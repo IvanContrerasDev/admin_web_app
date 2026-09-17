@@ -5,23 +5,23 @@
     {
       "id": "F-001",
       "title": "Formalizar acuerdos y organizar la ejecución",
-      "status": "in_progress",
+      "status": "done",
       "dependencies": [],
       "contract_dependencies": [],
       "task_spec": "docs/tasks/001-acuerdos-y-ejecucion.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "review_status": "pending",
-      "notes": "Entrega documental. No cerrar done sin revisión independiente; propuestas P-01 a P-05 aún pendientes."
+      "review_status": "approved_by_human",
+      "notes": "Entrega documental cerrada tras revisión humana. Acuerdos propagados; la Decisión 9 conserva detalles operativos pendientes para autenticación."
     },
     {
       "id": "F-002",
-      "title": "Base técnica, servicios y entorno de pruebas",
-      "status": "pending",
+      "title": "Base técnica y capa de servicios mock-first",
+      "status": "in_progress",
       "dependencies": ["F-001"],
       "contract_dependencies": [],
-      "task_spec": null,
+      "task_spec": "docs/tasks/002-base-tecnica-servicios.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "notes": "Preparar task spec antes de ejecutar. Infraestructura frontend desbloqueada contractualmente; cada servicio concreto requiere DTO aprobado."
+      "notes": "Infraestructura frontend desbloqueada contractualmente; cada servicio concreto requiere DTO aprobado."
     },
     {
       "id": "F-003",

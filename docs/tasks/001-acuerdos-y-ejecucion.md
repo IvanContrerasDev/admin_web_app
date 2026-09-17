@@ -1,6 +1,6 @@
 # F-001 — Formalizar acuerdos y organizar la ejecución
 
-**Estado:** in_progress
+**Estado:** done
 **App(s):** admin; coordinación documental con backend y mobile
 **Creada:** 2026-09-17
 
@@ -42,7 +42,7 @@ Comprobación propia del leader; los checks no equivalen al veredicto independie
 - [x] CA-05: decisiones del humano separadas de contratos ratificados; ausencia sin horas, medianoche y solicitud completa trazables.
 - [x] CA-06: F-002 puede preparar infraestructura frontend sin esperar contratos de dominios; ningún servicio o mock dependiente usa tipos candidatos sin aprobación.
 - [x] CA-07: Git diff sin código de producto ni modificaciones de fuentes sincronizadas; referencias locales válidas.
-- [ ] CA-08: reviewer independiente verifica CA-01 a CA-07; leader cierra y archiva después del veredicto, no antes.
+- [x] CA-08: el humano revisó y aprobó CA-01 a CA-07 el 2026-09-17; los acuerdos ratificados quedaron propagados en `docs/arquitectura/contratos-api.md`.
 
 ## Notas de implementación
 
@@ -84,7 +84,7 @@ Comprobaciones propias ejecutadas el 2026-09-17:
 - Validación Node (solo lectura): JSON válido, 10 IDs únicos, dependencias existentes/acíclicas, solo F-001 in_progress, ninguna done; rutas de plan/task spec existentes y dependencias P-01…P-05 válidas.
 - Matriz: 95 filas numeradas correlativamente, cada sección 1–95 una vez. Contraste manual de reglas/subsecciones con spec y referencias backend; sujeto a reviewer.
 - 17 enlaces Markdown locales comprobados; bloques de código balanceados.
-- Cinco propuestas con estado pendiente y apartados de problema/propuesta/impacto/preguntas/desbloqueo.
+- Cinco propuestas con apartados de problema/propuesta/impacto/preguntas/desbloqueo; P-01, P-03, P-04 y P-05 fueron aplicadas, y P-02 quedó aplicada parcialmente según la Decisión 9.
 - Whitelist de Git: exactamente 10 archivos documentales/de coordinación afectados; spec, contratos sincronizados, templates, adjuntos y código de producto intactos.
 - `git diff --check`: sin errores.
 
@@ -94,4 +94,6 @@ No hay package.json ni superficie ejecutable: build, lint, tests de aplicación 
 
 ## Review
 
-Pendiente de reviewer independiente. La herramienta de delegación del harness no está disponible en esta sesión; no se registra una ronda ficticia ni un veredicto aprobado. F-001 se mantiene in_progress hasta revisión y cierre por el leader.
+### Ronda 1 — 2026-09-17
+- Veredicto: aprobado por el humano.
+- Ítems: 0. El humano confirmó la revisión y aprobación de los puntos pendientes; `docs/arquitectura/contratos-api.md` contiene las decisiones ratificadas. Los detalles de despliegue aún abiertos en la Decisión 9 no bloquean el cierre documental de F-001 y continúan como dependencia explícita de autenticación.
