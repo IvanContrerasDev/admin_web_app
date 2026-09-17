@@ -39,10 +39,32 @@ describe('service adapters', () => {
     })
   })
 
+  it('validates the ratified pagination contract', async () => {
+    const mock = new MockServiceAdapter()
+    mock.register('GET', '/items', () => ({
+      data: [{ status: 'ready' }],
+      pagination: { page: 1, pageSize: 50, totalItems: 1, totalPages: 1 },
+    }))
+
+    await expect(new ServiceClient(mock).requestPage({ path: '/items' }, statusSchema))
+      .resolves.toEqual({
+        data: [{ status: 'ready' }],
+        pagination: { page: 1, pageSize: 50, totalItems: 1, totalPages: 1 },
+      })
+  })
+
   it('requires a base URL in HTTP mode', () => {
     expect(() => createServiceAdapter({ VITE_SERVICE_MODE: 'http' })).toThrowError(
       expect.objectContaining({ code: 'API_BASE_URL_REQUIRED' }),
     )
+  })
+
+  it('accepts successful responses without content', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }))
+    const adapter = new HttpServiceAdapter('https://api.example.com', fetcher)
+
+    await expect(adapter.request({ method: 'DELETE', path: '/documents/document-1' }))
+      .resolves.toBeUndefined()
   })
 
   it('normalizes API errors and includes credentials', async () => {

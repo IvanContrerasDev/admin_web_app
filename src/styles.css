@@ -2,10 +2,13 @@
 
 @theme {
   --color-primary: #0d80ae;
-  --color-background: #f9fafc;
-  --color-foreground: #111827;
-  --color-success: #22c55e;
-  --color-destructive: #ef4444;
+  --color-secondary: #62882b;
+  --color-accent: #ed701e;
+  --color-foreground: #0f172a;
+  --color-muted: #edf2f5;
+  --color-background: var(--color-muted);
+  --color-success: var(--color-secondary);
+  --color-destructive: var(--color-accent);
   --font-sans: 'Work Sans Variable', ui-sans-serif, system-ui, sans-serif;
 }
 

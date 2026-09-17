@@ -6,7 +6,7 @@ import { ServiceError } from './service-error'
 const paginationSchema = z.object({
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
-  total: z.number().int().nonnegative(),
+  totalItems: z.number().int().nonnegative(),
   totalPages: z.number().int().nonnegative(),
 })
 

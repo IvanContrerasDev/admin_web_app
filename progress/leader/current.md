@@ -4,17 +4,18 @@
 F-002 — Base técnica y capa de servicios mock-first (in_progress).
 
 ## Haciendo ahora
-Implementación recibida con status done. Pendiente de revisión independiente; F-002 no se marca done y F-003 no se inicia.
+Correcciones de la ronda 1 recibidas. Pendiente de re-revisión independiente; F-002 no se marca `done` y F-003 no se inicia.
 
 ## Hecho (esta sesión)
-- F-001 cerrada tras confirmación humana y contratos propagados.
-- Task spec F-002 preparado y enlazado en backlog.
-- Implementación F-002 completada con scaffold React/Vite, servicios mock-first, transporte HTTP, utilidades y pruebas.
-- Evidencia propia del implementer: npm ci, lint, typecheck, 15 tests, build y navegador desktop/mobile/404 correctos.
-- P-02 permanece aplicada parcialmente porque la Decisión 9 conserva detalles de despliegue/backend pendientes; no afecta F-002.
+- Leído el veredicto `changes_requested` del reviewer con 3 ítems.
+- Registrada la decisión humana: rige la paleta del plan aprobado F-001 (`#0D80AE`, `#62882B`, `#ED701E`, `#0F172A`, `#EDF2F5`).
+- Corregido el contrato de paginación a `totalItems`.
+- Corregido el manejo de respuestas `204 No Content`.
+- Actualizados tokens, `theme-color`, pruebas y trazabilidad del task spec.
+- Verificación fresca: lint, typecheck, 17 tests y build con exit 0; paleta comprobada en navegador real sin errores de aplicación.
 
 ## Blockers / Preguntas para el humano
-- La herramienta local `kimi` no está instalada en el entorno, por lo que no fue posible despachar el rol reviewer del harness desde esta sesión. No se inventa su veredicto.
+- Ninguno.
 
 ## Resultado final
-F-002 implementada y verificada por el implementer; estado in_progress hasta review independiente.
+Los 3 hallazgos de la ronda 1 fueron atendidos; F-002 queda a la espera del veredicto de re-revisión.

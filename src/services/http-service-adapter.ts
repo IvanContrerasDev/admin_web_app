@@ -79,6 +79,10 @@ export class HttpServiceAdapter implements ServiceAdapter {
       })
     }
 
+    if (response.status === 204) {
+      return undefined
+    }
+
     const payload = await parseJson(response)
 
     if (!response.ok) {
