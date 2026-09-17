@@ -106,3 +106,7 @@ Correcciones aplicadas el 2026-09-17:
 Verificación posterior: lint, typecheck, 17 tests y build finalizaron con exit 0. La vista principal se volvió a comprobar en navegador real a 1366 × 768 con la paleta aprobada y sin errores de aplicación en consola.
 
 Pendiente: re-revisión independiente y nuevo veredicto del reviewer.
+
+### Cierre humano — 2026-09-17
+
+El humano aprobó expresamente la entrega corregida y solicitó cerrar F-002. Se acepta como evidencia final la verificación posterior registrada (lint, typecheck, 17 tests, build y navegador real). F-002 queda `done` con `review_status: approved_by_human`; continúa F-003.

@@ -1,21 +1,23 @@
 # Current — leader
 
 ## Tarea activa
-F-002 — Base técnica y capa de servicios mock-first (in_progress).
+
+F-003 — Autenticación y navegación administrativa (`docs/tasks/003-autenticacion-navegacion.md`).
 
 ## Haciendo ahora
-Correcciones de la ronda 1 recibidas. Pendiente de re-revisión independiente; F-002 no se marca `done` y F-003 no se inicia.
 
-## Hecho (esta sesión)
-- Leído el veredicto `changes_requested` del reviewer con 3 ítems.
-- Registrada la decisión humana: rige la paleta del plan aprobado F-001 (`#0D80AE`, `#62882B`, `#ED701E`, `#0F172A`, `#EDF2F5`).
-- Corregido el contrato de paginación a `totalItems`.
-- Corregido el manejo de respuestas `204 No Content`.
-- Actualizados tokens, `theme-color`, pruebas y trazabilidad del task spec.
-- Verificación fresca: lint, typecheck, 17 tests y build con exit 0; paleta comprobada en navegador real sin errores de aplicación.
+Incremento A implementado y validado; F-003 sigue `in_progress` a la espera de contratos materializados para los subflujos restantes.
 
-## Blockers / Preguntas para el humano
-- Ninguno.
+## Hecho
 
-## Resultado final
-Los 3 hallazgos de la ronda 1 fueron atendidos; F-002 queda a la espera del veredicto de re-revisión.
+- F-002 cerrada por aprobación humana el 2026-09-17.
+- Login ADMIN con `identifier`, password y recordar sesión.
+- Challenge 2FA de email sin sesión previa; access token solo en memoria tras verificar.
+- Bootstrap, guard, retorno interno validado, logout y limpieza de caché.
+- Navegación administrativa responsive con sidebar/header y rutas lazy.
+- Mensaje exacto de TO_BE_ADMIN cubierto.
+- Validación verde: lint, typecheck, 20 tests, build y smoke real desktop/móvil del flujo completo.
+
+## Bloqueos contractuales parciales
+
+Reenvío 2FA ADMIN, CSRF/generación de sesión definitivos, recuperación/reset, catálogo público y solicitud/decisión administrativa requieren materialización backend completa. No se inventaron DTOs ni endpoints para esos flujos.

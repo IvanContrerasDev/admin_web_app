@@ -30,6 +30,19 @@ export class ServiceClient {
     return result.data.data
   }
 
+  async requestVoid(request: ServiceRequest): Promise<void> {
+    const result = await this.adapter.request(request)
+
+    if (result !== undefined) {
+      throw new ServiceError({
+        code: 'INVALID_API_RESPONSE',
+        message: 'La respuesta del servidor no cumple el contrato esperado.',
+        retryable: false,
+        kind: 'contract',
+      })
+    }
+  }
+
   async requestPage<T>(
     request: ServiceRequest,
     itemSchema: z.ZodType<T>,

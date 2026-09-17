@@ -1,3 +1,4 @@
+import { registerAuthMockRoutes } from '../mocks/auth-handlers'
 import { HttpServiceAdapter } from './http-service-adapter'
 import { MockServiceAdapter } from './mock-service-adapter'
 import type { ServiceAdapter } from './service-adapter'
@@ -12,7 +13,9 @@ export function createServiceAdapter(environment: ServiceEnvironment): ServiceAd
   const mode = environment.VITE_SERVICE_MODE ?? 'mock'
 
   if (mode === 'mock') {
-    return new MockServiceAdapter()
+    const adapter = new MockServiceAdapter()
+    registerAuthMockRoutes(adapter)
+    return adapter
   }
 
   if (mode === 'http') {
