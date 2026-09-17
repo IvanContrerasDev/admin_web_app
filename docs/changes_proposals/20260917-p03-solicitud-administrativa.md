@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-09-17
 **Origen:** admin_web_app / leader
-**Estado:** pendiente
+**Estado:** aplicada
+**Nota (2026-09-17, orchestrator, segunda ronda):** ratificada por el humano: ampliar la ruta existente (sin versionar), challenge 6 dígitos con TTL 10 min / 5 intentos / cooldown 60 s, payload sin verificar eliminado a las 72 h, link de decisión con expiración 7 días, **contraseña actual exigida** para cuentas existentes, discrepancias no identitarias → advertir y continuar, cuenta desactivada con decisión pendiente → solicitud cancelada, tipos candidatos como base. Todo en `docs/arquitectura/contratos-api.md` (decisión 10). Resta ejecución de backend: DTOs completos, respuestas neutrales y catálogo de errores.
 **Responsable propuesto:** leader backend/auth y humano; orchestrator propaga.
 **Módulos afectados:** F-003/F-010; mobile para compatibilidad de identidad y restricciones de rol.
 

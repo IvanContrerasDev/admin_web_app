@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-09-17
 **Origen:** admin_web_app / leader
-**Estado:** pendiente
+**Estado:** aplicada
+**Nota (2026-09-17, orchestrator, segunda ronda):** tras comparación de proveedores (MapTiler, Mapbox, Stadia, Geoapify, LocationIQ, Google, OSM público), el humano eligió **Geoapify** (tiles + geocoding) con Leaflet o MapLibre, acceso directo desde el navegador con clave restringida por dominio (sin proxy), free tier comercial con atribución, persistencia de coordenadas permitida. Contingencia si fallan housenumbers en la validación real: Mapbox o Google. Decisión 12 de `docs/arquitectura/contratos-api.md`. Resta ejecución: operaciones crea la cuenta/credencial restringida por origen y el leader admin planifica F-005 con la interfaz `GeocodingServiceCandidate`.
 **Responsable propuesto:** humano/operaciones selecciona proveedor y presupuesto; leader admin implementa integración; leader backend coordina proxy si es necesario.
 **Módulos afectados:** F-005 y F-010. No bloquea F-002 ni servicios de otros dominios.
 

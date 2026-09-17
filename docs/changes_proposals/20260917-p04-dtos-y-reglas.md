@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-09-17
 **Origen:** admin_web_app / leader
-**Estado:** pendiente
+**Estado:** aplicada
+**Nota (2026-09-17, orchestrator, segunda ronda):** ratificada por el humano: concurrencia por **`expectedVersion`**, solapamientos **rechazados** en carga manual (históricos intactos), no se aceptan WORK sin ambos extremos ni registros sin intervalos en carga manual, identidad empleado/lugar/fecha inmutable en PATCH, motivo de ausencia **opcional siempre**, flujo revisión pura vs MANUAL_LOADED, cargas retrospectivas permitidas como corrección histórica, **20 MiB** por archivo y lote **atómico**, búsqueda por fileName+nombre/apellido/legajo, dashboard con contadores del **mes seleccionado**. Todo en `docs/arquitectura/contratos-api.md` (decisión 11). Resta ejecución de backend: DTOs completos por recurso, políticas de validación, ejemplos y pruebas.
 **Responsables propuestos:** leader backend por DTO/regla; leader mobile por compatibilidad; humano ratifica; orchestrator propaga.
 **Módulos afectados:** F-003 a F-009 y F-010, según cada subacuerdo. No bloquea infraestructura de F-002.
 

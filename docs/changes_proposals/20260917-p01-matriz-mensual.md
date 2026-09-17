@@ -2,7 +2,8 @@
 
 **Fecha:** 2026-09-17
 **Origen:** admin_web_app / leader
-**Estado:** pendiente
+**Estado:** aplicada
+**Nota (2026-09-17, orchestrator):** ratificada por el humano en segunda ronda: ruta `GET /records/monthly`, tipos, filtros (siteId = provincia del lugar, conjunción en el mismo día), totales, orden fijo y snapshot con **TTL 15 min** + errores 410/400. Todo en `docs/arquitectura/contratos-api.md` (decisión 8). Resta ejecución de backend: materializar DTOs y entregar los ejemplos de evidencia (bisiesto, 31 días, dos páginas, concurrencia).
 **Responsable propuesto:** leader backend; decisión del humano; propagación por orchestrator.
 **Módulos afectados:** F-006 y F-010. No bloquea infraestructura F-002.
 
