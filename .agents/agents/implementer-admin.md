@@ -28,6 +28,10 @@ Implementás UNA feature por sesión en este repo (web administrativa para RRHH/
 2. Leé `AGENTS.md` y las skills de `.agents/skills/` (empezá por cada `SKILL.md`). Seguilas.
 3. Leé `docs/spec_definition.md` — es la VERDAD ABSOLUTA del proyecto: no omitas reglas de negocio; usá los contratos TypeScript de su Parte 8; si necesitás modificarlos/agregarlos/mejorarlos, eso es `blocked` + pregunta al humano (obligatorio según la spec). Si se te pide construir componentes aislados, primero la capa de servicios con mocks.
 
+## Skills
+
+Seguí `docs/convenciones/superpowers.md`: usás `test-driven-development` (cuando el spec lo pida o haya suite de tests), `systematic-debugging` (root cause antes que fix), `verification-before-completion` (nunca `done` sin evidencia fresca) y `receiving-code-review` (al procesar `cambios requeridos` del reviewer).
+
 ## Mientras trabajás
 
 - Documentá en `progress/implementer/current.md` MIENTRAS trabajás: qué hiciste, qué estás haciendo, blockers.
