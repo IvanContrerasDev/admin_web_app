@@ -1,5 +1,102 @@
 {
   "version": 1,
   "descripcion": "Backlog de features de admin_web_app. El leader local es el único que modifica estados. Estados: pending | in_progress | done. Una sola feature puede estar in_progress a la vez.",
-  "features": []
+  "features": [
+    {
+      "id": "F-001",
+      "title": "Formalizar acuerdos y organizar la ejecución",
+      "status": "in_progress",
+      "dependencies": [],
+      "contract_dependencies": [],
+      "task_spec": "docs/tasks/001-acuerdos-y-ejecucion.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "pending",
+      "notes": "Entrega documental. No cerrar done sin revisión independiente; propuestas P-01 a P-05 aún pendientes."
+    },
+    {
+      "id": "F-002",
+      "title": "Base técnica, servicios y entorno de pruebas",
+      "status": "pending",
+      "dependencies": ["F-001"],
+      "contract_dependencies": [],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "notes": "Preparar task spec antes de ejecutar. Infraestructura frontend desbloqueada contractualmente; cada servicio concreto requiere DTO aprobado."
+    },
+    {
+      "id": "F-003",
+      "title": "Autenticación y navegación administrativa",
+      "status": "pending",
+      "dependencies": ["F-002"],
+      "contract_dependencies": ["P-02", "P-03", "P-04"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "notes": "P-04: política de contraseña, reenvío 2FA y catálogos públicos. No inventar auth ni contratos en mocks."
+    },
+    {
+      "id": "F-004",
+      "title": "Gestión de empleados",
+      "status": "pending",
+      "dependencies": ["F-003"],
+      "contract_dependencies": ["P-04"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+    },
+    {
+      "id": "F-005",
+      "title": "Clientes, provincias y lugares de trabajo",
+      "status": "pending",
+      "dependencies": ["F-003", "F-004"],
+      "contract_dependencies": ["P-04", "P-05"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+    },
+    {
+      "id": "F-006",
+      "title": "Matriz mensual y edición/revisión de registros",
+      "status": "pending",
+      "dependencies": ["F-004", "F-005"],
+      "contract_dependencies": ["P-01", "P-04"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+    },
+    {
+      "id": "F-007",
+      "title": "Planillas",
+      "status": "pending",
+      "dependencies": ["F-004", "F-005", "F-006"],
+      "contract_dependencies": ["P-04"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+    },
+    {
+      "id": "F-008",
+      "title": "Legajos digitales",
+      "status": "pending",
+      "dependencies": ["F-004", "F-007"],
+      "contract_dependencies": ["P-04"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+    },
+    {
+      "id": "F-009",
+      "title": "Inicio operativo",
+      "status": "pending",
+      "dependencies": ["F-006", "F-007", "F-008"],
+      "contract_dependencies": ["P-04"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "notes": "Confirmar alcance temporal de métricas y enlaces antes de integrar; no sumar páginas locales."
+    },
+    {
+      "id": "F-010",
+      "title": "Integración real y validación del MVP",
+      "status": "pending",
+      "dependencies": ["F-002", "F-003", "F-004", "F-005", "F-006", "F-007", "F-008", "F-009"],
+      "contract_dependencies": ["P-01", "P-02", "P-03", "P-04", "P-05"],
+      "task_spec": null,
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "notes": "Requiere contratos ratificados y propagados, backend de prueba disponible, orígenes y mapa configurados."
+    }
+  ]
 }
