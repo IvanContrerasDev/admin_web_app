@@ -44,12 +44,14 @@ Construir la gestión administrativa de empleados sin exponer roles, contraseña
 
 P-04 ratificó reglas funcionales, pero la decisión 11 todavía marca como tarea backend materializar el DTO completo de users, allowlists de filtros/sort, rutas de escritura, códigos de unicidad y política de contraseña. Según `AGENTS.md`, agregar o mejorar contratos TypeScript exige consulta humana. No se implementará un mock que convierta candidatos en API ficticia.
 
-Para desbloquear el incremento se necesita ratificar una de estas alternativas: adoptar ahora un contrato frontend explícito para F-004 o esperar la materialización backend. La UI y el servicio se implementarán inmediatamente después de esa decisión.
+El humano eligió adoptar ahora un contrato frontend explícito. La propuesta completa está en `docs/changes_proposals/20260917-p06-contrato-empleados.md` y requiere ratificación expresa antes de escribir tipos, servicios o mocks.
 
 ## Registro de implementación
 
 - F-004 activada y límites contractuales relevados.
-- Implementación de servicio/mocks/UI detenida antes de inventar el contrato de red.
+- Alternativa “contrato frontend” elegida por el humano.
+- P-06 redactada con DTOs, rutas, validaciones, política de contraseña y errores propuestos.
+- Implementación de servicio/mocks/UI detenida hasta la ratificación expresa de P-06.
 
 ## Review
 

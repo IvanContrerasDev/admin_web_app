@@ -10,14 +10,15 @@ F-003 — Autenticación y navegación administrativa: incremento A entregado, `
 
 ## Haciendo ahora
 
-Contrato de F-004 relevado. La implementación se detuvo en el límite correcto antes de definir DTOs/rutas/mocks no ratificados.
+P-06 redactada como contrato frontend explícito para F-004. La implementación permanece detenida hasta ratificación humana expresa.
 
 ## Hecho
 
 - F-003 movida a `pending_review` por indicación humana.
 - F-004 activada y task spec creada.
-- Alcance funcional de empleados, prohibiciones y UX de tablas confirmados contra spec y decisión 11.
+- El humano eligió la alternativa de contrato frontend.
+- P-06 define DTOs seguros, rutas, paginación/filtros, escrituras, estado, validaciones, política de contraseña y catálogo de errores.
 
 ## Bloqueo contractual
 
-La decisión 11 deja explícitamente pendiente que backend materialice DTOs completos de users, allowlists de filtros/sort, política de contraseña, rutas de escritura y conflictos. `AGENTS.md` obliga a consultar al humano antes de agregar contratos TypeScript. Se requiere decidir si el humano ratifica ahora un contrato frontend concreto o si F-004 espera al backend.
+Ratificar o ajustar `docs/changes_proposals/20260917-p06-contrato-empleados.md`. Según `AGENTS.md`, no se escribirán contratos TypeScript, servicios ni mocks antes de esa aprobación.
