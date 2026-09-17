@@ -1,6 +1,6 @@
 # F-004 — Gestión de empleados
 
-**Estado:** in_progress
+**Estado:** pending_review
 **App(s):** admin
 **Creada:** 2026-09-17
 
@@ -51,8 +51,13 @@ El humano eligió adoptar ahora un contrato frontend explícito. La propuesta co
 - F-004 activada y límites contractuales relevados.
 - Alternativa “contrato frontend” elegida por el humano.
 - P-06 redactada con DTOs, rutas, validaciones, política de contraseña y errores propuestos.
-- Implementación de servicio/mocks/UI detenida hasta la ratificación expresa de P-06.
+- P-06 ratificada expresamente por el humano el 2026-09-17; contrato desbloqueado para implementación mock-first.
+- Materializados DTOs Zod/TypeScript y `UserService` para las rutas ratificadas.
+- Mock stateful con seis provincias, búsqueda, filtro, paginación, unicidad, validaciones y cambios de estado.
+- UI responsive: listado, alta, edición, detalle, links relacionados y confirmación de activación/desactivación.
+- Validación automática: typecheck, 25 pruebas y build de producción exitosos.
+- Validación real en navegador: listado desktop/mobile, detalle, confirmación y cambio de estado, y formulario de alta.
 
 ## Review
 
-Pendiente.
+Pendiente de revisión independiente. El runtime de reviewer continúa no disponible; no se emitió veredicto sustituto.

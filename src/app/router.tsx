@@ -37,8 +37,29 @@ export function createAppRouter() {
             {
               path: 'usuarios',
               lazy: async () => {
-                const { UsersPage } = await import('../features/modules/module-pages')
+                const { UsersPage } = await import('../features/users/users-page')
                 return { Component: UsersPage }
+              },
+            },
+            {
+              path: 'usuarios/nuevo',
+              lazy: async () => {
+                const { UserFormPage } = await import('../features/users/user-form-page')
+                return { Component: UserFormPage }
+              },
+            },
+            {
+              path: 'usuarios/:userId',
+              lazy: async () => {
+                const { UserDetailPage } = await import('../features/users/user-detail-page')
+                return { Component: UserDetailPage }
+              },
+            },
+            {
+              path: 'usuarios/:userId/editar',
+              lazy: async () => {
+                const { UserFormPage } = await import('../features/users/user-form-page')
+                return { Component: UserFormPage }
               },
             },
             {

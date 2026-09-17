@@ -1,17 +1,20 @@
-# Current — reviewer
+# Cola actual — reviewer admin_web_app
 
-## Pendiente de revisión
+Fecha: 2026-09-17
 
-F-003 — Autenticación y navegación administrativa (`docs/tasks/003-autenticacion-navegacion.md`).
+## Revisiones pendientes
 
-## Estado
+### F-003 — Autenticación + navegación
 
-Incremento A entregado, validado por implementación y marcado `pending_review`. Falta revisión independiente; no se sustituye con autoaprobación del leader/implementer.
+- Incremento A entregado y validado.
+- Revisar `docs/tasks/003-autenticacion-navegacion.md`.
+- Veredicto independiente pendiente porque `kimi --agent reviewer` no está disponible.
 
-## Siguiente tarea activa
+### F-004 — Gestión de empleados
 
-F-004 — Gestión de empleados. El humano autorizó avanzar mientras F-003 espera review.
+- Contrato P-06 ratificado.
+- Listado, filtros, alta, edición, detalle y estado implementados mock-first.
+- Typecheck, 25 pruebas, build y navegador real validados.
+- Revisar `docs/tasks/004-gestion-empleados.md` y `docs/changes_proposals/20260917-p06-contrato-empleados.md`.
 
-## Nota de entorno
-
-El comando documentado `kimi --agent reviewer` no está instalado en este entorno. La revisión queda en cola hasta disponer del reviewer independiente.
+No aprobar por ausencia de reviewer ni sustituir independencia con auto-revisión del implementador.

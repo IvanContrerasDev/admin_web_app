@@ -1,24 +1,23 @@
-# Current — leader
+# Estado actual — leader admin_web_app
 
-## Tarea activa
+Fecha: 2026-09-17
 
-F-004 — Gestión de empleados (`docs/tasks/004-gestion-empleados.md`).
+## Feature activa
 
-## En revisión
+Ninguna. F-003 y F-004 están en `pending_review` por decisión humana.
 
-F-003 — Autenticación y navegación administrativa: incremento A entregado, `pending_review`; no existe veredicto independiente porque `kimi --agent reviewer` no está disponible en este entorno.
+## Entrega F-004
 
-## Haciendo ahora
+- P-06 ratificada y materializada en tipos y servicios.
+- Gestión de empleados implementada mock-first: listado, búsqueda, filtro por estado, paginación, alta, edición, detalle y activación/desactivación.
+- Contraseñas no se devuelven ni se almacenan en caché de queries.
+- Deep links de perfil, planillas y legajo usan UUID.
+- Typecheck, 25 pruebas y build exitosos.
+- Flujo principal y responsive verificados en navegador real.
 
-P-06 redactada como contrato frontend explícito para F-004. La implementación permanece detenida hasta ratificación humana expresa.
+## Cola de revisión
 
-## Hecho
+- F-003 — autenticación + navegación, incremento A.
+- F-004 — gestión de empleados.
 
-- F-003 movida a `pending_review` por indicación humana.
-- F-004 activada y task spec creada.
-- El humano eligió la alternativa de contrato frontend.
-- P-06 define DTOs seguros, rutas, paginación/filtros, escrituras, estado, validaciones, política de contraseña y catálogo de errores.
-
-## Bloqueo contractual
-
-Ratificar o ajustar `docs/changes_proposals/20260917-p06-contrato-empleados.md`. Según `AGENTS.md`, no se escribirán contratos TypeScript, servicios ni mocks antes de esa aprobación.
+No se activa otra feature automáticamente. El humano decide el siguiente avance mientras el reviewer independiente siga no disponible.

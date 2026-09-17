@@ -38,11 +38,13 @@
     {
       "id": "F-004",
       "title": "Gestión de empleados",
-      "status": "in_progress",
+      "status": "pending_review",
       "dependencies": ["F-003"],
-      "contract_dependencies": ["P-04"],
+      "contract_dependencies": ["P-04", "P-06"],
       "task_spec": "docs/tasks/004-gestion-empleados.md",
-      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "pending_independent_review",
+      "notes": "P-06 ratificada. Listado, filtros, alta, edición, detalle y estado implementados mock-first; revisión independiente pendiente."
     },
     {
       "id": "F-005",
