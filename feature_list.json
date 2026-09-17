@@ -49,11 +49,12 @@
     {
       "id": "F-005",
       "title": "Clientes, provincias y lugares de trabajo",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": ["F-003", "F-004"],
-      "contract_dependencies": ["P-04", "P-05"],
-      "task_spec": null,
-      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+      "contract_dependencies": ["P-04", "P-05", "P-07"],
+      "task_spec": "docs/tasks/005-clientes-lugares.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "notes": "Activada por decisión humana mientras F-003/F-004 siguen pending_review. P-07 pendiente de ratificación antes de implementar tipos, servicios o mocks."
     },
     {
       "id": "F-006",
