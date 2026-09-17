@@ -81,4 +81,16 @@ Incidencia resuelta: el primer test de formato horario omitía solicitar `minute
 
 ## Review
 
-(pendiente del reviewer independiente; el implementer no se autoaprueba)
+### Ronda 1 — 2026-09-17
+
+**Veredicto: cambios requeridos** (3 ítems).
+
+Verificación ejecutada por el reviewer (no se confió en el registro): `npm ci --ignore-scripts` exit 0; `npm run lint` exit 0; `npm run typecheck` exit 0; `npm test -- --run` exit 0 (4 archivos, 15 tests); `npm run build` exit 0 (77 módulos); `sync-template.sh --check` sin deriva; `git status` limpio y ningún archivo SYNCED-FROM-TEMPLATE modificado. El smoke de navegador real no se re-ejecutó (entorno sin navegador); las rutas `/` y fallback están cubiertas por `src/app/app.test.tsx`.
+
+Lo verificado como correcto: scaffold estricto y reproducible (CA-01), router + providers + fallback accesible (CA-02), mock-first intercambiable sin condicionales de transporte ni DTOs de dominio (CA-03), jerarquía de errores tipada con causa preservada (CA-04), fechas `Intl`/`America/Argentina/Buenos_Aires` con tests deterministas (CA-05), adjuntos atómicos 20 MiB × 10 (CA-06), base visual accesible en español (CA-07), comandos frescos en verde (CA-08) y disciplina documental sin tocar fuentes sincronizadas (CA-09).
+
+Ítems de corrección:
+
+1. **Paginación fuera de contrato** — `src/types/api.ts:8` y `src/services/service-client.ts:9`: el campo se llama `total`, pero el contrato ratifica `totalItems` (`backend_api_gdes/docs/03-contratos-api.md`, "Formato de respuesta"; también citado en `docs/arquitectura/contratos-api.md` línea 226). Renombrar a `totalItems` en el tipo, el schema Zod y lo que dependa de ellos.
+2. **Consultar al humano — paleta de tokens contradictoria:** este task spec (línea 23) declara cinco tokens "tomados del plan aprobado" (`#0D80AE`, `#F9FAFC`, `#111827`, `#22C55E`, `#EF4444`), pero el plan aprobado (`docs/tasks/001-acuerdos-y-ejecucion-plan.md` §4, línea 159) y la spec (§44) definen otra paleta (`#0D80AE`, `#62882B`, `#ED701E`, `#0F172A`, `#EDF2F5`). La implementación siguió el task spec; el humano/leader debe definir cuál paleta manda y corregir el documento que corresponda.
+3. **`HttpServiceAdapter` rechaza respuestas 204 exitosas** — `src/services/http-service-adapter.ts:23-36`: `parseJson` se ejecuta sobre toda respuesta; un `204 No Content` con cuerpo vacío (código de éxito documentado en el contrato backend, usado por DELETE de documentos) termina en `INVALID_JSON_RESPONSE` pese al éxito. Manejar 204/cuerpo vacío antes de parsear.
