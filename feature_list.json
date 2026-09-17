@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "descripcion": "Backlog de features de admin_web_app. El leader local es el único que modifica estados. Estados: pending | in_progress | done. Una sola feature puede estar in_progress a la vez.",
+  "descripcion": "Backlog de features de admin_web_app. El leader local es el único que modifica estados. Estados: pending | in_progress | pending_review | done. Una sola feature puede estar in_progress a la vez.",
   "features": [
     {
       "id": "F-001",
@@ -27,20 +27,21 @@
     {
       "id": "F-003",
       "title": "Autenticación y navegación administrativa",
-      "status": "in_progress",
+      "status": "pending_review",
       "dependencies": ["F-002"],
       "contract_dependencies": ["P-02", "P-03", "P-04"],
       "task_spec": "docs/tasks/003-autenticacion-navegacion.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "notes": "P-04: política de contraseña, reenvío 2FA y catálogos públicos. No inventar auth ni contratos en mocks."
+      "review_status": "pending_independent_review",
+      "notes": "Incremento A implementado y validado; revisión independiente pendiente. Los subflujos sin contrato materializado permanecen excluidos."
     },
     {
       "id": "F-004",
       "title": "Gestión de empleados",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": ["F-003"],
       "contract_dependencies": ["P-04"],
-      "task_spec": null,
+      "task_spec": "docs/tasks/004-gestion-empleados.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
     },
     {

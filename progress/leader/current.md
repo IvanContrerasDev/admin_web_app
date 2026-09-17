@@ -2,22 +2,22 @@
 
 ## Tarea activa
 
-F-003 — Autenticación y navegación administrativa (`docs/tasks/003-autenticacion-navegacion.md`).
+F-004 — Gestión de empleados (`docs/tasks/004-gestion-empleados.md`).
+
+## En revisión
+
+F-003 — Autenticación y navegación administrativa: incremento A entregado, `pending_review`; no existe veredicto independiente porque `kimi --agent reviewer` no está disponible en este entorno.
 
 ## Haciendo ahora
 
-Incremento A implementado y validado; F-003 sigue `in_progress` a la espera de contratos materializados para los subflujos restantes.
+Contrato de F-004 relevado. La implementación se detuvo en el límite correcto antes de definir DTOs/rutas/mocks no ratificados.
 
 ## Hecho
 
-- F-002 cerrada por aprobación humana el 2026-09-17.
-- Login ADMIN con `identifier`, password y recordar sesión.
-- Challenge 2FA de email sin sesión previa; access token solo en memoria tras verificar.
-- Bootstrap, guard, retorno interno validado, logout y limpieza de caché.
-- Navegación administrativa responsive con sidebar/header y rutas lazy.
-- Mensaje exacto de TO_BE_ADMIN cubierto.
-- Validación verde: lint, typecheck, 20 tests, build y smoke real desktop/móvil del flujo completo.
+- F-003 movida a `pending_review` por indicación humana.
+- F-004 activada y task spec creada.
+- Alcance funcional de empleados, prohibiciones y UX de tablas confirmados contra spec y decisión 11.
 
-## Bloqueos contractuales parciales
+## Bloqueo contractual
 
-Reenvío 2FA ADMIN, CSRF/generación de sesión definitivos, recuperación/reset, catálogo público y solicitud/decisión administrativa requieren materialización backend completa. No se inventaron DTOs ni endpoints para esos flujos.
+La decisión 11 deja explícitamente pendiente que backend materialice DTOs completos de users, allowlists de filtros/sort, política de contraseña, rutas de escritura y conflictos. `AGENTS.md` obliga a consultar al humano antes de agregar contratos TypeScript. Se requiere decidir si el humano ratifica ahora un contrato frontend concreto o si F-004 espera al backend.

@@ -2,7 +2,7 @@
 
 ## Estado
 
-`in_progress` — activada el 2026-09-17 tras aprobación humana y cierre de F-002.
+`pending_review` — incremento A entregado; revisión independiente pendiente. El humano autorizó avanzar F-004 sin confundir esta entrega con aprobación.
 
 ## Fuentes y límites
 
@@ -60,4 +60,4 @@ F-003 permanece `in_progress`: falta incorporar los subflujos bloqueados listado
 
 ## Review
 
-Pendiente.
+Pendiente de revisión independiente. El runtime `kimi --agent reviewer` no está disponible en este entorno; no se emitió un veredicto sustituto.

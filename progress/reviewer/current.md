@@ -1,13 +1,17 @@
 # Current — reviewer
 
-## Tarea activa
+## Pendiente de revisión
 
-F-003 — Autenticación y navegación administrativa (`docs/tasks/003-autenticacion-navegacion.md`). Aún no enviada a revisión.
+F-003 — Autenticación y navegación administrativa (`docs/tasks/003-autenticacion-navegacion.md`).
 
-## Estado anterior
+## Estado
 
-F-002 cerrada por aprobación humana el 2026-09-17. Las 3 correcciones de ronda 1 quedaron registradas en el task spec y la verificación posterior quedó en verde.
+Incremento A entregado, validado por implementación y marcado `pending_review`. Falta revisión independiente; no se sustituye con autoaprobación del leader/implementer.
 
-## Haciendo ahora
+## Siguiente tarea activa
 
-Sin revisión activa. Esperando entrega del incremento A de F-003.
+F-004 — Gestión de empleados. El humano autorizó avanzar mientras F-003 espera review.
+
+## Nota de entorno
+
+El comando documentado `kimi --agent reviewer` no está instalado en este entorno. La revisión queda en cola hasta disponer del reviewer independiente.
