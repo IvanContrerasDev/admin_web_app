@@ -66,8 +66,8 @@ El contrato del backend sigue enviando `latitude`, `longitude`, `radiusMeters` y
 - Clic/arrastre confirman centro; Marker, Circle, slider e inputs permanecen sincronizados.
 - El contrato HTTP de Workplace y sus validaciones no cambiaron.
 - Validación automática posterior: lint, typecheck, 7 archivos/31 tests y build exitosos.
-- Navegador real 1072 × 800: formulario, slider y recuperación accesible sin clave verificados; queda pendiente la prueba real de Autocomplete/mapa con clave restringida.
+- Navegador real 1072 × 800: formulario y `PlaceAutocompleteElement` verificados con la clave configurada. La prueba local detectó correctamente `RefererNotAllowedMapError` porque `http://localhost:5174` no pertenece a sus referrers autorizados; queda pendiente probar clic/arrastre contra un origen autorizado de preview o producción.
 
 ## Review
 
-Pendiente de revisión independiente y de validación real con una clave restringida de Google Maps. El modo sin clave muestra recuperación explícita y no utiliza proveedores públicos alternativos.
+Pendiente de revisión independiente y de validación final en un origen autorizado de preview o producción. Los errores de ausencia, carga o referrer muestran recuperación explícita y no utilizan proveedores públicos alternativos.

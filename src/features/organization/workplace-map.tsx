@@ -1,6 +1,12 @@
 import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 import { useEffect, useRef, useState } from 'react'
 
+declare global {
+  interface Window {
+    gm_authFailure?: () => void
+  }
+}
+
 export interface MapLocation {
   latitude: number
   longitude: number
@@ -61,6 +67,11 @@ export function WorkplaceMap({
     let disposed = false
     const listeners: google.maps.MapsEventListener[] = []
     let autocomplete: google.maps.places.PlaceAutocompleteElement | null = null
+    const previousAuthFailure = window.gm_authFailure
+
+    window.gm_authFailure = () => {
+      if (!disposed) setLoadError('Google Maps rechazó la clave para este origen. Revisá las restricciones HTTP y las APIs habilitadas.')
+    }
 
     async function initializeMap() {
       try {
@@ -148,6 +159,7 @@ export function WorkplaceMap({
       disposed = true
       listeners.forEach((listener) => listener.remove())
       autocomplete?.remove()
+      window.gm_authFailure = previousAuthFailure
       markerRef.current?.setMap(null)
       circleRef.current?.setMap(null)
       mapRef.current = null
