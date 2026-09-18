@@ -87,9 +87,10 @@ export function WorkplaceMap({
           zoom: initialPosition ? 16 : 13,
           clickableIcons: false,
           fullscreenControl: true,
+          gestureHandling: 'greedy',
           mapTypeControl: false,
           streetViewControl: false,
-          scrollwheel: false,
+          scrollwheel: true,
         })
         const marker = new google.maps.Marker({
           draggable: !readOnly,

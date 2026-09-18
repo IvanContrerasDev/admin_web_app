@@ -18,6 +18,7 @@ Construir la gestión de la estructura organizacional y la configuración geogr�
 - Configuración `CIRCLE` con centro, radio en metros y umbral GPS opcional.
 - Google Maps Platform mediante Maps JavaScript API y Places Autocomplete, cargados de forma diferida.
 - Autocomplete argentino que solo centra el mapa; clic o arrastre para confirmar el centro; marcador, círculo real y slider de radio.
+- En escritorio, la rueda del mouse sobre el mapa controla el zoom directamente; fuera del mapa conserva el scroll de página.
 - Ubicación predeterminada y acción explícita para centrar con geolocalización del navegador.
 
 **NO incluye:**
