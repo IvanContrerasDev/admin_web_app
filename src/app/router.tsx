@@ -63,10 +63,59 @@ export function createAppRouter() {
               },
             },
             {
+              path: 'clientes',
+              lazy: async () => {
+                const { ClientsPage } = await import('../features/organization/clients-page')
+                return { Component: ClientsPage }
+              },
+            },
+            {
+              path: 'clientes/nuevo',
+              lazy: async () => {
+                const { ClientFormPage } = await import('../features/organization/client-form-page')
+                return { Component: ClientFormPage }
+              },
+            },
+            {
+              path: 'clientes/:clientId',
+              lazy: async () => {
+                const { ClientDetailPage } = await import('../features/organization/client-detail-page')
+                return { Component: ClientDetailPage }
+              },
+            },
+            {
+              path: 'clientes/:clientId/editar',
+              lazy: async () => {
+                const { ClientFormPage } = await import('../features/organization/client-form-page')
+                return { Component: ClientFormPage }
+              },
+            },
+            {
               path: 'lugares',
               lazy: async () => {
-                const { WorkplacesPage } = await import('../features/modules/module-pages')
+                const { WorkplacesPage } = await import('../features/organization/workplaces-page')
                 return { Component: WorkplacesPage }
+              },
+            },
+            {
+              path: 'lugares/nuevo',
+              lazy: async () => {
+                const { WorkplaceFormPage } = await import('../features/organization/workplace-form-page')
+                return { Component: WorkplaceFormPage }
+              },
+            },
+            {
+              path: 'lugares/:workplaceId',
+              lazy: async () => {
+                const { WorkplaceDetailPage } = await import('../features/organization/workplace-detail-page')
+                return { Component: WorkplaceDetailPage }
+              },
+            },
+            {
+              path: 'lugares/:workplaceId/editar',
+              lazy: async () => {
+                const { WorkplaceFormPage } = await import('../features/organization/workplace-form-page')
+                return { Component: WorkplaceFormPage }
               },
             },
             {

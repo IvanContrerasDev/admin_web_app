@@ -5,6 +5,7 @@ const navigation = [
   { label: 'Inicio', href: '/' },
   { label: 'Registros', href: '/registros' },
   { label: 'Usuarios', href: '/usuarios' },
+  { label: 'Clientes', href: '/clientes' },
   { label: 'Lugares de trabajo', href: '/lugares' },
   { label: 'Planillas', href: '/planillas' },
   { label: 'Legajos', href: '/legajos' },

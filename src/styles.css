@@ -39,6 +39,23 @@ a {
   touch-action: manipulation;
 }
 
+.workplace-marker {
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--color-background);
+  border-radius: 9999px;
+  background: var(--color-primary);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--color-foreground) 35%, transparent);
+}
+
+.workplace-marker span {
+  display: block;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: var(--color-background);
+}
+
 .skip-link {
   position: fixed;
   top: 0.75rem;

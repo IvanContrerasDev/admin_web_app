@@ -10,14 +10,16 @@ El humano autorizó continuar aun cuando F-003 y F-004 permanecen en `pending_re
 
 ## Estado F-005
 
-- Task spec creada en `docs/tasks/005-clientes-lugares.md`.
-- Leaflet seleccionado como renderizador técnico permitido por P-05; Geoapify se mantiene como proveedor ratificado.
-- P-07 redactada en `docs/changes_proposals/20260917-p07-contrato-clientes-lugares.md`.
-- Bloqueo actual: ratificación humana de DTOs, rutas, unicidades, límites geográficos y errores de P-07 antes de implementar tipos, servicios o mocks.
+- P-07 ratificada por el humano y materializada como contrato frontend temporal.
+- Clientes, provincias y lugares implementados mock-first con servicios, React Query, validaciones y errores contractuales.
+- Leaflet y geocodificación mock cargados bajo demanda; adaptador Geoapify preparado para la integración HTTP real.
+- lint, typecheck, 33 pruebas, build y smoke desktop/mobile exitosos.
+- Estado: `pending_review`; falta revisión independiente.
 
 ## Cola de revisión
 
 - F-003 — autenticación + navegación, incremento A.
 - F-004 — gestión de empleados.
+- F-005 — clientes, provincias y lugares de trabajo.
 
 El reviewer independiente continúa no disponible; no se sustituye su veredicto con auto-revisión.

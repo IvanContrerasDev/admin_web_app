@@ -1,6 +1,6 @@
 # F-005 — Clientes, provincias y lugares de trabajo
 
-**Estado:** in_progress
+**Estado:** pending_review
 **App(s):** admin
 **Creada:** 2026-09-17
 
@@ -57,8 +57,15 @@ P-04 ratificó las reglas de inactividad e historia, pero dejó como tarea del b
 
 - F-005 activada por decisión humana el 2026-09-17, manteniendo F-003/F-004 en revisión pendiente.
 - Leaflet seleccionado como detalle técnico permitido por P-05.
-- P-07 redactada para consulta humana.
+- P-07 ratificada por decisión humana el 2026-09-17.
+- DTOs, rutas, unicidades, límites geográficos y catálogo de errores habilitados para implementación mock-first.
+- Materializados DTOs Zod/TypeScript, `OrganizationService` y mocks stateful para clientes, provincias y lugares.
+- Listados, filtros, paginación, altas, ediciones, detalles y cambios de estado conectados con React Query.
+- Geocodificación mock determinista con debounce/cancelación y adaptador Geoapify para modo HTTP.
+- Mapa Leaflet diferido con marcador, círculo en metros, operación por teclado y recuperación sin tiles cuando falta la clave pública.
+- Validación automática: lint, typecheck, 33 pruebas y build de producción exitosos.
+- Validación real en navegador: listados desktop/mobile, búsqueda de dirección, selección de coordenadas, mapa y alta completa hasta el detalle.
 
 ## Review
 
-Pendiente.
+Pendiente de revisión independiente. La clave pública restringida de Geoapify sigue siendo un requisito de la integración HTTP real; el modo mock no usa servicios públicos alternativos.

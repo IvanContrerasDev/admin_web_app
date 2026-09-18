@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-09-17  
 **Origen:** admin_web_app / leader  
-**Estado:** pendiente de ratificación humana  
+**Estado:** ratificada por humano el 2026-09-17
 **Alcance:** F-005 — Clientes, provincias y lugares de trabajo
 
 ## Objetivo

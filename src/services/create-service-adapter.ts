@@ -1,4 +1,5 @@
 import { registerAuthMockRoutes } from '../mocks/auth-handlers'
+import { registerOrganizationMockRoutes } from '../mocks/organization-handlers'
 import { registerUserMockRoutes } from '../mocks/user-handlers'
 import { HttpServiceAdapter } from './http-service-adapter'
 import { MockServiceAdapter } from './mock-service-adapter'
@@ -17,6 +18,7 @@ export function createServiceAdapter(environment: ServiceEnvironment): ServiceAd
     const adapter = new MockServiceAdapter()
     registerAuthMockRoutes(adapter)
     registerUserMockRoutes(adapter)
+    registerOrganizationMockRoutes(adapter)
     return adapter
   }
 

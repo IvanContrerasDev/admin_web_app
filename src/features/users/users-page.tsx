@@ -21,7 +21,8 @@ export function UsersPage() {
 
   const updateFilter = (name: 'status', value: string) => {
     const next = new URLSearchParams(searchParams)
-    value ? next.set(name, value) : next.delete(name)
+    if (value) next.set(name, value)
+    else next.delete(name)
     next.delete('page')
     setSearchParams(next)
   }
