@@ -73,9 +73,3 @@ export interface WorkplaceListQuery {
   pageSize?: number
 }
 
-export interface GeocodingResult {
-  id: string
-  label: string
-  latitude: number
-  longitude: number
-}

@@ -27,7 +27,7 @@ El repositorio aún no tiene código de producto. Esta feature crea una base Rea
 **NO incluye:**
 - Autenticación, sesión, cookies ni CSRF.
 - Endpoints, DTOs o fixtures de empleados, clientes, registros, planillas, legajos o dashboard.
-- Conexión a backend real, base de datos, almacenamiento o Geoapify.
+- Conexión a backend real, base de datos, almacenamiento o proveedor cartográfico.
 - Navegación funcional de módulos F-003 a F-009.
 - Cambios en `docs/spec_definition.md` ni archivos `SYNCED-FROM-TEMPLATE`.
 

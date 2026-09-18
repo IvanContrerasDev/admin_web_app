@@ -1,6 +1,5 @@
 import { AuthService } from './auth-service'
 import { createServiceAdapter } from './create-service-adapter'
-import { createGeocodingService } from './geocoding-service'
 import { OrganizationService } from './organization-service'
 import { ServiceClient } from './service-client'
 import { UserService } from './user-service'
@@ -11,4 +10,3 @@ export const services = new ServiceClient(adapter)
 export const authService = new AuthService(adapter)
 export const userService = new UserService(adapter)
 export const organizationService = new OrganizationService(adapter)
-export const geocodingService = createGeocodingService(import.meta.env)

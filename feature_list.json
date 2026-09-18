@@ -55,7 +55,7 @@
       "task_spec": "docs/tasks/005-clientes-lugares.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
       "review_status": "pending_independent_review",
-      "notes": "P-07 ratificada. Clientes, provincias, lugares y mapa circular implementados mock-first; revisión independiente pendiente."
+      "notes": "P-07 ratificada. Clientes, provincias y lugares implementados; mapa migrado a Google Maps Platform el 2026-09-18 sin cambios de contrato backend; revisión independiente pendiente."
     },
     {
       "id": "F-006",

@@ -1,6 +1,6 @@
 # Estado actual — leader admin_web_app
 
-Fecha: 2026-09-17
+Fecha: 2026-09-18
 
 ## Feature activa
 
@@ -12,8 +12,8 @@ El humano autorizó continuar aun cuando F-003 y F-004 permanecen en `pending_re
 
 - P-07 ratificada por el humano y materializada como contrato frontend temporal.
 - Clientes, provincias y lugares implementados mock-first con servicios, React Query, validaciones y errores contractuales.
-- Leaflet y geocodificación mock cargados bajo demanda; adaptador Geoapify preparado para la integración HTTP real.
-- lint, typecheck, 33 pruebas, build y smoke desktop/mobile exitosos.
+- Google Maps Platform sustituye a Leaflet/Geoapify por decisión humana del 2026-09-18: Maps JavaScript API + Places Autocomplete diferidos, sin persistir resultados del geocoder.
+- El contrato backend se conserva; falta validación real con `VITE_GOOGLE_MAPS_API_KEY` restringida y revisión independiente.
 - Estado: `pending_review`; falta revisión independiente.
 
 ## Cola de revisión

@@ -152,30 +152,14 @@ Rutas restantes:
 
 Alta/edición revalidan que cliente y provincia existan. Un cliente `INACTIVE` no admite crear o reasignar lugares; un lugar existente conserva lectura y correcciones históricas. Cambiar cliente/provincia no altera relaciones históricas ya materializadas en registros o planillas.
 
-## Geocodificación local propuesta
+## Búsqueda de direcciones local
 
-No es contrato del backend ni campo de Workplace:
+No es contrato del backend ni campo de Workplace. Se utiliza `PlaceAutocompleteElement` de Places API (New), restringido a Argentina.
 
-```ts
-interface GeocodingResult {
-  id: string;
-  label: string;
-  latitude: number;
-  longitude: number;
-}
-
-interface GeocodingService {
-  searchAddress(
-    query: string,
-    options: { country: "AR"; signal?: AbortSignal },
-  ): Promise<GeocodingResult[]>;
-}
-```
-
-- Adaptador mock determinista para pruebas y adaptador Geoapify directo en modo HTTP configurado.
-- El identificador y label del proveedor no se persisten.
-- Debounce de 350 ms, cancelación de búsqueda anterior y máximo 5 resultados solicitados.
-- Sin geocodificación inversa ni fallback a Nominatim/tiles OSM públicos.
+- Elegir una sugerencia solo centra/encuadra Google Maps; no modifica el DTO ni confirma el centro.
+- No se persisten ni envían texto de dirección, Place ID, predicciones, viewport o resultados del geocoder.
+- La selección persistible ocurre después mediante clic en mapa, arrastre del marcador o inputs numéricos.
+- Sin geocodificación inversa, servicio propio de resultados ni fallback a Nominatim/tiles OSM públicos.
 
 ## Validaciones propuestas
 
@@ -203,7 +187,7 @@ Todos `retryable=false` salvo indisponibilidad transitoria general:
 - `400 INVALID_SITE`.
 - `400 INVALID_GEO_CONFIGURATION`.
 
-La geocodificación usa errores internos normalizados `GEOCODING_UNAVAILABLE`, `GEOCODING_RATE_LIMITED` y `GEOCODING_INVALID_RESPONSE`; no amplía el envelope del backend.
+Los errores de configuración, carga o cuota de Google Maps son estados internos de UI; no amplían el envelope del backend ni borran la configuración geográfica existente.
 
 ## Inactividad, permisos e invalidaciones
 
@@ -216,13 +200,14 @@ La geocodificación usa errores internos normalizados `GEOCODING_UNAVAILABLE`, `
 
 ## Mapa y operación
 
-- Renderizador: Leaflet; proveedor: Geoapify para tiles y geocodificación.
+- Proveedor/renderizador: Google Maps Platform mediante Maps JavaScript API y Places API (New).
 - Carga diferida solo en alta/edición/detalle geográfico.
-- Marcador movible y círculo en metros sincronizados con inputs numéricos accesibles.
-- Seleccionar dirección actualiza centro; arrastrar no inventa un nuevo label.
+- Autocomplete restringido a Argentina; seleccionar dirección solo centra la cámara y no cambia el payload.
+- Clic o arrastre confirman el centro; Marker y Circle se sincronizan con inputs numéricos accesibles.
+- Radio editable mediante slider e input numérico en metros.
 - Un error de proveedor no borra centro/radio ya seleccionados.
-- Atribución Geoapify/OpenStreetMap visible según términos del proveedor.
-- `VITE_GEOAPIFY_API_KEY` es pública, restringida por origen y producto; nunca se trata como secreto.
+- No se persisten dirección, Place ID ni resultados del geocoder; atribución nativa de Google visible.
+- `VITE_GOOGLE_MAPS_API_KEY` es pública y debe restringirse por HTTP referrer y por API.
 
 ## Decisión solicitada
 

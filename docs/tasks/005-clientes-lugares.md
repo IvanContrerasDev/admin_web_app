@@ -1,71 +1,73 @@
 # F-005 — Clientes, provincias y lugares de trabajo
 
-**Estado:** pending_review
-**App(s):** admin
-**Creada:** 2026-09-17
+**Estado:** pending_review  
+**App(s):** admin  
+**Creada:** 2026-09-17  
+**Proveedor de mapas actualizado:** 2026-09-18
 
 ## Contexto
 
-Construir la gestión de la estructura organizacional y la configuración geográfica circular de cada lugar de trabajo. F-003 y F-004 siguen pendientes de revisión independiente; el humano autorizó continuar con la siguiente etapa sin considerarlas aprobadas.
+Construir la gestión de la estructura organizacional y la configuración geográfica circular de cada lugar de trabajo. F-003 y F-004 siguen pendientes de revisión independiente; el humano autorizó continuar sin considerarlas aprobadas.
 
 ## Alcance
 
 **Incluye:**
 - Clientes: listado paginado, búsqueda parcial, filtro de estado, alta, edición y activación/desactivación.
 - Provincias: catálogo consultable de las seis provincias habilitadas, sin CRUD.
-- Lugares de trabajo: listado paginado, búsqueda y filtros por cliente, provincia y estado; alta, edición, detalle y activación/desactivación.
+- Lugares de trabajo: listado paginado, búsqueda y filtros; alta, edición, detalle y activación/desactivación.
 - Configuración `CIRCLE` con centro, radio en metros y umbral GPS opcional.
-- Mapa Leaflet cargado de forma diferida, tiles y geocodificación Geoapify, búsqueda accesible, selección de resultado, marcador movible y círculo real en metros.
-- Servicio de geocodificación desacoplado con adaptador mock determinista antes del adaptador real.
+- Google Maps Platform mediante Maps JavaScript API y Places Autocomplete, cargados de forma diferida.
+- Autocomplete argentino que solo centra el mapa; clic o arrastre para confirmar el centro; marcador, círculo real y slider de radio.
+- Ubicación predeterminada y acción explícita para centrar con geolocalización del navegador.
 
 **NO incluye:**
-- CRUD de provincias, eliminación de clientes/lugares, polígonos, zonas múltiples o geocodificación inversa.
+- CRUD de provincias, eliminación, polígonos, zonas múltiples o geocodificación inversa.
 - Desactivación en cascada ni alteración de registros/planillas históricos.
 - Cálculo frontend de validez GPS o reescritura de revisiones históricas.
-- Persistir texto de dirección o identificadores de Geoapify en el dominio.
-- Implementar DTOs, rutas, límites numéricos o errores sin ratificación humana.
+- Persistir texto de dirección, Place ID, predicciones, viewport ni resultados de geocodificación de Google.
+- Proxy backend para Google Maps ni cambios al DTO Workplace ratificado.
 
-## Referencias (fuente de verdad)
+## Referencias
 
-- Docs: `docs/spec_definition.md` §§28–37, 49–55, 58 y Parte 8.
-- Plan: `docs/tasks/001-acuerdos-y-ejecucion-plan.md`, F-005.
-- Contratos: `docs/arquitectura/contratos-api.md`, decisiones 1, 3, 4, 11 y 12; P-04.C/D y P-05.
-- Propuesta específica: `docs/changes_proposals/20260917-p07-contrato-clientes-lugares.md`.
-- Código base: `src/services`, `src/app/router.tsx`, `src/features/users` y `src/features/modules/module-pages.tsx`.
+- `docs/spec_definition.md` §§28–37, 49–55, 58 y Parte 8.
+- `docs/changes_proposals/20260917-p05-mapa-y-direcciones.md`.
+- `docs/changes_proposals/20260917-p07-contrato-clientes-lugares.md`.
+- `docs/changes_proposals/20260918-google-maps-synced-contract.md`.
+- `docs/arquitectura/contratos-api.md` Decisión 12, pendiente de propagación desde template.
 
 ## Criterios de aceptación
 
 - [ ] Clientes y lugares consultan mediante servicios + React Query con paginación y filtros server-side reproducidos por mocks.
-- [ ] Los listados distinguen carga inicial, actualización, vacío y error, con reintento manual accesible.
-- [ ] Alta/edición/estado respetan el contrato P-07 ratificado y no ofrecen borrado.
-- [ ] Un lugar siempre referencia cliente y provincia existentes; una entidad inactiva no queda disponible para nuevas operaciones.
-- [ ] Desactivar exige confirmación, revalida estado al guardar y no propaga estado a entidades relacionadas.
-- [ ] La configuración geográfica conserva centro, radio y umbral GPS opcional; `shapeType` permanece `CIRCLE`.
-- [ ] Buscar dirección admite teclado, debounce y cancelación; seleccionar o arrastrar actualiza el centro sin inventar dirección inversa.
-- [ ] El círculo usa metros reales y el mapa ofrece inputs equivalentes para operación por teclado.
-- [ ] Fallos de tiles/geocodificación no borran una selección existente y muestran recuperación explícita.
-- [ ] Leaflet/Geoapify se cargan solo en el flujo geográfico y la atribución permanece visible.
+- [ ] Alta/edición/estado respetan P-07 y no ofrecen borrado.
+- [ ] La configuración geográfica conserva centro, radio, umbral GPS opcional y `shapeType=CIRCLE`.
+- [ ] Maps JavaScript API y Places API (New) se cargan solo en el flujo geográfico.
+- [ ] Autocomplete admite teclado, restringe a Argentina y seleccionar una sugerencia solo centra/encuadra el mapa.
+- [ ] El payload no cambia hasta que la persona hace clic, arrastra el marcador o edita coordenadas.
+- [ ] Clic en mapa dibuja/sincroniza Marker + Circle; slider e input actualizan el radio en metros.
+- [ ] La geolocalización requiere una acción explícita y solo centra la cámara.
+- [ ] No se persiste ni envía texto de dirección, Place ID ni ningún resultado del geocoder.
+- [ ] Clave ausente y errores de carga no borran una selección existente; los inputs siguen disponibles.
+- [ ] Atribución nativa de Google permanece visible.
 - [ ] lint, typecheck, tests, build y validación en navegador desktop/mobile pasan.
 
 ## Notas de implementación
 
-Se adopta Leaflet como renderizador técnico porque la configuración requerida es raster, circular y de marcador único; evita incorporar un motor vectorial mayor sin necesidad funcional. Geoapify sigue siendo el proveedor ratificado. La clave `VITE_GEOAPIFY_API_KEY` será pública y deberá restringirse por origen/producto; no se codificará ni se sustituirá silenciosamente por servicios OSM públicos.
+Se usa `@googlemaps/js-api-loader` con importación dinámica de las librerías `maps` y `places`. La variable pública es `VITE_GOOGLE_MAPS_API_KEY`, restringida por HTTP referrer y por API a Maps JavaScript API + Places API (New). El loader usa español, región Argentina y `authReferrerPolicy: "origin"`.
 
-P-04 ratificó las reglas de inactividad e historia, pero dejó como tarea del backend materializar DTOs por recurso. Según `AGENTS.md`, agregar o mejorar contratos TypeScript exige consulta humana. P-07 debe ratificarse antes de escribir tipos, servicios o mocks de F-005.
+El contrato del backend sigue enviando `latitude`, `longitude`, `radiusMeters` y `gpsAccuracyThreshold`; no se agrega dirección. El volumen estimado de 100–200 configuraciones totales se considera compatible con el free tier indicado al tomar la decisión, pero operaciones debe conservar billing, alertas y revisión de precios.
 
 ## Registro de implementación
 
-- F-005 activada por decisión humana el 2026-09-17, manteniendo F-003/F-004 en revisión pendiente.
-- Leaflet seleccionado como detalle técnico permitido por P-05.
-- P-07 ratificada por decisión humana el 2026-09-17.
-- DTOs, rutas, unicidades, límites geográficos y catálogo de errores habilitados para implementación mock-first.
-- Materializados DTOs Zod/TypeScript, `OrganizationService` y mocks stateful para clientes, provincias y lugares.
-- Listados, filtros, paginación, altas, ediciones, detalles y cambios de estado conectados con React Query.
-- Geocodificación mock determinista con debounce/cancelación y adaptador Geoapify para modo HTTP.
-- Mapa Leaflet diferido con marcador, círculo en metros, operación por teclado y recuperación sin tiles cuando falta la clave pública.
-- Validación automática: lint, typecheck, 33 pruebas y build de producción exitosos.
-- Validación real en navegador: listados desktop/mobile, búsqueda de dirección, selección de coordenadas, mapa y alta completa hasta el detalle.
+- F-005 activada y P-07 ratificada por decisión humana el 2026-09-17.
+- Gestión de clientes, provincias y lugares implementada mock-first.
+- El 2026-09-18 se sustituyeron Leaflet/Geoapify por Google Maps Platform por decisión humana.
+- Se eliminaron el adaptador Geoapify, la búsqueda propia y las dependencias Leaflet.
+- Autocomplete nativo de Google centra el mapa sin persistir el resultado.
+- Clic/arrastre confirman centro; Marker, Circle, slider e inputs permanecen sincronizados.
+- El contrato HTTP de Workplace y sus validaciones no cambiaron.
+- Validación automática posterior: lint, typecheck, 7 archivos/31 tests y build exitosos.
+- Navegador real 1072 × 800: formulario, slider y recuperación accesible sin clave verificados; queda pendiente la prueba real de Autocomplete/mapa con clave restringida.
 
 ## Review
 
-Pendiente de revisión independiente. La clave pública restringida de Geoapify sigue siendo un requisito de la integración HTTP real; el modo mock no usa servicios públicos alternativos.
+Pendiente de revisión independiente y de validación real con una clave restringida de Google Maps. El modo sin clave muestra recuperación explícita y no utiliza proveedores públicos alternativos.

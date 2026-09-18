@@ -3,6 +3,7 @@
 **Fecha:** 2026-09-17
 **Origen:** orchestrator (GdesProject)
 **Procesado:** 2026-09-17 — F-001 cerrada y F-002 activada; los pendientes explícitos de la Decisión 9 se mantienen para F-003.
+**Nota de reemplazo (2026-09-18):** la decisión humana vigente sustituye Geoapify/Leaflet por Google Maps Platform (Maps JavaScript API + Places API New). Ver P-05 actualizada y la propuesta de sincronización `20260918-google-maps-synced-contract.md`.
 
 El humano ratificó tus propuestas P-01, P-03 y P-04 (Estado: `aplicada`) y gran parte de P-02. El contrato común `docs/arquitectura/contratos-api.md` (SYNCED, ya propagado a este repo) tiene ahora las decisiones 8–12 con todo lo aprobado: matriz mensual con snapshot (TTL 15 min), rutas `/auth/web/*`, solicitud admin completa (10 campos, challenge, password actual para existentes), `expectedVersion`, reglas de carga manual, retrospectivas, archivos 20 MiB × 10 atómicos y dashboard por mes seleccionado.
 
