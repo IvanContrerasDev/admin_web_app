@@ -1,5 +1,13 @@
 export const MAX_ATTACHMENT_FILES = 10
 export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024
+export const ALLOWED_ATTACHMENT_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'txt'] as const
+
+export type AllowedAttachmentExtension = (typeof ALLOWED_ATTACHMENT_EXTENSIONS)[number]
+
+export function attachmentExtension(fileName: string): string {
+  const segments = fileName.trim().toLowerCase().split('.')
+  return segments.length > 1 ? (segments.at(-1) ?? '') : ''
+}
 
 export interface AttachmentCandidate {
   name: string
@@ -7,7 +15,7 @@ export interface AttachmentCandidate {
 }
 
 export interface AttachmentIssue {
-  code: 'FILE_TOO_LARGE' | 'TOO_MANY_FILES'
+  code: 'FILE_TOO_LARGE' | 'TOO_MANY_FILES' | 'FILE_EXTENSION_NOT_ALLOWED'
   message: string
   fileName?: string
 }
@@ -36,6 +44,13 @@ export function validateAttachmentBatch<T extends AttachmentCandidate>(
         code: 'FILE_TOO_LARGE',
         fileName: file.name,
         message: `${file.name} supera el límite de 20 MiB.`,
+      })
+    }
+    if (!ALLOWED_ATTACHMENT_EXTENSIONS.includes(attachmentExtension(file.name) as AllowedAttachmentExtension)) {
+      issues.push({
+        code: 'FILE_EXTENSION_NOT_ALLOWED',
+        fileName: file.name,
+        message: `${file.name} tiene un formato no permitido. Formatos aceptados: PDF, JPG, JPEG, PNG, DOC, DOCX y TXT.`,
       })
     }
   }
