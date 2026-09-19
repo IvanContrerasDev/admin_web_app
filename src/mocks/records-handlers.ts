@@ -3,10 +3,14 @@ import { MockServiceAdapter } from '../services/mock-service-adapter'
 import type { ServiceRequest } from '../services/service-adapter'
 import type {
   AttendanceEventDetail,
+  CreateRecordInput,
   MonthlyDay,
   MonthlyQuery,
   MonthlyRow,
   RecordDetail,
+  RecordInterval,
+  RecordIntervalInput,
+  UpdateRecordInput,
 } from '../types/records'
 import { ORGANIZATION_SITES } from './organization-handlers'
 
@@ -152,6 +156,71 @@ function createRecordDetail(context: RecordContext, eventDetails: Map<string, At
   }
 }
 
+function intervalStatus(interval: Pick<RecordIntervalInput, 'startTime' | 'endTime'>) {
+  if (interval.startTime && interval.endTime) return 'CLOSED' as const
+  if (interval.startTime) return 'OPEN' as const
+  if (interval.endTime) return 'SEMI_CLOSED' as const
+  return 'CLOSED' as const
+}
+
+function validateManualIntervals(intervals: RecordIntervalInput[]) {
+  if (intervals.length === 0) throw apiError('RECORD_INTERVALS_REQUIRED', 'Agregá al menos un intervalo.', 422)
+
+  for (const interval of intervals) {
+    if (interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) {
+      throw apiError('WORK_INTERVAL_REQUIRES_BOUNDS', 'Los intervalos de trabajo manuales requieren entrada y salida.', 422)
+    }
+    if (interval.startTime && interval.endTime && new Date(interval.endTime).getTime() <= new Date(interval.startTime).getTime()) {
+      throw apiError('INVALID_INTERVAL_RANGE', 'La salida debe ser posterior a la entrada.', 422)
+    }
+  }
+
+  const bounded = intervals
+    .filter((interval) => interval.startTime && interval.endTime)
+    .map((interval) => ({ start: new Date(interval.startTime!).getTime(), end: new Date(interval.endTime!).getTime() }))
+    .sort((left, right) => left.start - right.start)
+
+  if (bounded.some((interval, index) => index > 0 && interval.start < bounded[index - 1]!.end)) {
+    throw apiError('RECORD_INTERVALS_OVERLAP', 'Los intervalos manuales no pueden superponerse.', 422)
+  }
+}
+
+function toManualInterval(id: string, input: RecordIntervalInput, previous?: RecordInterval): RecordInterval {
+  return {
+    id,
+    ...input,
+    status: intervalStatus(input),
+    origin: 'MANUAL',
+    reviewStatus: 'MANUAL_LOADED',
+    attendanceEvents: previous?.attendanceEvents ?? [],
+  }
+}
+
+function recalculateRecord(detail: RecordDetail): RecordDetail {
+  const totalWorkMinutes = detail.intervals.reduce((total, interval) => {
+    if (interval.type !== 'WORK' || interval.status !== 'CLOSED' || !interval.startTime || !interval.endTime) return total
+    return total + Math.max(0, Math.round((new Date(interval.endTime).getTime() - new Date(interval.startTime).getTime()) / 60_000))
+  }, 0)
+  return {
+    ...detail,
+    totalWorkMinutes,
+    recordStatus: detail.intervals.every((interval) => interval.status === 'CLOSED') ? 'COMPLETE' : 'INCOMPLETE',
+    hasAbsence: detail.intervals.some((interval) => interval.type === 'ABSENCE'),
+  }
+}
+
+function detailSummary(detail: RecordDetail) {
+  return {
+    id: detail.id,
+    totalWorkMinutes: detail.totalWorkMinutes,
+    recordStatus: detail.recordStatus,
+    reviewStatus: detail.reviewStatus,
+    origin: detail.origin,
+    hasAbsence: detail.hasAbsence,
+    intervalCount: detail.intervals.length,
+  }
+}
+
 function createDays(rowIndex: number, year: number, month: number): MonthlyDay[] {
   return Array.from({ length: daysInMonth(year, month) }, (_, index) => {
     const day = index + 1
@@ -235,6 +304,10 @@ function snapshotFor(query: MonthlyQuery) {
 export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () => Date = () => new Date()) {
   const recordContexts = new Map<string, RecordContext>()
   const eventDetails = new Map<string, AttendanceEventDetail>()
+  const storedRecords = new Map<string, RecordDetail>()
+  const createdRecordIds = new Set<string>()
+  let manualRecordSequence = 1
+  let manualIntervalSequence = 1
 
   adapter.register('GET', '/records/monthly', (request: ServiceRequest) => {
     const query: MonthlyQuery = {
@@ -260,9 +333,20 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
 
     const rows = createRows(query.year, query.month, query)
     for (const row of rows) {
-      for (const day of row.days) {
-        if (day.state === 'PRESENT') recordContexts.set(day.record.id, { row, day })
+      for (const detail of storedRecords.values()) {
+        if (!createdRecordIds.has(detail.id) || detail.employee.id !== row.employee.id || detail.workplace.id !== row.workplace.id) continue
+        if (Number(detail.date.slice(0, 4)) !== query.year || Number(detail.date.slice(5, 7)) !== query.month) continue
+        const dayIndex = Number(detail.date.slice(-2)) - 1
+        row.days[dayIndex] = { date: detail.date, state: 'PRESENT', matchesFilters: dayMatches({ date: detail.date, state: 'PRESENT', matchesFilters: true, record: detailSummary(detail) }, query), record: detailSummary(detail) }
       }
+      for (const day of row.days) {
+        if (day.state !== 'PRESENT') continue
+        const stored = storedRecords.get(day.record.id)
+        if (stored) day.record = detailSummary(stored)
+        recordContexts.set(day.record.id, { row, day })
+      }
+      row.totals.monthWorkMinutes = row.days.reduce((total, day) => total + (day.state === 'PRESENT' ? day.record.totalWorkMinutes : 0), 0)
+      row.totals.matchingWorkMinutes = row.days.reduce((total, day) => total + (day.state === 'PRESENT' && day.matchesFilters ? day.record.totalWorkMinutes : 0), 0)
     }
     const page = query.page ?? 1
     const pageSize = query.pageSize ?? 50
@@ -288,11 +372,90 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
     }
   })
 
+  adapter.register('POST', '/records', (request) => {
+    const input = request.body as CreateRecordInput
+    const employee = employees.find((item) => item.id === input.userId)
+    const workplace = workplaces.find((item) => item.id === input.workplaceId)
+    if (!employee || !workplace) throw apiError('RECORD_RELATION_NOT_FOUND', 'El empleado o lugar seleccionado no está disponible.', 422)
+    validateManualIntervals(input.intervals)
+
+    const year = Number(input.date.slice(0, 4))
+    const month = Number(input.date.slice(5, 7))
+    const day = Number(input.date.slice(8, 10))
+    const rowIndex = employees.findIndex((item) => item.id === input.userId) * workplaces.length + workplaces.findIndex((item) => item.id === input.workplaceId)
+    const generatedDay = createDays(rowIndex, year, month)[day - 1]
+    const alreadyCreated = [...storedRecords.values()].some((detail) => detail.employee.id === input.userId && detail.workplace.id === input.workplaceId && detail.date === input.date)
+    if (generatedDay?.state === 'PRESENT' || alreadyCreated) throw apiError('RECORD_ALREADY_EXISTS', 'Ya existe un registro para esa combinación. Abrí el registro existente.', 409)
+
+    const id = `990e8400-e29b-41d4-a716-${String(manualRecordSequence++).padStart(12, '0')}`
+    const createdAt = now().toISOString()
+    const intervals = input.intervals.map((interval) => toManualInterval(`880e8400-e29b-41d4-a716-${String(manualIntervalSequence++).padStart(12, '0')}`, interval))
+    const detail = recalculateRecord({
+      id,
+      date: input.date,
+      employee,
+      workplace: { id: workplace.id, name: workplace.name },
+      client: workplace.client,
+      site: workplace.site,
+      totalWorkMinutes: 0,
+      recordStatus: 'COMPLETE',
+      reviewStatus: 'MANUAL_LOADED',
+      origin: 'MANUAL',
+      hasAbsence: false,
+      observations: input.observations,
+      version: 1,
+      intervals,
+      createdAt,
+      updatedAt: createdAt,
+    })
+    storedRecords.set(id, detail)
+    createdRecordIds.add(id)
+    return { data: detail }
+  })
+
+  adapter.registerPattern('PATCH', /^\/records\/[0-9a-f-]{36}$/i, (request) => {
+    const recordIdentifier = request.path.split('/').at(-1) ?? ''
+    const input = request.body as UpdateRecordInput
+    const context = recordContexts.get(recordIdentifier)
+    const current = storedRecords.get(recordIdentifier) ?? (context ? createRecordDetail(context, eventDetails) : undefined)
+    if (!current) throw apiError('RECORD_NOT_FOUND', 'El registro solicitado no existe o ya no está disponible.', 404)
+    if (input.expectedVersion !== current.version) throw apiError('RECORD_VERSION_CONFLICT', 'El registro cambió desde que lo abriste. Recargá para comparar la versión actual.', 409)
+
+    const nextIntervals = [...current.intervals]
+    for (const change of input.intervalChanges ?? []) {
+      if (change.operation === 'ADD') {
+        nextIntervals.push(toManualInterval(`880e8400-e29b-41d4-a716-${String(manualIntervalSequence++).padStart(12, '0')}`, change.interval))
+        continue
+      }
+      const index = nextIntervals.findIndex((interval) => interval.id === change.id)
+      if (index < 0) throw apiError('RECORD_INTERVAL_NOT_FOUND', 'El intervalo ya no pertenece a este registro.', 422)
+      nextIntervals[index] = toManualInterval(change.id, change.interval, nextIntervals[index])
+    }
+    if (input.intervalChanges?.length) validateManualIntervals(nextIntervals)
+
+    const changed = Object.prototype.hasOwnProperty.call(input, 'observations') || Boolean(input.intervalChanges?.length)
+    const next = recalculateRecord({
+      ...current,
+      observations: Object.prototype.hasOwnProperty.call(input, 'observations') ? input.observations ?? null : current.observations,
+      intervals: nextIntervals,
+      origin: changed ? 'MANUAL' : current.origin,
+      reviewStatus: changed ? 'MANUAL_LOADED' : current.reviewStatus,
+      version: current.version + 1,
+      updatedAt: now().toISOString(),
+    })
+    storedRecords.set(recordIdentifier, next)
+    return { data: next }
+  })
+
   adapter.registerPattern('GET', /^\/records\/[0-9a-f-]{36}$/i, (request) => {
     const recordIdentifier = request.path.split('/').at(-1) ?? ''
+    const stored = storedRecords.get(recordIdentifier)
+    if (stored) return { data: stored }
     const context = recordContexts.get(recordIdentifier)
     if (!context) throw apiError('RECORD_NOT_FOUND', 'El registro solicitado no existe o ya no está disponible.', 404)
-    return { data: createRecordDetail(context, eventDetails) }
+    const detail = createRecordDetail(context, eventDetails)
+    storedRecords.set(recordIdentifier, detail)
+    return { data: detail }
   })
 
   adapter.registerPattern('GET', /^\/attendance-events\/[0-9a-f-]{36}$/i, (request) => {

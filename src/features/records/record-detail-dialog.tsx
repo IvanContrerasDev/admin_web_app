@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AttendanceEventDetail, RecordInterval, ReviewStatus } from '../../types/records'
-import { useAttendanceEventDetails, useRecordDetail } from './use-monthly-records'
+import { RecordEditorForm } from './record-editor-form'
+import { useAttendanceEventDetails, useRecordDetail, useRecordsFilterOptions } from './use-monthly-records'
 
 interface RecordDetailDialogProps {
   recordId: string
@@ -104,7 +105,10 @@ function EventMetadata({ event }: { event: AttendanceEventDetail }) {
 export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showEventDetails, setShowEventDetails] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editorDirty, setEditorDirty] = useState(false)
   const detailQuery = useRecordDetail(recordId)
+  const options = useRecordsFilterOptions()
   const eventIds = useMemo(() => detailQuery.data?.intervals.flatMap((interval) => interval.attendanceEvents.map((event) => event.id)) ?? [], [detailQuery.data])
   const eventQueries = useAttendanceEventDetails(eventIds, showEventDetails)
   const eventQueryById = new Map(eventIds.map((eventId, index) => [eventId, eventQueries[index]]))
@@ -115,6 +119,16 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
     if (dialog && !dialog.open) dialog.showModal()
   }, [])
 
+  const attemptClose = () => {
+    if (editorDirty && !window.confirm('Hay cambios sin guardar. ¿Querés descartarlos?')) return
+    onClose()
+  }
+  const cancelEditing = () => {
+    if (editorDirty && !window.confirm('Hay cambios sin guardar. ¿Querés descartarlos?')) return
+    setEditing(false)
+    setEditorDirty(false)
+  }
+
   return (
     <dialog
       aria-describedby="record-detail-description"
@@ -123,16 +137,16 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
       ref={dialogRef}
       onCancel={(event) => {
         event.preventDefault()
-        onClose()
+        attemptClose()
       }}
       onClose={onClose}
     >
       <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-foreground/15 bg-background p-4 sm:p-5">
         <div className="min-w-0">
-          <h2 className="text-balance text-xl font-bold" id="record-detail-title">Detalle del registro</h2>
-          <p className="text-pretty text-sm leading-6 text-foreground/65" id="record-detail-description">Información diaria, intervalos y evidencia de marcación asociada.</p>
+          <h2 className="text-balance text-xl font-bold" id="record-detail-title">{editing ? 'Corregir registro' : 'Detalle del registro'}</h2>
+          <p className="text-pretty text-sm leading-6 text-foreground/65" id="record-detail-description">{editing ? 'La identidad permanece fija; podés corregir datos o agregar intervalos.' : 'Información diaria, intervalos y evidencia de marcación asociada.'}</p>
         </div>
-        <button aria-label="Cerrar detalle" className="shrink-0 rounded-md border border-foreground/25 px-3 py-1.5 text-sm font-semibold transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={onClose}>Cerrar</button>
+        <button aria-label="Cerrar detalle" className="shrink-0 rounded-md border border-foreground/25 px-3 py-1.5 text-sm font-semibold transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={attemptClose}>Cerrar</button>
       </div>
 
       <div className="flex flex-col gap-5 p-4 sm:p-5">
@@ -145,7 +159,20 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
           </div>
         ) : null}
 
-        {detailQuery.data ? (
+        {detailQuery.data ? editing ? (
+          <RecordEditorForm
+            employees={options.employees.data?.data ?? []}
+            initialDate={detailQuery.data.date}
+            record={detailQuery.data}
+            workplaces={options.workplaces.data?.data ?? []}
+            onCancel={cancelEditing}
+            onDirtyChange={setEditorDirty}
+            onSaved={() => {
+              setEditing(false)
+              setEditorDirty(false)
+            }}
+          />
+        ) : (
           <>
             <section aria-labelledby="record-summary-title" className="flex flex-col gap-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -153,10 +180,11 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
                   <h3 className="text-lg font-bold" id="record-summary-title">{detailQuery.data.employee.lastName}, {detailQuery.data.employee.firstName}</h3>
                   <p className="text-sm text-foreground/65">{detailQuery.data.employee.employeeId} · {formatDate(detailQuery.data.date)}</p>
                 </div>
-                <div className="flex flex-wrap gap-2 text-sm">
+                <div className="flex flex-wrap items-center justify-end gap-2 text-sm">
                   <span className="rounded-full border border-foreground/20 px-2.5 py-1">{detailQuery.data.recordStatus === 'COMPLETE' ? 'Completo' : 'Incompleto'}</span>
                   <span className="rounded-full border border-foreground/20 px-2.5 py-1">{reviewLabels[detailQuery.data.reviewStatus]}</span>
                   <span className="rounded-full border border-foreground/20 px-2.5 py-1">{detailQuery.data.origin === 'AUTOMATIC' ? 'Automático' : 'Manual'}</span>
+                  <button className="min-h-11 rounded-md bg-primary px-4 font-semibold text-background hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setEditing(true)}>Corregir registro</button>
                 </div>
               </div>
               <dl className="grid gap-x-6 gap-y-3 rounded-md border border-foreground/15 bg-muted p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">

@@ -44,6 +44,58 @@ describe('RecordsService', () => {
     expect(response.data.some((row) => row.days.some((day) => day.state === 'PRESENT' && !day.matchesFilters))).toBe(true)
   })
 
+  it('creates a manual record and prevents a duplicate for the same day', async () => {
+    const service = setup()
+    const input = {
+      userId: '22000000-0000-4000-8000-000000000001',
+      workplaceId: '44000000-0000-4000-8000-000000000001',
+      date: '2026-09-04',
+      observations: 'Corrección retrospectiva.',
+      intervals: [{ type: 'ABSENCE' as const, startTime: null, endTime: null, absenceReason: 'LEAVE' as const, observations: null }],
+    }
+
+    const created = await service.create(input)
+
+    expect(created).toMatchObject({ date: input.date, origin: 'MANUAL', reviewStatus: 'MANUAL_LOADED', totalWorkMinutes: 0, version: 1 })
+    await expect(service.create(input)).rejects.toMatchObject({ code: 'RECORD_ALREADY_EXISTS', status: 409 })
+  })
+
+  it('updates only declared intervals and detects stale versions', async () => {
+    const service = setup()
+    const monthly = await service.listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID })
+    const presentDay = monthly.data[0]!.days.find((day) => day.state === 'PRESENT' && day.record.intervalCount === 1)
+    if (!presentDay || presentDay.state !== 'PRESENT') return
+    const detail = await service.getDetail(presentDay.record.id)
+    const interval = detail.intervals[0]!
+
+    const updated = await service.update(detail.id, {
+      expectedVersion: detail.version,
+      observations: 'Horario corregido por administración.',
+      intervalChanges: [{
+        operation: 'UPDATE',
+        id: interval.id,
+        interval: { type: 'WORK', startTime: `${detail.date}T12:00:00.000Z`, endTime: `${detail.date}T20:00:00.000Z`, absenceReason: null, observations: null },
+      }],
+    })
+
+    expect(updated).toMatchObject({ version: detail.version + 1, origin: 'MANUAL', reviewStatus: 'MANUAL_LOADED', totalWorkMinutes: 480 })
+    await expect(service.update(detail.id, { expectedVersion: detail.version, observations: null })).rejects.toMatchObject({ code: 'RECORD_VERSION_CONFLICT', status: 409 })
+  })
+
+  it('rejects overlapping intervals in manual writes', async () => {
+    const service = setup()
+    await expect(service.create({
+      userId: '22000000-0000-4000-8000-000000000001',
+      workplaceId: '44000000-0000-4000-8000-000000000001',
+      date: '2026-09-04',
+      observations: null,
+      intervals: [
+        { type: 'WORK', startTime: '2026-09-03T12:00:00.000Z', endTime: '2026-09-03T18:00:00.000Z', absenceReason: null, observations: null },
+        { type: 'WORK', startTime: '2026-09-03T17:00:00.000Z', endTime: '2026-09-03T20:00:00.000Z', absenceReason: null, observations: null },
+      ],
+    })).rejects.toMatchObject({ code: 'RECORD_INTERVALS_OVERLAP', status: 422 })
+  })
+
   it('loads a record detail and then each automatic event on demand', async () => {
     const service = setup()
     const monthly = await service.listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID })

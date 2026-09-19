@@ -6,6 +6,8 @@ import {
   type MonthlyQuery,
   type MonthlyResponse,
   type RecordDetail,
+  type CreateRecordInput,
+  type UpdateRecordInput,
 } from '../types/records'
 import type { ServiceAdapter } from './service-adapter'
 import { ServiceClient } from './service-client'
@@ -28,6 +30,20 @@ export class RecordsService {
     return this.client.request(
       { path: `/attendance-events/${eventId}`, signal },
       attendanceEventDetailSchema,
+    )
+  }
+
+  create(input: CreateRecordInput): Promise<RecordDetail> {
+    return this.client.request(
+      { method: 'POST', path: '/records', body: input },
+      recordDetailSchema,
+    )
+  }
+
+  update(recordId: string, input: UpdateRecordInput): Promise<RecordDetail> {
+    return this.client.request(
+      { method: 'PATCH', path: `/records/${recordId}`, body: input },
+      recordDetailSchema,
     )
   }
 

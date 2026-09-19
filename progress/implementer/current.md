@@ -1,21 +1,22 @@
 # Current — admin
 
 ## Tarea activa
-F-002 — Base técnica y capa de servicios mock-first (`docs/tasks/002-base-tecnica-servicios.md`).
+F-006 — Matriz mensual y edición/revisión de registros (`docs/tasks/006-matriz-mensual-registros.md`).
 
 ## Haciendo ahora
-Correcciones de la ronda 1 implementadas; handoff listo para re-revisión independiente.
+Incremento B de alta y corrección mock-first implementado; pendiente revisión independiente y materialización backend.
 
 ## Hecho (esta sesión)
-- Renombrado el contrato de paginación de `total` a `totalItems` en tipo y schema Zod.
-- Agregada cobertura del envelope paginado ratificado.
-- Aplicada la paleta confirmada por el humano y definida en el plan F-001: `#0D80AE`, `#62882B`, `#ED701E`, `#0F172A`, `#EDF2F5`.
-- Corregido `HttpServiceAdapter` para aceptar `204 No Content` sin parsear JSON.
-- Agregada cobertura de DELETE con respuesta 204.
-- Verificación fresca: lint, typecheck, 17 tests y build con exit 0; navegador real a 1366 × 768 sin errores de aplicación.
+- Alta manual global y desde celdas `EMPTY` confirmadas.
+- Corrección con identidad inmutable, `expectedVersion`, intervalos ADD/UPDATE y sin DELETE.
+- Validaciones de WORK completo, rango temporal y solapamiento; ausencia permite extremos opcionales.
+- Mocks persistentes para duplicado, conflicto de versión, totales derivados, origen MANUAL y estado MANUAL_LOADED.
+- Aviso de cambios sin guardar y recuperación de la versión actual sin sobrescritura.
+- Cobertura de servicio para alta, corrección, duplicado, concurrencia y solapamientos.
 
 ## Blockers / Preguntas para el humano
-- Ninguno.
+- La revisión pura APPROVED/REJECTED y la revisión por intervalo siguen bloqueadas hasta que backend materialice sus rutas exactas. No se sobrecarga `PATCH /records/{id}` para evitar convertir una revisión en corrección manual.
+- La verificación visual automática no pudo ejecutarse: el sandbox de `agent-browser` devolvió “Sandbox could not be found” y el Playwright Python local no está instalado. La validación de código continúa con lint, typecheck, tests y build.
 
 ## Resultado final
-Los 3 ítems de la ronda 1 fueron atendidos. F-002 permanece `in_progress` hasta el nuevo veredicto del reviewer.
+Alta y corrección quedan listas en modo mock-first; F-006 continúa `in_progress` por revisión pura y evidencia backend pendientes.

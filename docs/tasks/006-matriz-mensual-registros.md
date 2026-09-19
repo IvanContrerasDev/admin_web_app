@@ -1,4 +1,4 @@
-# F-006A — Matriz mensual de registros
+# F-006 — Matriz mensual y edición de registros
 
 **Estado:** in_progress
 **App(s):** admin | backend
@@ -6,7 +6,7 @@
 
 ## Contexto
 
-Primera entrega de F-006 centrada en consulta mensual densa y continua. Implementa el contrato P-01 ratificado y las decisiones de interfaz confirmadas por el humano el 2026-09-18, sin anticipar DTOs de detalle o escritura todavía no materializados por backend.
+Entrega incremental de F-006: consulta mensual densa y continua sobre P-01, seguida de detalle, alta y corrección mock-first basados en las escrituras P-04 ratificadas. Los adaptadores conservan separación por dominio mientras backend materializa los DTOs definitivos y la ruta exacta de revisión pura.
 
 ## Alcance
 
@@ -17,9 +17,13 @@ Primera entrega de F-006 centrada en consulta mensual densa y continua. Implemen
 - Filtros por cliente, lugar y empleado; filtros contractuales de completitud, revisión, origen y ausencia bajo divulgación progresiva.
 - Paginación interna mediante `useInfiniteQuery`, snapshot de 15 minutos y carga al acercarse al final, sin botones de paginación.
 - Servicio y mock contractuales para `GET /records/monthly` bajo la base `/api/v1` configurada por el adaptador HTTP.
+- Detalle diario con intervalos y metadata de eventos cargada bajo demanda.
+- Alta global y desde celdas `EMPTY` confirmadas, con identidad empleado–lugar–fecha y uno o más intervalos.
+- Corrección con `expectedVersion`, identidad inmutable, operaciones ADD/UPDATE sin DELETE y conservación de eventos automáticos.
+- Validación local y mock de WORK completo, rangos válidos, no solapamiento, duplicado y conflicto de versión.
 
 **NO incluye:**
-- Alta, edición, revisión, detalle de intervalos o metadata de eventos.
+- Revisión pura APPROVED/REJECTED ni revisión por intervalo: falta materializar una ruta de escritura exacta sin confundir revisión con corrección manual.
 - Cambios al contrato P-01, al contrato sincronizado o a archivos `SYNCED-FROM-TEMPLATE`.
 - Búsqueda libre agregada a la matriz: el selector de empleado resuelve un UUID con el listado `/users` y envía el `employeeId` ya aprobado.
 - Integración con el backend real ni evidencia de sus snapshots, concurrencia o rendimiento.
@@ -41,7 +45,9 @@ Primera entrega de F-006 centrada en consulta mensual densa y continua. Implemen
 - [x] Los totales globales vienen de `meta.totals`; no se recalculan a partir de las páginas cargadas.
 - [x] Los filtros de estados conservan días no coincidentes con `matchesFilters=false`.
 - [ ] Backend materializa el DTO y aporta la evidencia pendiente indicada en la decisión 8.
-- [ ] Detalle, alta, corrección y revisión se implementan tras publicar el DTO completo de P-04.
+- [x] Detalle, alta y corrección mock-first respetan P-04, sin borrar intervalos ni generar eventos manuales.
+- [x] Un duplicado concurrente y un conflicto de versión conservan una salida recuperable sin sobrescritura.
+- [ ] Revisión pura y revisión por intervalo se implementan cuando backend materialice sus rutas exactas.
 
 ## Notas de implementación
 
@@ -56,6 +62,8 @@ No se requiere cambio de backend adicional para los puntos confirmados: mes/prov
 - Fixture mock determinista con meses de 28–31 días, filtros same-day, totales globales y snapshot.
 - Vista compacta con filtros URL, tabla semántica, estados textuales, scroll continuo y sticky headers/columns.
 - Pruebas de filas completas, febrero, paginación snapshot y filtros.
+- Formularios accesibles de alta/corrección, alertas inline, aviso de cambios sin guardar y recuperación explícita ante `RECORD_VERSION_CONFLICT`.
+- Servicio `POST /records` y `PATCH /records/{id}` con mocks persistentes, invalidación de matriz y pruebas de duplicado, versión y solapamientos.
 
 ## Review
 

@@ -146,6 +146,35 @@ export const attendanceEventDetailSchema = z.object({
 })
 export type AttendanceEventDetail = z.infer<typeof attendanceEventDetailSchema>
 
+export type IntervalType = z.infer<typeof intervalTypeSchema>
+export type AbsenceReason = z.infer<typeof absenceReasonSchema>
+
+export interface RecordIntervalInput {
+  type: IntervalType
+  startTime: string | null
+  endTime: string | null
+  absenceReason: AbsenceReason | null
+  observations: string | null
+}
+
+export type RecordIntervalChange =
+  | { operation: 'ADD'; interval: RecordIntervalInput }
+  | { operation: 'UPDATE'; id: string; interval: RecordIntervalInput }
+
+export interface CreateRecordInput {
+  userId: string
+  workplaceId: string
+  date: string
+  observations: string | null
+  intervals: RecordIntervalInput[]
+}
+
+export interface UpdateRecordInput {
+  expectedVersion: number
+  observations?: string | null
+  intervalChanges?: RecordIntervalChange[]
+}
+
 export interface MonthlyQuery {
   month: number
   year: number

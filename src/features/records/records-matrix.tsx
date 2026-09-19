@@ -9,6 +9,7 @@ interface RecordsMatrixProps {
   isFetchingNextPage: boolean
   onEndReached: () => void
   onRecordOpen: (recordId: string) => void
+  onEmptyCreate: (employeeId: string, workplaceId: string, date: string) => void
 }
 
 const shortWeekdayFormatter = new Intl.DateTimeFormat('es-AR', { weekday: 'short', timeZone: 'UTC' })
@@ -50,7 +51,7 @@ function cellClass(day: MonthlyDay) {
   return 'bg-background text-foreground'
 }
 
-export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetchingNextPage, onEndReached, onRecordOpen }: RecordsMatrixProps) {
+export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetchingNextPage, onEndReached, onRecordOpen, onEmptyCreate }: RecordsMatrixProps) {
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     const element = event.currentTarget
     if (element.scrollHeight - element.scrollTop - element.clientHeight < 160 && hasNextPage && !isFetchingNextPage) onEndReached()
@@ -113,7 +114,13 @@ export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetching
                         {state.note ? <span className="block leading-4">{state.note}</span> : null}
                       </button>
                     ) : (
-                      <span aria-label={`${day.date}: ${state.label}`} className="block px-1 font-semibold" title={state.label}>{state.value}</span>
+                      <button
+                        aria-label={`${day.date}: sin registro confirmado. Crear registro manual`}
+                        className="size-full min-h-12 px-1 font-semibold text-foreground/45 transition-colors duration-150 hover:bg-primary/10 hover:text-primary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                        title="Sin registro confirmado. Crear registro manual."
+                        type="button"
+                        onClick={() => onEmptyCreate(row.employee.id, row.workplace.id, day.date)}
+                      >{state.value}</button>
                     )}
                   </td>
                 )

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { RecordOrigin, RecordStatus, ReviewStatus } from '../../types/records'
+import { RecordCreateDialog } from './record-create-dialog'
 import { RecordDetailDialog } from './record-detail-dialog'
 import { RecordsFilters } from './records-filters'
 import { RecordsMatrix } from './records-matrix'
@@ -107,6 +108,30 @@ export function RecordsPage() {
     setSearchParams(next, { replace: true })
   }
 
+  const openRecordCreate = (prefill?: { employeeId: string; workplaceId: string; date: string }) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('createRecord', 'true')
+    if (prefill) {
+      next.set('createEmployeeId', prefill.employeeId)
+      next.set('createWorkplaceId', prefill.workplaceId)
+      next.set('createDate', prefill.date)
+    } else {
+      next.delete('createEmployeeId')
+      next.delete('createWorkplaceId')
+      next.set('createDate', `${monthValue}-01`)
+    }
+    setSearchParams(next)
+  }
+
+  const closeRecordCreate = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('createRecord')
+    next.delete('createEmployeeId')
+    next.delete('createWorkplaceId')
+    next.delete('createDate')
+    setSearchParams(next, { replace: true })
+  }
+
   const clearSecondaryFilters = () => {
     const next = new URLSearchParams()
     next.set('month', monthValue)
@@ -124,7 +149,10 @@ export function RecordsPage() {
           <h1 className="text-balance font-sans text-2xl font-bold tracking-tight">Registros mensuales</h1>
           <p className="text-pretty text-sm leading-6 text-foreground/65">Una fila por empleado y lugar. Los horarios se muestran en GMT-3.</p>
         </div>
-        {firstPage ? <p className="shrink-0 text-sm text-foreground/65"><span className="font-semibold tabular-nums text-foreground">{numberFormatter.format(totalItems)}</span> filas · <span className="font-semibold tabular-nums text-foreground">{formatTotal(totalMinutes)} h</span> totales</p> : null}
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {firstPage ? <p className="shrink-0 text-sm text-foreground/65"><span className="font-semibold tabular-nums text-foreground">{numberFormatter.format(totalItems)}</span> filas · <span className="font-semibold tabular-nums text-foreground">{formatTotal(totalMinutes)} h</span> totales</p> : null}
+          <button className="min-h-11 rounded-md bg-primary px-4 text-sm font-semibold text-background hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => openRecordCreate()}>Crear registro</button>
+        </div>
       </header>
 
       <RecordsFilters
@@ -141,10 +169,29 @@ export function RecordsPage() {
         {optionPending || recordsQuery.isPending ? <div className="flex min-h-80 items-center justify-center rounded-md border border-foreground/15 bg-background text-sm text-foreground/65">Cargando matriz mensual…</div> : null}
         {optionError || recordsQuery.isError ? <div className="rounded-md border border-accent/35 bg-background p-4" role="alert"><p className="font-semibold">No pudimos cargar la matriz mensual.</p><p className="mt-1 text-sm text-foreground/65">Revisá tu conexión o reiniciá la consulta para obtener un snapshot nuevo.</p><button className="mt-3 h-9 rounded-md border border-accent px-3 text-sm font-semibold text-accent transition-colors duration-150 hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => void recordsQuery.refetch()}>Reintentar</button></div> : null}
         {!optionPending && !recordsQuery.isPending && !optionError && !recordsQuery.isError && rows.length === 0 ? <div className="flex min-h-80 flex-col items-center justify-center gap-2 rounded-md border border-foreground/15 bg-background p-6 text-center"><h2 className="text-lg font-bold">No hay actividad para estos filtros</h2><p className="max-w-lg text-sm leading-6 text-foreground/65">La matriz solo muestra combinaciones de empleado y lugar con actividad en el mes seleccionado.</p><button className="mt-1 h-9 rounded-md border border-foreground/25 px-3 text-sm font-semibold transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={clearSecondaryFilters}>Limpiar filtros</button></div> : null}
-        {rows.length > 0 ? <RecordsMatrix rows={rows} dates={monthDates(year, month)} totalItems={totalItems} hasNextPage={recordsQuery.hasNextPage} isFetchingNextPage={recordsQuery.isFetchingNextPage} onEndReached={() => void recordsQuery.fetchNextPage()} onRecordOpen={openRecordDetail} /> : null}
+        {rows.length > 0 ? <RecordsMatrix rows={rows} dates={monthDates(year, month)} totalItems={totalItems} hasNextPage={recordsQuery.hasNextPage} isFetchingNextPage={recordsQuery.isFetchingNextPage} onEmptyCreate={(nextEmployeeId, nextWorkplaceId, date) => openRecordCreate({ employeeId: nextEmployeeId, workplaceId: nextWorkplaceId, date })} onEndReached={() => void recordsQuery.fetchNextPage()} onRecordOpen={openRecordDetail} /> : null}
       </div>
 
       {searchParams.get('recordId') ? <RecordDetailDialog recordId={searchParams.get('recordId')!} onClose={closeRecordDetail} /> : null}
+      {searchParams.get('createRecord') === 'true' ? (
+        <RecordCreateDialog
+          employees={options.employees.data?.data ?? []}
+          initialDate={searchParams.get('createDate') ?? `${monthValue}-01`}
+          initialEmployeeId={searchParams.get('createEmployeeId') ?? undefined}
+          initialWorkplaceId={searchParams.get('createWorkplaceId') ?? undefined}
+          workplaces={options.workplaces.data?.data ?? []}
+          onClose={closeRecordCreate}
+          onSaved={(record) => {
+            const next = new URLSearchParams(searchParams)
+            next.delete('createRecord')
+            next.delete('createEmployeeId')
+            next.delete('createWorkplaceId')
+            next.delete('createDate')
+            next.set('recordId', record.id)
+            setSearchParams(next, { replace: true })
+          }}
+        />
+      ) : null}
     </section>
   )
 }
