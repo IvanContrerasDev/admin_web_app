@@ -4,6 +4,7 @@
 **Origen:** admin_web_app / leader
 **Estado:** aplicada
 **Nota (2026-09-17, orchestrator, segunda ronda):** ratificada por el humano: concurrencia por **`expectedVersion`**, solapamientos **rechazados** en carga manual (históricos intactos), no se aceptan WORK sin ambos extremos ni registros sin intervalos en carga manual, identidad empleado/lugar/fecha inmutable en PATCH, motivo de ausencia **opcional siempre**, flujo revisión pura vs MANUAL_LOADED, cargas retrospectivas permitidas como corrección histórica, **20 MiB** por archivo y lote **atómico**, búsqueda por fileName+nombre/apellido/legajo, dashboard con contadores del **mes seleccionado**. Todo en `docs/arquitectura/contratos-api.md` (decisión 11). Resta ejecución de backend: DTOs completos por recurso, políticas de validación, ejemplos y pruebas.
+**Enmienda ratificada 2026-09-19:** `REJECTED` se elimina de la revisión de registros e intervalos; la revisión pura solo aprueba mediante `PATCH /records/{id}/review`; la corrección admite `DELETE` explícito de intervalos y conserva al menos uno. La propuesta `20260919-f006-aprobacion-y-eliminacion-intervalos.md` solicita propagación al contrato sincronizado.
 **Responsables propuestos:** leader backend por DTO/regla; leader mobile por compatibilidad; humano ratifica; orchestrator propaga.
 **Módulos afectados:** F-003 a F-009 y F-010, según cada subacuerdo. No bloquea infraestructura de F-002.
 
@@ -42,7 +43,8 @@ interface CreateRecordCandidate {
 }
 type IntervalChangeCandidate =
   | { operation: "ADD"; interval: IntervalInputCandidate }
-  | { operation: "UPDATE"; id: string; interval: IntervalInputCandidate };
+  | { operation: "UPDATE"; id: string; interval: IntervalInputCandidate }
+  | { operation: "DELETE"; id: string };
 interface UpdateRecordCandidate {
   expectedVersion: number;
   observations?: string | null;
@@ -50,13 +52,13 @@ interface UpdateRecordCandidate {
 }
 interface ReviewRecordCandidate {
   expectedVersion: number;
-  reviewStatus: "APPROVED" | "REJECTED";
+  reviewStatus: "APPROVED";
 }
 ```
 
 - `expectedVersion` y operaciones ADD/UPDATE son propuesta explícita de concurrencia e identidad, NO campos vigentes. Backend incrementaría versión e impediría pérdida de cambios. Alternativa ETag/If-Match debe acordarse en lugar de implementar ambas.
-- PATCH omitido conserva valor; null borra solo campo nullable. Intervalos no mencionados se preservan. No hay operación DELETE ni omisión como borrado. Sin autorización expresa tampoco eliminar intervalos persistidos desde UI.
-- Intervalo UPDATE debe pertenecer al registro; ID ajeno se rechaza. Campos derivados (`totalWorkMinutes`, estados de completitud, origen) no vienen del cliente. Backend devuelve detalle completo recalculado y nueva versión.
+- PATCH omitido conserva valor; null borra solo campo nullable. Intervalos no mencionados se preservan. `DELETE` elimina únicamente el intervalo identificado dentro de la corrección y se rechaza si dejaría el registro sin intervalos.
+- Intervalos UPDATE/DELETE deben pertenecer al registro; un ID ajeno se rechaza. Campos derivados (`totalWorkMinutes`, estados de completitud, origen) no vienen del cliente. Backend devuelve detalle completo recalculado y nueva versión.
 - Fechas de extremos ISO UTC; `date` es día GMT-3. Validar parseo estricto, minutos y límites de día. Pendiente definir precisión segundos/milisegundos, límites inclusivos/exclusivos, igualdad inicio=fin, fecha futura, cantidad de intervalos y máximo de observaciones. No inventar estas reglas en Zod.
 - Resolver si solapamientos se rechazan, se advierten o se conservan como evidencia de marcaciones; no impedir abrir/corregir datos históricos aunque una nueva entrada manual no los admita.
 - Candidatos de error: `409 RECORD_ALREADY_EXISTS`, `409 RECORD_VERSION_CONFLICT`, `retryable=false`; ratificar en catálogo 07. Conflicto de versión mantiene formulario y ofrece recargar/comparar, nunca sobreescribe automáticamente.
@@ -95,10 +97,10 @@ Medianoche: entrada `2026-09-18T02:50:00Z` corresponde al 17/09 23:50 GMT-3, sal
 
 Algoritmo vigente: cada entrada agrega intervalo y cada salida cierra el último abierto del mismo registro diario. Entrada 09:00, entrada 11:00, salida 12:00, salida 18:00 produce 09:00–18:00 y 11:00–12:00: total 600 minutos según suma vigente (aunque se solapan), no el ejemplo contradictorio del §23. La política de nuevas ediciones solapadas no altera silenciosamente la proyección automática existente. Eventos offline fuera de orden necesitan ejemplos del backend, no una reconstrucción inventada por admin.
 
-Separación pendiente de ratificar:
-- Cambio de datos/observaciones por admin: registro MANUAL/MANUAL_LOADED; intervalos efectivamente editados MANUAL. Para edición solo de observación general, aclarar cómo se concilia origen derivado de intervalos con la intervención global; no marcar arbitrariamente todos los intervalos como manuales.
-- Revisión pura: propuesta conservar origen/horarios y permitir PATCH de APPROVED/REJECTED sin convertirlo en edición manual. Confirmar estados de origen/transiciones y comportamiento de REJECTED → corregido (MANUAL_LOADED) → APPROVED. Rechazado permanece visible y editable.
-- Revisión de intervalo: falta operación exacta, permisos y efecto sobre revisión global. Candidato `PATCH /records/{recordId}/intervals/{intervalId}/review` con `{ expectedVersion, reviewStatus: APPROVED | REJECTED }`; compartir versión del registro y devolver detalle recalculado. Ratificar antes de servicio/UI de escritura.
+Separación ratificada para F-006:
+- Cambio de datos/observaciones por admin: registro MANUAL/MANUAL_LOADED; intervalos efectivamente editados MANUAL. La eliminación de un intervalo es una corrección manual explícita y no borra la evidencia AttendanceEvent original.
+- Revisión pura: `PATCH /records/{id}/review` acepta `{ expectedVersion, reviewStatus: "APPROVED" }`, devuelve detalle completo y nueva versión, y conserva origen, datos e intervalos. `REJECTED` no existe en registros ni intervalos.
+- Revisión individual de intervalos: fuera del incremento; no se infiere ni implementa una ruta. La aprobación confirmada opera sobre el registro completo.
 - Metadata de eventos inmutable: edición manual no crea, actualiza ni borra AttendanceEvent. Recordar que el modelo 02 dice origen ADMIN posible, mientras doc 05 prohíbe generar eventos para estas correcciones; solicitar precisión sobre otros usos de ADMIN sin inferirlos.
 
 ### P-04.C — Lecturas, entidades y catálogos (F-003/F-004/F-005/F-006)

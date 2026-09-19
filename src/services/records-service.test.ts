@@ -37,7 +37,7 @@ describe('RecordsService', () => {
   })
 
   it('applies day filters while returning every day in matching rows', async () => {
-    const response = await setup().listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID, reviewStatus: 'REJECTED' })
+    const response = await setup().listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID, reviewStatus: 'PENDING' })
 
     expect(response.data.length).toBeGreaterThan(0)
     expect(response.data.every((row) => row.days.length === 30)).toBe(true)
@@ -80,6 +80,61 @@ describe('RecordsService', () => {
 
     expect(updated).toMatchObject({ version: detail.version + 1, origin: 'MANUAL', reviewStatus: 'MANUAL_LOADED', totalWorkMinutes: 480 })
     await expect(service.update(detail.id, { expectedVersion: detail.version, observations: null })).rejects.toMatchObject({ code: 'RECORD_VERSION_CONFLICT', status: 409 })
+  })
+
+  it('approves a record without changing its origin, data, or intervals', async () => {
+    const service = setup()
+    const monthly = await service.listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID, reviewStatus: 'PENDING' })
+    const presentDay = monthly.data[0]!.days.find((day) => day.state === 'PRESENT' && day.matchesFilters)
+    if (!presentDay || presentDay.state !== 'PRESENT') return
+    const detail = await service.getDetail(presentDay.record.id)
+    const intervalsBefore = structuredClone(detail.intervals)
+
+    const approved = await service.approve(detail.id, {
+      expectedVersion: detail.version,
+      reviewStatus: 'APPROVED',
+    })
+
+    expect(approved).toMatchObject({
+      id: detail.id,
+      reviewStatus: 'APPROVED',
+      origin: detail.origin,
+      observations: detail.observations,
+      totalWorkMinutes: detail.totalWorkMinutes,
+      version: detail.version + 1,
+    })
+    expect(approved.intervals).toEqual(intervalsBefore)
+    await expect(service.approve(detail.id, {
+      expectedVersion: detail.version,
+      reviewStatus: 'APPROVED',
+    })).rejects.toMatchObject({ code: 'RECORD_VERSION_CONFLICT', status: 409 })
+  })
+
+  it('deletes an interval during correction but preserves at least one', async () => {
+    const service = setup()
+    const created = await service.create({
+      userId: '22000000-0000-4000-8000-000000000001',
+      workplaceId: '44000000-0000-4000-8000-000000000001',
+      date: '2026-09-04',
+      observations: null,
+      intervals: [
+        { type: 'WORK', startTime: '2026-09-04T12:00:00.000Z', endTime: '2026-09-04T16:00:00.000Z', absenceReason: null, observations: null },
+        { type: 'WORK', startTime: '2026-09-04T17:00:00.000Z', endTime: '2026-09-04T21:00:00.000Z', absenceReason: null, observations: null },
+      ],
+    })
+
+    const corrected = await service.update(created.id, {
+      expectedVersion: created.version,
+      intervalChanges: [{ operation: 'DELETE', id: created.intervals[0]!.id }],
+    })
+
+    expect(corrected.intervals).toHaveLength(1)
+    expect(corrected.totalWorkMinutes).toBe(240)
+    expect(corrected.version).toBe(created.version + 1)
+    await expect(service.update(corrected.id, {
+      expectedVersion: corrected.version,
+      intervalChanges: [{ operation: 'DELETE', id: corrected.intervals[0]!.id }],
+    })).rejects.toMatchObject({ code: 'RECORD_INTERVALS_REQUIRED', status: 422 })
   })
 
   it('rejects overlapping intervals in manual writes', async () => {

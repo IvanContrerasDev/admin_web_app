@@ -30,7 +30,7 @@ function validRecordStatus(value: string | null): RecordStatus | undefined {
 }
 
 function validReviewStatus(value: string | null): ReviewStatus | undefined {
-  return value === 'NONE' || value === 'PENDING' || value === 'APPROVED' || value === 'REJECTED' || value === 'MANUAL_LOADED' ? value : undefined
+  return value === 'NONE' || value === 'PENDING' || value === 'APPROVED' || value === 'MANUAL_LOADED' ? value : undefined
 }
 
 function validOrigin(value: string | null): RecordOrigin | undefined {

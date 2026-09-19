@@ -4,19 +4,19 @@
 F-006 — Matriz mensual y edición/revisión de registros (`docs/tasks/006-matriz-mensual-registros.md`).
 
 ## Haciendo ahora
-Incremento B de alta y corrección mock-first implementado; pendiente revisión independiente y materialización backend.
+Incremento de alta, corrección y aprobación pura mock-first implementado; pendiente revisión independiente y materialización backend.
 
 ## Hecho (esta sesión)
-- Alta manual global y desde celdas `EMPTY` confirmadas.
-- Corrección con identidad inmutable, `expectedVersion`, intervalos ADD/UPDATE y sin DELETE.
-- Validaciones de WORK completo, rango temporal y solapamiento; ausencia permite extremos opcionales.
-- Mocks persistentes para duplicado, conflicto de versión, totales derivados, origen MANUAL y estado MANUAL_LOADED.
-- Aviso de cambios sin guardar y recuperación de la versión actual sin sobrescritura.
-- Cobertura de servicio para alta, corrección, duplicado, concurrencia y solapamientos.
+- `REJECTED` eliminado del estado de revisión de registros e intervalos, incluidos tipos, filtros, matriz, detalle y fixtures.
+- Corrección con identidad inmutable, `expectedVersion` e intervalos ADD/UPDATE/DELETE; el último intervalo no puede eliminarse.
+- Aprobación pura separada en `PATCH /records/{id}/review`, sin modificar origen, datos ni intervalos y con incremento de versión.
+- Mocks persistentes para conflicto de versión, totales derivados, origen MANUAL y estado MANUAL_LOADED.
+- Documentación funcional y propuesta de cambio sincronizado actualizadas con las decisiones humanas.
+- Cobertura de servicio para aprobación pura, DELETE y protección del último intervalo.
 
 ## Blockers / Preguntas para el humano
-- La revisión pura APPROVED/REJECTED y la revisión por intervalo siguen bloqueadas hasta que backend materialice sus rutas exactas. No se sobrecarga `PATCH /records/{id}` para evitar convertir una revisión en corrección manual.
-- La verificación visual automática no pudo ejecutarse: el sandbox de `agent-browser` devolvió “Sandbox could not be found” y el Playwright Python local no está instalado. La validación de código continúa con lint, typecheck, tests y build.
+- Backend debe materializar y el orchestrator debe propagar la enmienda contractual aprobada al archivo sincronizado y a las demás apps.
+- La revisión individual de intervalos queda fuera de alcance porque no se aprobó una ruta separada; no bloquea la aprobación del registro completo.
 
 ## Resultado final
-Alta y corrección quedan listas en modo mock-first; F-006 continúa `in_progress` por revisión pura y evidencia backend pendientes.
+Alta, corrección y aprobación quedan listas en modo mock-first; F-006 continúa `in_progress` por propagación/evidencia backend y revisión independiente pendientes.

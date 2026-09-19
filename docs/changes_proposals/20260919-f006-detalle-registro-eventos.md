@@ -22,7 +22,7 @@ interface RecordDetail {
   site: { id: string; name: string };
   totalWorkMinutes: number;
   recordStatus: "COMPLETE" | "INCOMPLETE";
-  reviewStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED" | "MANUAL_LOADED";
+  reviewStatus: "NONE" | "PENDING" | "APPROVED" | "MANUAL_LOADED";
   origin: "AUTOMATIC" | "MANUAL";
   hasAbsence: boolean;
   observations: string | null;

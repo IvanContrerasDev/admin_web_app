@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const recordStatusSchema = z.enum(['COMPLETE', 'INCOMPLETE'])
 export type RecordStatus = z.infer<typeof recordStatusSchema>
 
-export const reviewStatusSchema = z.enum(['NONE', 'PENDING', 'APPROVED', 'REJECTED', 'MANUAL_LOADED'])
+export const reviewStatusSchema = z.enum(['NONE', 'PENDING', 'APPROVED', 'MANUAL_LOADED'])
 export type ReviewStatus = z.infer<typeof reviewStatusSchema>
 
 export const recordOriginSchema = z.enum(['AUTOMATIC', 'MANUAL'])
@@ -160,6 +160,7 @@ export interface RecordIntervalInput {
 export type RecordIntervalChange =
   | { operation: 'ADD'; interval: RecordIntervalInput }
   | { operation: 'UPDATE'; id: string; interval: RecordIntervalInput }
+  | { operation: 'DELETE'; id: string }
 
 export interface CreateRecordInput {
   userId: string
@@ -173,6 +174,11 @@ export interface UpdateRecordInput {
   expectedVersion: number
   observations?: string | null
   intervalChanges?: RecordIntervalChange[]
+}
+
+export interface ReviewRecordInput {
+  expectedVersion: number
+  reviewStatus: 'APPROVED'
 }
 
 export interface MonthlyQuery {
