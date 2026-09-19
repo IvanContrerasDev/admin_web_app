@@ -67,8 +67,8 @@ El contrato del backend sigue enviando `latitude`, `longitude`, `radiusMeters` y
 - Clic/arrastre confirman centro; Marker, Circle, slider e inputs permanecen sincronizados.
 - El contrato HTTP de Workplace y sus validaciones no cambiaron.
 - Validación automática posterior: lint, typecheck, 7 archivos/31 tests y build exitosos.
-- Navegador real 1072 × 800: formulario y `PlaceAutocompleteElement` verificados con la clave configurada. La prueba local detectó correctamente `RefererNotAllowedMapError` porque `http://localhost:5174` no pertenece a sus referrers autorizados; queda pendiente probar clic/arrastre contra un origen autorizado de preview o producción.
+- Navegador real 1072 × 800: formulario y `PlaceAutocompleteElement` verificados con la clave configurada. El humano validó clic, arrastre y funcionamiento general desde el dominio autorizado el 2026-09-18.
 
 ## Review
 
-Pendiente de revisión independiente y de validación final en un origen autorizado de preview o producción. Los errores de ausencia, carga o referrer muestran recuperación explícita y no utilizan proveedores públicos alternativos.
+Pendiente únicamente de revisión independiente. La validación funcional en un dominio autorizado fue completada por el humano; los errores de ausencia, carga o referrer muestran recuperación explícita y no utilizan proveedores públicos alternativos.
