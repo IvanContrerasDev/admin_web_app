@@ -30,7 +30,7 @@ export function createAppRouter() {
             {
               path: 'registros',
               lazy: async () => {
-                const { RecordsPage } = await import('../features/modules/module-pages')
+                const { RecordsPage } = await import('../features/records/records-page')
                 return { Component: RecordsPage }
               },
             },

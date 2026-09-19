@@ -39,6 +39,19 @@ a {
   touch-action: manipulation;
 }
 
+.records-matrix-viewport {
+  min-height: 22rem;
+  max-height: 62dvh;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 1024px) {
+  .records-matrix-viewport {
+    max-height: calc(100dvh - 16.5rem);
+  }
+}
+
 .skip-link {
   position: fixed;
   top: 0.75rem;

@@ -16,10 +16,6 @@ function ModulePage({ title, description }: ModulePageProps) {
   )
 }
 
-export function RecordsPage() {
-  return <ModulePage title="Registros" description="Revisión mensual de jornadas, intervalos, ausencias y estados." />
-}
-
 export function UsersPage() {
   return <ModulePage title="Usuarios" description="Gestión de empleados y consulta de su información administrativa." />
 }

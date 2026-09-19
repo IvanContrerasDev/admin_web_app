@@ -25,7 +25,7 @@ describe('administrative authentication and navigation', () => {
     renderApplication('/registros')
 
     expect(await screen.findByRole('heading', { name: /ingresá a administración/i })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Registros' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Registros mensuales' })).not.toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Email'), 'admin@example.test')
     await user.type(screen.getByLabelText('Contraseña'), 'contraseña temporal')
@@ -37,7 +37,7 @@ describe('administrative authentication and navigation', () => {
     await user.type(screen.getByLabelText('Código de verificación'), '123456')
     await user.click(screen.getByRole('button', { name: /ingresar a administración/i }))
 
-    expect(await screen.findByRole('heading', { name: 'Registros' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Registros mensuales' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: /navegación principal/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /cerrar sesión/i }))

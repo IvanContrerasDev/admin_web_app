@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/use-auth'
 
 const navigation = [
@@ -13,7 +13,9 @@ const navigation = [
 
 export function AppShell() {
   const { session, logout, isSubmitting } = useAuth()
+  const location = useLocation()
   const fullName = session ? `${session.user.firstName} ${session.user.lastName}` : ''
+  const isRecordsPage = location.pathname === '/registros'
 
   return (
     <div className="min-h-dvh bg-background text-foreground lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
@@ -61,7 +63,7 @@ export function AppShell() {
             </button>
           </div>
         </header>
-        <main id="main-content" className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <main id="main-content" className={isRecordsPage ? 'w-full min-w-0 px-3 py-4 sm:px-4 lg:px-5 lg:py-5' : 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10'}>
           <Outlet />
         </main>
       </div>
