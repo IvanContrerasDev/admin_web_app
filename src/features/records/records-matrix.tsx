@@ -36,8 +36,7 @@ function cellState(day: MonthlyDay) {
   if (day.state === 'EMPTY') return { value: '—', note: '', label: 'Sin registro' }
   const record = day.record
   if (record.hasAbsence) return { value: 'Aus.', note: record.reviewStatus === 'PENDING' ? 'Pend.' : '', label: 'Ausencia' }
-  if (record.recordStatus === 'INCOMPLETE') return { value: 'Inc.', note: record.reviewStatus === 'REJECTED' ? 'Rech.' : '', label: 'Registro incompleto' }
-  if (record.reviewStatus === 'REJECTED') return { value: formatMinutes(record.totalWorkMinutes), note: 'Rech.', label: 'Registro rechazado' }
+  if (record.recordStatus === 'INCOMPLETE') return { value: 'Inc.', note: record.reviewStatus === 'PENDING' ? 'Pend.' : '', label: 'Registro incompleto' }
   if (record.reviewStatus === 'PENDING') return { value: formatMinutes(record.totalWorkMinutes), note: 'Pend.', label: 'Revisión pendiente' }
   if (record.reviewStatus === 'MANUAL_LOADED') return { value: formatMinutes(record.totalWorkMinutes), note: 'Manual', label: 'Carga manual' }
   return { value: formatMinutes(record.totalWorkMinutes), note: '', label: 'Registro completo' }
@@ -45,7 +44,7 @@ function cellState(day: MonthlyDay) {
 
 function cellClass(day: MonthlyDay) {
   const sunday = isSunday(day.date)
-  if (day.state === 'PRESENT' && (day.record.reviewStatus === 'REJECTED' || day.record.recordStatus === 'INCOMPLETE')) return 'bg-accent/10 text-accent'
+  if (day.state === 'PRESENT' && (day.record.reviewStatus === 'PENDING' || day.record.recordStatus === 'INCOMPLETE')) return 'bg-accent/10 text-accent'
   if (day.state === 'PRESENT' && day.record.hasAbsence) return 'bg-secondary/10 text-secondary'
   if (sunday) return 'bg-foreground/[0.06] text-foreground/70'
   return 'bg-background text-foreground'

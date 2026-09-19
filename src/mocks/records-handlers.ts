@@ -10,6 +10,7 @@ import type {
   RecordDetail,
   RecordInterval,
   RecordIntervalInput,
+  ReviewRecordInput,
   UpdateRecordInput,
 } from '../types/records'
 import { ORGANIZATION_SITES } from './organization-handlers'
@@ -148,7 +149,7 @@ function createRecordDetail(context: RecordContext, eventDetails: Map<string, At
     reviewStatus: summary.reviewStatus,
     origin: summary.origin,
     hasAbsence: summary.hasAbsence,
-    observations: summary.reviewStatus === 'REJECTED' ? 'Revisar la consistencia de las marcaciones.' : null,
+    observations: null,
     version: 1 + Number(summary.id.slice(-2)) % 4,
     intervals,
     createdAt: timestamp(day.date, 11, 55),
@@ -229,13 +230,11 @@ function createDays(rowIndex: number, year: number, month: number): MonthlyDay[]
 
     const hasAbsence = (day + rowIndex) % 13 === 0
     const recordStatus = (day + rowIndex) % 9 === 0 ? 'INCOMPLETE' as const : 'COMPLETE' as const
-    const reviewStatus = (day + rowIndex) % 17 === 0
-      ? 'REJECTED' as const
-      : (day + rowIndex) % 7 === 0
-        ? 'PENDING' as const
-        : (day + rowIndex) % 5 === 0
-          ? 'APPROVED' as const
-          : 'NONE' as const
+    const reviewStatus = (day + rowIndex) % 7 === 0
+      ? 'PENDING' as const
+      : (day + rowIndex) % 5 === 0
+        ? 'APPROVED' as const
+        : 'NONE' as const
     const totalWorkMinutes = hasAbsence || recordStatus === 'INCOMPLETE' ? 0 : 420 + ((day + rowIndex) % 3) * 30
 
     return {
@@ -429,6 +428,10 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
       }
       const index = nextIntervals.findIndex((interval) => interval.id === change.id)
       if (index < 0) throw apiError('RECORD_INTERVAL_NOT_FOUND', 'El intervalo ya no pertenece a este registro.', 422)
+      if (change.operation === 'DELETE') {
+        nextIntervals.splice(index, 1)
+        continue
+      }
       nextIntervals[index] = toManualInterval(change.id, change.interval, nextIntervals[index])
     }
     if (input.intervalChanges?.length) validateManualIntervals(nextIntervals)
@@ -443,6 +446,25 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
       version: current.version + 1,
       updatedAt: now().toISOString(),
     })
+    storedRecords.set(recordIdentifier, next)
+    return { data: next }
+  })
+
+  adapter.registerPattern('PATCH', /^\/records\/[0-9a-f-]{36}\/review$/i, (request) => {
+    const recordIdentifier = request.path.split('/').at(-2) ?? ''
+    const input = request.body as ReviewRecordInput
+    const context = recordContexts.get(recordIdentifier)
+    const current = storedRecords.get(recordIdentifier) ?? (context ? createRecordDetail(context, eventDetails) : undefined)
+    if (!current) throw apiError('RECORD_NOT_FOUND', 'El registro solicitado no existe o ya no está disponible.', 404)
+    if (input.expectedVersion !== current.version) throw apiError('RECORD_VERSION_CONFLICT', 'El registro cambió desde que lo abriste. Recargá para comparar la versión actual.', 409)
+    if (input.reviewStatus !== 'APPROVED') throw apiError('INVALID_REVIEW_STATUS', 'La revisión solo admite la aprobación del registro.', 422)
+
+    const next: RecordDetail = {
+      ...current,
+      reviewStatus: 'APPROVED',
+      version: current.version + 1,
+      updatedAt: now().toISOString(),
+    }
     storedRecords.set(recordIdentifier, next)
     return { data: next }
   })

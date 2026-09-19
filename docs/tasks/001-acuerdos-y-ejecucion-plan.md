@@ -241,10 +241,10 @@ Cada etapa es un incremento revisable. El leader la convierte en una feature con
 - Encabezado e identificación de fila fijos, scroll continuo vertical con páginas de filas completas, sin botones de paginación ni virtualización. Prevenir solicitudes duplicadas de siguiente página.
 - Celdas con resumen de horas/estados/ausencia; detalle de intervalos bajo demanda. Totales oficiales del backend, no sumar solo las páginas cargadas como total global.
 - Crear registro desde acción global para cualquier combinación válida; celda vacía habilita creación solo si su ausencia está confirmada. Concurrencia/duplicado lleva a recuperar el registro existente sin sobrescribirlo.
-- Editor registro por registro: horarios, observaciones, agregar intervalos, WORK/ABSENCE, motivos y revisión según contrato. Sin borrado de registros ni edición masiva.
-- Completitud, origen y revisión independientes: WORK cerrado suma minutos; ausencias nunca suman; un intervalo manual determina origen general manual; creación/edición administrativa marca MANUAL_LOADED; revisión pura según transición aprobada.
+- Editor registro por registro: horarios, observaciones, agregar, modificar o eliminar intervalos, WORK/ABSENCE, motivos y revisión según contrato. Sin borrado de registros ni edición masiva; toda corrección conserva al menos un intervalo.
+- Completitud, origen y revisión independientes: WORK cerrado suma minutos; ausencias nunca suman; un intervalo manual determina origen general manual; creación/edición administrativa marca MANUAL_LOADED; aprobación pura separada sin alterar origen, datos ni intervalos.
 - Ausencia sin extremos CLOSED/cero trabajo; con uno OPEN o SEMI_CLOSED; «Otros» sin observación obligatoria. Sin duración estadística de ausencia.
-- Rechazados visibles, destacados y editables; corrección y posterior aprobación permitidas.
+- No existe estado REJECTED en registros ni intervalos; una inconsistencia se corrige y luego el registro puede aprobarse.
 - Metadata expandible de entrada/salida: hora oficial, coordenadas, precisión, dispositivo, origen, recepción y fix cuando API los exponga. Nunca inventar eventos para cargas manuales.
 - Mantener fechas separadas al cruzar medianoche; explicar estado incompleto, sin unión ni reparto automático entre días.
 

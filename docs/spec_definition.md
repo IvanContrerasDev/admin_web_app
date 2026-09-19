@@ -782,7 +782,6 @@ review\_status
 NONE  
 PENDING  
 APPROVED  
-REJECTED  
 MANUAL\_LOADED
 
 ---
@@ -809,20 +808,9 @@ Un registro pendiente debe ser revisado por administración.
 
 **APPROVED**
 
-El administrador revisó un registro pendiente y confirmó que la información es válida.
+El administrador confirmó que la información del registro es válida. La aprobación es una revisión pura: no altera el origen, los datos ni los intervalos del registro.
 
----
-
-**REJECTED**
-
-El administrador determinó que la información es inválida.
-
-Comportamiento:
-
-* El registro sigue apareciendo en la tabla de registros.  
-* Debe destacarse visualmente como un problema pendiente.  
-* Continúa siendo editable.  
-* Una vez corregido por administración puede pasar nuevamente a un estado aprobado.
+Si la información requiere cambios, el administrador corrige el registro en lugar de asignarle un estado de rechazo. La corrección permanece visible y editable bajo `MANUAL_LOADED`, y puede aprobarse posteriormente.
 
 ---
 
@@ -1004,10 +992,9 @@ interval\_review\_status
 
 NONE  
 PENDING  
-APPROVED  
-REJECTED
+APPROVED
 
-Este estado permite marcar individualmente problemas relacionados con la validación de un evento particular.
+No existe un estado de rechazo para los intervalos. Este estado permite marcar individualmente problemas relacionados con la validación de un evento particular; una inconsistencia se resuelve mediante la corrección del registro.
 
 Ejemplo:
 
@@ -3184,7 +3171,6 @@ enum ReviewStatus {
   NONE,  
   PENDING,  
   APPROVED,  
-  REJECTED,  
   MANUAL\_LOADED  
 }
 

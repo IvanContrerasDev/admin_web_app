@@ -6,7 +6,7 @@
 
 ## Contexto
 
-Entrega incremental de F-006: consulta mensual densa y continua sobre P-01, seguida de detalle, alta y corrección mock-first basados en las escrituras P-04 ratificadas. Los adaptadores conservan separación por dominio mientras backend materializa los DTOs definitivos y la ruta exacta de revisión pura.
+Entrega incremental de F-006: consulta mensual densa y continua sobre P-01, seguida de detalle, alta, corrección y aprobación pura mock-first. El humano ratificó la ruta separada de aprobación, la eliminación del estado `REJECTED` y el borrado explícito de intervalos durante la corrección.
 
 ## Alcance
 
@@ -19,11 +19,13 @@ Entrega incremental de F-006: consulta mensual densa y continua sobre P-01, segu
 - Servicio y mock contractuales para `GET /records/monthly` bajo la base `/api/v1` configurada por el adaptador HTTP.
 - Detalle diario con intervalos y metadata de eventos cargada bajo demanda.
 - Alta global y desde celdas `EMPTY` confirmadas, con identidad empleado–lugar–fecha y uno o más intervalos.
-- Corrección con `expectedVersion`, identidad inmutable, operaciones ADD/UPDATE sin DELETE y conservación de eventos automáticos.
+- Corrección con `expectedVersion`, identidad inmutable, operaciones ADD/UPDATE/DELETE, mínimo de un intervalo y conservación de los eventos automáticos como evidencia inmutable.
+- Aprobación pura mediante `PATCH /records/{id}/review` con `{ expectedVersion, reviewStatus: "APPROVED" }`; devuelve el detalle completo y nueva versión sin alterar origen, datos ni intervalos.
+- `ReviewStatus` de registro e intervalo sin `REJECTED`: `NONE`, `PENDING`, `APPROVED` y, solo donde corresponda a intervención manual, `MANUAL_LOADED`.
 - Validación local y mock de WORK completo, rangos válidos, no solapamiento, duplicado y conflicto de versión.
 
 **NO incluye:**
-- Revisión pura APPROVED/REJECTED ni revisión por intervalo: falta materializar una ruta de escritura exacta sin confundir revisión con corrección manual.
+- Revisión individual de intervalos: no se aprobó una ruta de escritura separada y la aprobación confirmada opera sobre el registro completo.
 - Cambios al contrato P-01, al contrato sincronizado o a archivos `SYNCED-FROM-TEMPLATE`.
 - Búsqueda libre agregada a la matriz: el selector de empleado resuelve un UUID con el listado `/users` y envía el `employeeId` ya aprobado.
 - Integración con el backend real ni evidencia de sus snapshots, concurrencia o rendimiento.
@@ -45,9 +47,11 @@ Entrega incremental de F-006: consulta mensual densa y continua sobre P-01, segu
 - [x] Los totales globales vienen de `meta.totals`; no se recalculan a partir de las páginas cargadas.
 - [x] Los filtros de estados conservan días no coincidentes con `matchesFilters=false`.
 - [ ] Backend materializa el DTO y aporta la evidencia pendiente indicada en la decisión 8.
-- [x] Detalle, alta y corrección mock-first respetan P-04, sin borrar intervalos ni generar eventos manuales.
+- [x] Detalle, alta y corrección mock-first permiten ADD/UPDATE/DELETE, conservan al menos un intervalo y no generan eventos manuales.
 - [x] Un duplicado concurrente y un conflicto de versión conservan una salida recuperable sin sobrescritura.
-- [ ] Revisión pura y revisión por intervalo se implementan cuando backend materialice sus rutas exactas.
+- [x] La aprobación pura usa una ruta separada, incrementa la versión y preserva origen, datos e intervalos.
+- [x] `REJECTED` no existe en tipos, filtros, matriz, detalle ni fixtures de registros o intervalos.
+- [ ] Backend materializa y propaga la enmienda contractual ratificada para aprobación y DELETE de intervalos.
 
 ## Notas de implementación
 
@@ -63,7 +67,7 @@ No se requiere cambio de backend adicional para los puntos confirmados: mes/prov
 - Vista compacta con filtros URL, tabla semántica, estados textuales, scroll continuo y sticky headers/columns.
 - Pruebas de filas completas, febrero, paginación snapshot y filtros.
 - Formularios accesibles de alta/corrección, alertas inline, aviso de cambios sin guardar y recuperación explícita ante `RECORD_VERSION_CONFLICT`.
-- Servicio `POST /records` y `PATCH /records/{id}` con mocks persistentes, invalidación de matriz y pruebas de duplicado, versión y solapamientos.
+- Servicio `POST /records`, `PATCH /records/{id}` y `PATCH /records/{id}/review` con mocks persistentes, invalidación de matriz y pruebas de duplicado, versión, solapamientos, DELETE con mínimo de un intervalo y aprobación sin mutaciones colaterales.
 
 ## Review
 

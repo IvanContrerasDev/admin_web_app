@@ -127,12 +127,16 @@ export function RecordEditorForm({ record, initialEmployeeId = '', initialWorkpl
         const input: CreateRecordInput = { userId: employeeId, workplaceId, date, observations: normalizedObservations, intervals: intervals.map(toInput) }
         return recordsService.create(input)
       }
-      const intervalChanges = intervals.reduce<RecordIntervalChange[]>((changes, interval) => {
+      const currentIntervalIds = new Set(intervals.flatMap((interval) => interval.id ? [interval.id] : []))
+      const intervalChanges = baseRecord.intervals
+        .filter((interval) => !currentIntervalIds.has(interval.id))
+        .map<RecordIntervalChange>((interval) => ({ operation: 'DELETE', id: interval.id }))
+      intervals.reduce<RecordIntervalChange[]>((changes, interval) => {
         const input = toInput(interval)
         if (!interval.id) changes.push({ operation: 'ADD', interval: input })
         else if (interval.original !== intervalSignature(interval)) changes.push({ operation: 'UPDATE', id: interval.id, interval: input })
         return changes
-      }, [])
+      }, intervalChanges)
       const input: UpdateRecordInput = { expectedVersion: baseRecord.version }
       if (normalizedObservations !== baseRecord.observations) input.observations = normalizedObservations
       if (intervalChanges.length) input.intervalChanges = intervalChanges
@@ -221,10 +225,19 @@ export function RecordEditorForm({ record, initialEmployeeId = '', initialWorkpl
       <label className="flex flex-col gap-2 text-sm font-semibold" htmlFor="record-observations">Observaciones generales<textarea className="min-h-24 rounded-md border border-foreground/25 bg-background p-3 font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" id="record-observations" name="observations" value={observations} onChange={(event) => setObservations(event.target.value)} /></label>
 
       <section className="flex flex-col gap-3" aria-labelledby="record-editor-intervals">
-        <div className="flex flex-wrap items-end justify-between gap-3"><div><h3 className="text-lg font-bold" id="record-editor-intervals">Intervalos</h3><p className="text-sm leading-6 text-foreground/65">No se pueden eliminar intervalos existentes. Las horas se editan en GMT-3.</p></div><button className="min-h-11 rounded-md border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setIntervals((current) => [...current, emptyInterval(current.length + 1)])}>Agregar intervalo</button></div>
+        <div className="flex flex-wrap items-end justify-between gap-3"><div><h3 className="text-lg font-bold" id="record-editor-intervals">Intervalos</h3><p className="text-sm leading-6 text-foreground/65">Podés agregar o eliminar intervalos; el registro debe conservar al menos uno. Las horas se editan en GMT-3.</p></div><button className="min-h-11 rounded-md border border-primary px-4 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setIntervals((current) => [...current, emptyInterval(current.length + 1)])}>Agregar intervalo</button></div>
         {intervals.map((interval, index) => (
           <fieldset className="grid gap-4 rounded-md border border-foreground/15 bg-muted/40 p-4 md:grid-cols-2" key={interval.key}>
             <legend className="px-1 font-bold">Intervalo {index + 1}{interval.id ? ' · existente' : ' · nuevo'}</legend>
+            <div className="flex justify-end md:col-span-2">
+              <button
+                aria-label={`Eliminar intervalo ${index + 1}`}
+                className="min-h-9 rounded-md border border-destructive/45 px-3 text-sm font-semibold text-destructive transition-colors duration-150 hover:bg-destructive/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-45"
+                disabled={intervals.length === 1}
+                type="button"
+                onClick={() => setIntervals((current) => current.filter((item) => item.key !== interval.key))}
+              >Eliminar intervalo</button>
+            </div>
             <label className="flex flex-col gap-2 text-sm font-semibold">Tipo<select className={fieldClass} name={`interval-${index}-type`} value={interval.type} onChange={(event) => updateInterval(interval.key, { type: event.target.value as EditableInterval['type'], absenceReason: '' })}><option value="WORK">Trabajo</option><option value="ABSENCE">Ausencia</option></select></label>
             {interval.type === 'ABSENCE' ? <label className="flex flex-col gap-2 text-sm font-semibold">Motivo opcional<select className={fieldClass} name={`interval-${index}-absence`} value={interval.absenceReason} onChange={(event) => updateInterval(interval.key, { absenceReason: event.target.value as EditableInterval['absenceReason'] })}><option value="">Sin motivo</option>{absenceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label> : <div />}
             <label className="flex flex-col gap-2 text-sm font-semibold">Entrada<input className={fieldClass} name={`interval-${index}-start`} type="datetime-local" value={interval.startTime} onChange={(event) => updateInterval(interval.key, { startTime: event.target.value })} /></label>

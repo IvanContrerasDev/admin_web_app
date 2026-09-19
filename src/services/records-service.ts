@@ -7,6 +7,7 @@ import {
   type MonthlyResponse,
   type RecordDetail,
   type CreateRecordInput,
+  type ReviewRecordInput,
   type UpdateRecordInput,
 } from '../types/records'
 import type { ServiceAdapter } from './service-adapter'
@@ -43,6 +44,13 @@ export class RecordsService {
   update(recordId: string, input: UpdateRecordInput): Promise<RecordDetail> {
     return this.client.request(
       { method: 'PATCH', path: `/records/${recordId}`, body: input },
+      recordDetailSchema,
+    )
+  }
+
+  approve(recordId: string, input: ReviewRecordInput): Promise<RecordDetail> {
+    return this.client.request(
+      { method: 'PATCH', path: `/records/${recordId}/review`, body: input },
       recordDetailSchema,
     )
   }

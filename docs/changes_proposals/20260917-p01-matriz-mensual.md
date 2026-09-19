@@ -36,7 +36,7 @@ Semántica candidata:
 
 ```ts
 type RecordStatusCandidate = "COMPLETE" | "INCOMPLETE";
-type ReviewStatusCandidate = "NONE" | "PENDING" | "APPROVED" | "REJECTED" | "MANUAL_LOADED";
+type ReviewStatusCandidate = "NONE" | "PENDING" | "APPROVED" | "MANUAL_LOADED";
 interface MonthlyQueryCandidate {
   month: number;
   year: number;

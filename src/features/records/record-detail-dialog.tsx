@@ -1,4 +1,7 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { ServiceError } from '../../services/service-error'
+import { recordsService } from '../../services/services'
 import type { AttendanceEventDetail, RecordInterval, ReviewStatus } from '../../types/records'
 import { RecordEditorForm } from './record-editor-form'
 import { useAttendanceEventDetails, useRecordDetail, useRecordsFilterOptions } from './use-monthly-records'
@@ -25,7 +28,6 @@ const reviewLabels: Record<ReviewStatus, string> = {
   NONE: 'Sin revisión',
   PENDING: 'Pendiente',
   APPROVED: 'Aprobado',
-  REJECTED: 'Rechazado',
   MANUAL_LOADED: 'Carga manual',
 }
 
@@ -103,16 +105,34 @@ function EventMetadata({ event }: { event: AttendanceEventDetail }) {
 }
 
 export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProps) {
+  const queryClient = useQueryClient()
   const dialogRef = useRef<HTMLDialogElement>(null)
   const [showEventDetails, setShowEventDetails] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editorDirty, setEditorDirty] = useState(false)
+  const [approvalError, setApprovalError] = useState('')
   const detailQuery = useRecordDetail(recordId)
   const options = useRecordsFilterOptions()
   const eventIds = useMemo(() => detailQuery.data?.intervals.flatMap((interval) => interval.attendanceEvents.map((event) => event.id)) ?? [], [detailQuery.data])
   const eventQueries = useAttendanceEventDetails(eventIds, showEventDetails)
   const eventQueryById = new Map(eventIds.map((eventId, index) => [eventId, eventQueries[index]]))
   const loadingEvents = showEventDetails && eventQueries.some((query) => query.isPending)
+  const approvalMutation = useMutation({
+    mutationFn: () => recordsService.approve(recordId, {
+      expectedVersion: detailQuery.data!.version,
+      reviewStatus: 'APPROVED',
+    }),
+    onSuccess: async (saved) => {
+      setApprovalError('')
+      queryClient.setQueryData(['records', 'detail', saved.id], saved)
+      await queryClient.invalidateQueries({ queryKey: ['records', 'monthly'] })
+    },
+    onError: (caught) => {
+      setApprovalError(caught instanceof ServiceError && caught.code === 'RECORD_VERSION_CONFLICT'
+        ? 'El registro cambió antes de aprobarlo. Recargá el detalle y revisá la versión actual.'
+        : caught instanceof Error ? caught.message : 'No pudimos aprobar el registro.')
+    },
+  })
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -144,7 +164,7 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
       <div className="sticky top-0 flex items-start justify-between gap-4 border-b border-foreground/15 bg-background p-4 sm:p-5">
         <div className="min-w-0">
           <h2 className="text-balance text-xl font-bold" id="record-detail-title">{editing ? 'Corregir registro' : 'Detalle del registro'}</h2>
-          <p className="text-pretty text-sm leading-6 text-foreground/65" id="record-detail-description">{editing ? 'La identidad permanece fija; podés corregir datos o agregar intervalos.' : 'Información diaria, intervalos y evidencia de marcación asociada.'}</p>
+          <p className="text-pretty text-sm leading-6 text-foreground/65" id="record-detail-description">{editing ? 'La identidad permanece fija; podés corregir datos, agregar o eliminar intervalos.' : 'Información diaria, intervalos y evidencia de marcación asociada.'}</p>
         </div>
         <button aria-label="Cerrar detalle" className="shrink-0 rounded-md border border-foreground/25 px-3 py-1.5 text-sm font-semibold transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={attemptClose}>Cerrar</button>
       </div>
@@ -184,9 +204,26 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
                   <span className="rounded-full border border-foreground/20 px-2.5 py-1">{detailQuery.data.recordStatus === 'COMPLETE' ? 'Completo' : 'Incompleto'}</span>
                   <span className="rounded-full border border-foreground/20 px-2.5 py-1">{reviewLabels[detailQuery.data.reviewStatus]}</span>
                   <span className="rounded-full border border-foreground/20 px-2.5 py-1">{detailQuery.data.origin === 'AUTOMATIC' ? 'Automático' : 'Manual'}</span>
+                  {detailQuery.data.reviewStatus !== 'APPROVED' ? (
+                    <button
+                      className="min-h-11 rounded-md border border-secondary px-4 font-semibold text-secondary transition-colors duration-150 hover:bg-secondary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
+                      disabled={approvalMutation.isPending}
+                      type="button"
+                      onClick={() => {
+                        setApprovalError('')
+                        approvalMutation.mutate()
+                      }}
+                    >{approvalMutation.isPending ? 'Aprobando…' : 'Aprobar registro'}</button>
+                  ) : null}
                   <button className="min-h-11 rounded-md bg-primary px-4 font-semibold text-background hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setEditing(true)}>Corregir registro</button>
                 </div>
               </div>
+              {approvalError ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm" role="alert">
+                  <p>{approvalError}</p>
+                  <button className="min-h-9 rounded-md border border-destructive px-3 font-semibold text-destructive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => void detailQuery.refetch().then(() => setApprovalError(''))}>Recargar detalle</button>
+                </div>
+              ) : null}
               <dl className="grid gap-x-6 gap-y-3 rounded-md border border-foreground/15 bg-muted p-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
                 <div><dt className="text-foreground/60">Lugar de trabajo</dt><dd className="font-semibold">{detailQuery.data.workplace.name}</dd></div>
                 <div><dt className="text-foreground/60">Cliente</dt><dd>{detailQuery.data.client.name}</dd></div>
