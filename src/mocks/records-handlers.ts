@@ -487,3 +487,23 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
     return { data: detail }
   })
 }
+
+// Métricas del mes sobre la generación determinista: los registros manuales
+// creados en runtime no se reflejan (limitación del mock, sin efecto en backend real).
+export function computeMonthlyRecordMetrics(year: number, month: number) {
+  const rows = createRows(year, month, { year, month })
+  let incompleteRecords = 0
+  let pendingReviewRecords = 0
+  let recordsWithAbsence = 0
+
+  for (const row of rows) {
+    for (const day of row.days) {
+      if (day.state !== 'PRESENT') continue
+      if (day.record.recordStatus === 'INCOMPLETE') incompleteRecords += 1
+      if (day.record.reviewStatus === 'PENDING') pendingReviewRecords += 1
+      if (day.record.hasAbsence) recordsWithAbsence += 1
+    }
+  }
+
+  return { incompleteRecords, pendingReviewRecords, recordsWithAbsence }
+}

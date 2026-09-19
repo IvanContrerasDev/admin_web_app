@@ -1,6 +1,9 @@
 import { registerAuthMockRoutes } from '../mocks/auth-handlers'
+import { registerDashboardMockRoutes } from '../mocks/dashboard-handlers'
+import { registerDocumentsMockRoutes } from '../mocks/documents-handlers'
 import { registerOrganizationMockRoutes } from '../mocks/organization-handlers'
 import { registerRecordsMockRoutes } from '../mocks/records-handlers'
+import { createTimesheetsStore, registerTimesheetsMockRoutes } from '../mocks/timesheets-handlers'
 import { registerUserMockRoutes } from '../mocks/user-handlers'
 import { HttpServiceAdapter } from './http-service-adapter'
 import { MockServiceAdapter } from './mock-service-adapter'
@@ -17,10 +20,14 @@ export function createServiceAdapter(environment: ServiceEnvironment): ServiceAd
 
   if (mode === 'mock') {
     const adapter = new MockServiceAdapter()
+    const timesheetsStore = createTimesheetsStore()
     registerAuthMockRoutes(adapter)
     registerUserMockRoutes(adapter)
     registerOrganizationMockRoutes(adapter)
     registerRecordsMockRoutes(adapter)
+    registerTimesheetsMockRoutes(adapter, undefined, timesheetsStore)
+    registerDocumentsMockRoutes(adapter)
+    registerDashboardMockRoutes(adapter, timesheetsStore)
     return adapter
   }
 

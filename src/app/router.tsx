@@ -121,14 +121,14 @@ export function createAppRouter() {
             {
               path: 'planillas',
               lazy: async () => {
-                const { TimesheetsPage } = await import('../features/modules/module-pages')
+                const { TimesheetsPage } = await import('../features/timesheets/timesheets-page')
                 return { Component: TimesheetsPage }
               },
             },
             {
               path: 'legajos',
               lazy: async () => {
-                const { DocumentsPage } = await import('../features/modules/module-pages')
+                const { DocumentsPage } = await import('../features/documents/documents-page')
                 return { Component: DocumentsPage }
               },
             },

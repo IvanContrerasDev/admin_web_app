@@ -69,30 +69,35 @@
     {
       "id": "F-007",
       "title": "Planillas",
-      "status": "pending",
+      "status": "pending_review",
       "dependencies": ["F-004", "F-005", "F-006"],
       "contract_dependencies": ["P-04"],
-      "task_spec": null,
-      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+      "task_spec": "docs/tasks/007-planillas.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "pending_independent_review",
+      "notes": "Listado con filtros (empleado/lugar/período/estado), carga multi-archivo con validación de formato y tamaño, detalle con cambio de estado, reemplazo de archivo y descarga con enlace firmado simulado. Implementado mock-first; revisión independiente pendiente."
     },
     {
       "id": "F-008",
       "title": "Legajos digitales",
-      "status": "pending",
+      "status": "pending_review",
       "dependencies": ["F-004", "F-007"],
       "contract_dependencies": ["P-04"],
-      "task_spec": null,
-      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+      "task_spec": "docs/tasks/008-legajos-digitales.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "pending_independent_review",
+      "notes": "Listado con filtros (búsqueda/tipo/empleado/cargado por/rango de fechas), carga con validación, detalle con edición de nombre y tipo, eliminación con confirmación y descarga simulada. Implementado mock-first; revisión independiente pendiente."
     },
     {
       "id": "F-009",
       "title": "Inicio operativo",
-      "status": "pending",
+      "status": "pending_review",
       "dependencies": ["F-006", "F-007", "F-008"],
       "contract_dependencies": ["P-04"],
-      "task_spec": null,
+      "task_spec": "docs/tasks/009-inicio-operativo.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "notes": "Confirmar alcance temporal de métricas y enlaces antes de integrar; no sumar páginas locales."
+      "review_status": "pending_independent_review",
+      "notes": "Dashboard con selector de mes y 4 tarjetas de métricas (planillas pendientes, registros incompletos, pendientes de validación, registros con ausencia) que enlazan a las vistas filtradas del mismo período. Sin páginas locales nuevas. Implementado mock-first; revisión independiente pendiente."
     },
     {
       "id": "F-010",
