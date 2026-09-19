@@ -6,6 +6,7 @@ import { timesheetsService } from '../../services/services'
 import { ServiceError } from '../../services/service-error'
 import type { TimesheetListItem, TimesheetStatus } from '../../types/timesheets'
 import { fieldClass, labelClass } from '../organization/organization-ui'
+import { useToast } from '../toasts/use-toast'
 import { TimesheetStatusBadge } from './timesheet-status-badge'
 import { formatFileSize, formatPeriod } from './use-timesheets'
 
@@ -26,6 +27,7 @@ export function TimesheetDetailDialog({ timesheet, onClose }: TimesheetDetailDia
   const [replacement, setReplacement] = useState<File | null>(null)
   const [confirmingReplacement, setConfirmingReplacement] = useState(false)
   const [replacementIssue, setReplacementIssue] = useState('')
+  const toast = useToast()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -43,6 +45,10 @@ export function TimesheetDetailDialog({ timesheet, onClose }: TimesheetDetailDia
       setCurrent(updated)
       setSelectedStatus(updated.status)
       refresh()
+      toast.success('El estado se guardó correctamente.')
+    },
+    onError: () => {
+      toast.error('No pudimos guardar el estado. Intentá nuevamente.')
     },
   })
 

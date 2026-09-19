@@ -89,8 +89,8 @@ export function DocumentsPage() {
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-4 border-b border-foreground/15 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-2xl">
-          <h1 className="text-balance font-sans text-3xl font-bold tracking-tight sm:text-4xl">Legajos</h1>
-          <p className="mt-2 text-pretty leading-relaxed text-foreground/65">Documentación digital de cada empleado: certificados, contratos y formularios.</p>
+          <h1 className="text-balance font-sans text-3xl font-bold tracking-tight sm:text-4xl">Documentos</h1>
+          <p className="mt-2 text-pretty leading-relaxed text-foreground/65">Toda la documentación digital: certificados, contratos y formularios de cada empleado.</p>
         </div>
         <button className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 font-semibold text-background hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={openUpload}>Cargar documento</button>
       </header>

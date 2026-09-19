@@ -28,6 +28,7 @@ export class UserService {
         query: {
           search: query.search,
           accountStatus: query.accountStatus,
+          siteId: query.siteId,
           page: query.page ?? 1,
           pageSize: query.pageSize ?? 25,
         },

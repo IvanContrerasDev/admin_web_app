@@ -110,10 +110,12 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
   adapter.register('GET', '/users', (request) => {
     const search = String(request.query?.search ?? '').trim().toLocaleLowerCase('es-AR')
     const status = request.query?.accountStatus as AccountStatus | undefined
+    const siteId = typeof request.query?.siteId === 'string' ? request.query.siteId : ''
     const page = Math.max(1, Number(request.query?.page ?? 1))
     const pageSize = Math.min(100, Math.max(1, Number(request.query?.pageSize ?? 25)))
     const filtered = users
       .filter((user) => !status || user.accountStatus === status)
+      .filter((user) => !siteId || user.site.id === siteId)
       .filter((user) => !search || [user.firstName, user.lastName, user.email, user.employeeId, user.dni].some((value) => value.toLocaleLowerCase('es-AR').includes(search)))
       .sort((a, b) => a.lastName.localeCompare(b.lastName, 'es-AR') || a.firstName.localeCompare(b.firstName, 'es-AR') || a.id.localeCompare(b.id))
     const totalItems = filtered.length

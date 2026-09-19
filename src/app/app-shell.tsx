@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/use-auth'
 
@@ -8,12 +9,13 @@ const navigation = [
   { label: 'Clientes', href: '/clientes' },
   { label: 'Lugares de trabajo', href: '/lugares' },
   { label: 'Planillas', href: '/planillas' },
-  { label: 'Legajos', href: '/legajos' },
+  { label: 'Documentos', href: '/documentos' },
 ]
 
 export function AppShell() {
   const { session, logout, isSubmitting } = useAuth()
   const location = useLocation()
+  const [confirmingLogout, setConfirmingLogout] = useState(false)
   const fullName = session ? `${session.user.firstName} ${session.user.lastName}` : ''
   const isRecordsPage = location.pathname === '/registros'
 
@@ -53,14 +55,35 @@ export function AppShell() {
               <p className="truncate font-sans text-sm font-semibold text-foreground">{fullName}</p>
               <p className="truncate font-sans text-sm text-foreground/60">{session?.user.role === 'SUPER_ADMIN' ? 'Superadministración' : 'Administración'} · Legajo {session?.user.employeeId}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              disabled={isSubmitting}
-              className="min-h-11 shrink-0 rounded-md border border-foreground/25 px-4 py-2 font-sans text-sm font-semibold text-foreground transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60"
-            >
-              {isSubmitting ? 'Cerrando sesión…' : 'Cerrar sesión'}
-            </button>
+            {!confirmingLogout ? (
+              <button
+                type="button"
+                onClick={() => setConfirmingLogout(true)}
+                className="min-h-11 shrink-0 rounded-md border border-foreground/25 px-4 py-2 font-sans text-sm font-semibold text-foreground transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                Cerrar sesión
+              </button>
+            ) : (
+              <div className="flex shrink-0 items-center gap-2" role="group" aria-label="Confirmar cierre de sesión">
+                <span className="hidden font-sans text-sm font-semibold text-foreground/70 sm:inline">¿Cerrar sesión?</span>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingLogout(false)}
+                  disabled={isSubmitting}
+                  className="min-h-11 rounded-md border border-foreground/25 px-3 py-2 font-sans text-sm font-semibold text-foreground hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  disabled={isSubmitting}
+                  className="min-h-11 rounded-md bg-accent px-3 py-2 font-sans text-sm font-semibold text-background hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-60"
+                >
+                  {isSubmitting ? 'Cerrando…' : 'Confirmar'}
+                </button>
+              </div>
+            )}
           </div>
         </header>
         <main id="main-content" className={isRecordsPage ? 'w-full min-w-0 px-3 py-4 sm:px-4 lg:px-5 lg:py-5' : 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10'}>
