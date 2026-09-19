@@ -8,6 +8,7 @@ interface RecordsMatrixProps {
   hasNextPage: boolean
   isFetchingNextPage: boolean
   onEndReached: () => void
+  onRecordOpen: (recordId: string) => void
 }
 
 const shortWeekdayFormatter = new Intl.DateTimeFormat('es-AR', { weekday: 'short', timeZone: 'UTC' })
@@ -49,7 +50,7 @@ function cellClass(day: MonthlyDay) {
   return 'bg-background text-foreground'
 }
 
-export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetchingNextPage, onEndReached }: RecordsMatrixProps) {
+export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetchingNextPage, onEndReached, onRecordOpen }: RecordsMatrixProps) {
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     const element = event.currentTarget
     if (element.scrollHeight - element.scrollTop - element.clientHeight < 160 && hasNextPage && !isFetchingNextPage) onEndReached()
@@ -94,9 +95,26 @@ export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetching
                 const state = cellState(day)
                 const detail = day.state === 'PRESENT' && !day.matchesFilters ? ' No coincide con los filtros de estado, pero se conserva para evitar duplicados.' : ''
                 return (
-                  <td className={`h-12 w-14 min-w-14 border-b border-r border-foreground/15 px-1 text-center tabular-nums ${cellClass(day)} ${day.state === 'PRESENT' && !day.matchesFilters ? 'opacity-45' : ''}`} key={day.date} aria-label={`${day.date}: ${state.label}.${detail}`} title={`${state.label}${detail}`}>
-                    <span className="block font-semibold">{state.value}</span>
-                    {state.note ? <span className="block leading-4">{state.note}</span> : null}
+                  <td className={`h-12 w-14 min-w-14 border-b border-r border-foreground/15 p-0 text-center tabular-nums ${cellClass(day)} ${day.state === 'PRESENT' && !day.matchesFilters ? 'opacity-45' : ''}`} key={day.date}>
+                    {day.state === 'PRESENT' ? (
+                      <button
+                        aria-label={`${day.date}: ${state.label}. Abrir detalle del registro`}
+                        className="size-full min-h-12 cursor-pointer px-1 transition-colors duration-150 hover:bg-primary/10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                        title={`${state.label}${detail}. Doble clic o Enter para abrir el detalle.`}
+                        type="button"
+                        onDoubleClick={() => onRecordOpen(day.record.id)}
+                        onKeyDown={(event) => {
+                          if (event.key !== 'Enter' && event.key !== ' ') return
+                          event.preventDefault()
+                          onRecordOpen(day.record.id)
+                        }}
+                      >
+                        <span className="block font-semibold">{state.value}</span>
+                        {state.note ? <span className="block leading-4">{state.note}</span> : null}
+                      </button>
+                    ) : (
+                      <span aria-label={`${day.date}: ${state.label}`} className="block px-1 font-semibold" title={state.label}>{state.value}</span>
+                    )}
                   </td>
                 )
               })}

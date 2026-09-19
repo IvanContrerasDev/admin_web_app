@@ -1,4 +1,12 @@
-import { monthlyResponseSchema, type MonthlyQuery, type MonthlyResponse } from '../types/records'
+import {
+  attendanceEventDetailSchema,
+  monthlyResponseSchema,
+  recordDetailSchema,
+  type AttendanceEventDetail,
+  type MonthlyQuery,
+  type MonthlyResponse,
+  type RecordDetail,
+} from '../types/records'
 import type { ServiceAdapter } from './service-adapter'
 import { ServiceClient } from './service-client'
 
@@ -7,6 +15,20 @@ export class RecordsService {
 
   constructor(adapter: ServiceAdapter) {
     this.client = new ServiceClient(adapter)
+  }
+
+  getDetail(recordId: string, signal?: AbortSignal): Promise<RecordDetail> {
+    return this.client.request(
+      { path: `/records/${recordId}`, signal },
+      recordDetailSchema,
+    )
+  }
+
+  getAttendanceEventDetail(eventId: string, signal?: AbortSignal): Promise<AttendanceEventDetail> {
+    return this.client.request(
+      { path: `/attendance-events/${eventId}`, signal },
+      attendanceEventDetailSchema,
+    )
   }
 
   listMonthly(query: MonthlyQuery, signal?: AbortSignal): Promise<MonthlyResponse> {

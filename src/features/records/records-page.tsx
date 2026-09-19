@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { RecordOrigin, RecordStatus, ReviewStatus } from '../../types/records'
+import { RecordDetailDialog } from './record-detail-dialog'
 import { RecordsFilters } from './records-filters'
 import { RecordsMatrix } from './records-matrix'
 import { useMonthlyRecords, useRecordsFilterOptions } from './use-monthly-records'
@@ -94,6 +95,18 @@ export function RecordsPage() {
     setSearchParams(next)
   }
 
+  const openRecordDetail = (recordId: string) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('recordId', recordId)
+    setSearchParams(next)
+  }
+
+  const closeRecordDetail = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('recordId')
+    setSearchParams(next, { replace: true })
+  }
+
   const clearSecondaryFilters = () => {
     const next = new URLSearchParams()
     next.set('month', monthValue)
@@ -128,8 +141,10 @@ export function RecordsPage() {
         {optionPending || recordsQuery.isPending ? <div className="flex min-h-80 items-center justify-center rounded-md border border-foreground/15 bg-background text-sm text-foreground/65">Cargando matriz mensual…</div> : null}
         {optionError || recordsQuery.isError ? <div className="rounded-md border border-accent/35 bg-background p-4" role="alert"><p className="font-semibold">No pudimos cargar la matriz mensual.</p><p className="mt-1 text-sm text-foreground/65">Revisá tu conexión o reiniciá la consulta para obtener un snapshot nuevo.</p><button className="mt-3 h-9 rounded-md border border-accent px-3 text-sm font-semibold text-accent transition-colors duration-150 hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => void recordsQuery.refetch()}>Reintentar</button></div> : null}
         {!optionPending && !recordsQuery.isPending && !optionError && !recordsQuery.isError && rows.length === 0 ? <div className="flex min-h-80 flex-col items-center justify-center gap-2 rounded-md border border-foreground/15 bg-background p-6 text-center"><h2 className="text-lg font-bold">No hay actividad para estos filtros</h2><p className="max-w-lg text-sm leading-6 text-foreground/65">La matriz solo muestra combinaciones de empleado y lugar con actividad en el mes seleccionado.</p><button className="mt-1 h-9 rounded-md border border-foreground/25 px-3 text-sm font-semibold transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={clearSecondaryFilters}>Limpiar filtros</button></div> : null}
-        {rows.length > 0 ? <RecordsMatrix rows={rows} dates={monthDates(year, month)} totalItems={totalItems} hasNextPage={recordsQuery.hasNextPage} isFetchingNextPage={recordsQuery.isFetchingNextPage} onEndReached={() => void recordsQuery.fetchNextPage()} /> : null}
+        {rows.length > 0 ? <RecordsMatrix rows={rows} dates={monthDates(year, month)} totalItems={totalItems} hasNextPage={recordsQuery.hasNextPage} isFetchingNextPage={recordsQuery.isFetchingNextPage} onEndReached={() => void recordsQuery.fetchNextPage()} onRecordOpen={openRecordDetail} /> : null}
       </div>
+
+      {searchParams.get('recordId') ? <RecordDetailDialog recordId={searchParams.get('recordId')!} onClose={closeRecordDetail} /> : null}
     </section>
   )
 }

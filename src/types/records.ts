@@ -72,6 +72,80 @@ export const monthlyResponseSchema = z.object({
 })
 export type MonthlyResponse = z.infer<typeof monthlyResponseSchema>
 
+export const attendanceEventTypeSchema = z.enum(['CHECK_IN', 'CHECK_OUT', 'ABSENCE'])
+export type AttendanceEventType = z.infer<typeof attendanceEventTypeSchema>
+
+export const intervalTypeSchema = z.enum(['WORK', 'ABSENCE'])
+export const intervalStatusSchema = z.enum(['OPEN', 'SEMI_CLOSED', 'CLOSED'])
+export const absenceReasonSchema = z.enum(['ILLNESS', 'VACATION', 'LEAVE', 'ART', 'OTHER'])
+
+export const attendanceEventReferenceSchema = z.object({
+  id: z.string().uuid(),
+  type: attendanceEventTypeSchema,
+  occurredAt: z.string().datetime(),
+})
+export type AttendanceEventReference = z.infer<typeof attendanceEventReferenceSchema>
+
+export const recordIntervalSchema = z.object({
+  id: z.string().uuid(),
+  type: intervalTypeSchema,
+  status: intervalStatusSchema,
+  startTime: z.string().datetime().nullable(),
+  endTime: z.string().datetime().nullable(),
+  absenceReason: absenceReasonSchema.nullable(),
+  observations: z.string().nullable(),
+  origin: recordOriginSchema,
+  reviewStatus: reviewStatusSchema,
+  attendanceEvents: z.array(attendanceEventReferenceSchema),
+})
+export type RecordInterval = z.infer<typeof recordIntervalSchema>
+
+export const recordDetailSchema = z.object({
+  id: z.string().uuid(),
+  date: z.string().date(),
+  employee: z.object({
+    id: z.string().uuid(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    employeeId: z.string().min(1),
+  }),
+  workplace: z.object({ id: z.string().uuid(), name: z.string().min(1) }),
+  client: z.object({ id: z.string().uuid(), name: z.string().min(1) }),
+  site: z.object({ id: z.string().uuid(), name: z.string().min(1) }),
+  totalWorkMinutes: z.number().int().nonnegative(),
+  recordStatus: recordStatusSchema,
+  reviewStatus: reviewStatusSchema,
+  origin: recordOriginSchema,
+  hasAbsence: z.boolean(),
+  observations: z.string().nullable(),
+  version: z.number().int().positive(),
+  intervals: z.array(recordIntervalSchema),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+export type RecordDetail = z.infer<typeof recordDetailSchema>
+
+const metadataValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()])
+
+export const attendanceEventDetailSchema = z.object({
+  id: z.string().uuid(),
+  recordId: z.string().uuid(),
+  intervalId: z.string().uuid(),
+  type: attendanceEventTypeSchema,
+  occurredAt: z.string().datetime(),
+  receivedAt: z.string().datetime(),
+  origin: z.enum(['MOBILE', 'ADMIN']),
+  observation: z.string().nullable(),
+  location: z.object({
+    latitude: z.number().finite().min(-90).max(90),
+    longitude: z.number().finite().min(-180).max(180),
+    accuracyMeters: z.number().finite().nonnegative(),
+    capturedAt: z.string().datetime(),
+  }).nullable(),
+  metadata: z.record(z.string(), metadataValueSchema),
+})
+export type AttendanceEventDetail = z.infer<typeof attendanceEventDetailSchema>
+
 export interface MonthlyQuery {
   month: number
   year: number

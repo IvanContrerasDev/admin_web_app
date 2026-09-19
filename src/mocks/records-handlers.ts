@@ -1,7 +1,13 @@
 import { ServiceError } from '../services/service-error'
 import { MockServiceAdapter } from '../services/mock-service-adapter'
 import type { ServiceRequest } from '../services/service-adapter'
-import type { MonthlyDay, MonthlyQuery, MonthlyRow } from '../types/records'
+import type {
+  AttendanceEventDetail,
+  MonthlyDay,
+  MonthlyQuery,
+  MonthlyRow,
+  RecordDetail,
+} from '../types/records'
 import { ORGANIZATION_SITES } from './organization-handlers'
 
 const clients = [
@@ -45,6 +51,105 @@ function dateFor(year: number, month: number, day: number) {
 
 function recordId(rowIndex: number, day: number) {
   return `550e8400-e29b-41d4-a716-${String((rowIndex + 1) * 100 + day).padStart(12, '0')}`
+}
+
+type PresentDay = Extract<MonthlyDay, { state: 'PRESENT' }>
+
+interface RecordContext {
+  row: MonthlyRow
+  day: PresentDay
+}
+
+function intervalId(recordIdentifier: string, index: number) {
+  const value = Number(recordIdentifier.slice(-12)) * 10 + index + 1
+  return `770e8400-e29b-41d4-a716-${String(value).padStart(12, '0')}`
+}
+
+function eventId(recordIdentifier: string, index: number) {
+  const value = Number(recordIdentifier.slice(-12)) * 100 + index + 1
+  return `660e8400-e29b-41d4-a716-${String(value).padStart(12, '0')}`
+}
+
+function timestamp(date: string, utcHour: number, minutes = 0) {
+  return `${date}T${String(utcHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00.000Z`
+}
+
+function createRecordDetail(context: RecordContext, eventDetails: Map<string, AttendanceEventDetail>): RecordDetail {
+  const { day, row } = context
+  const summary = day.record
+  let eventIndex = 0
+  const intervals = Array.from({ length: summary.intervalCount }, (_, index) => {
+    const id = intervalId(summary.id, index)
+    const isAbsence = summary.hasAbsence
+    const startTime = isAbsence ? null : timestamp(day.date, index === 0 ? 12 : 17)
+    const missingEnd = summary.recordStatus === 'INCOMPLETE' && index === summary.intervalCount - 1
+    const endTime = isAbsence || missingEnd ? null : timestamp(day.date, index === 0 ? 16 : 21)
+    const attendanceEvents = summary.origin === 'MANUAL'
+      ? []
+      : isAbsence
+        ? [{ id: eventId(summary.id, eventIndex++), type: 'ABSENCE' as const, occurredAt: timestamp(day.date, 12) }]
+        : [
+            { id: eventId(summary.id, eventIndex++), type: 'CHECK_IN' as const, occurredAt: startTime! },
+            ...(endTime ? [{ id: eventId(summary.id, eventIndex++), type: 'CHECK_OUT' as const, occurredAt: endTime }] : []),
+          ]
+
+    for (const event of attendanceEvents) {
+      eventDetails.set(event.id, {
+        id: event.id,
+        recordId: summary.id,
+        intervalId: id,
+        type: event.type,
+        occurredAt: event.occurredAt,
+        receivedAt: new Date(new Date(event.occurredAt).getTime() + 28_000).toISOString(),
+        origin: 'MOBILE',
+        observation: event.type === 'ABSENCE' ? 'Aviso informado desde la aplicación.' : null,
+        location: {
+          latitude: -31.5375 + index * 0.0003,
+          longitude: -68.5364 - index * 0.0002,
+          accuracyMeters: 8.4 + index * 3.2,
+          capturedAt: event.occurredAt,
+        },
+        metadata: {
+          devicePlatform: 'Android',
+          appVersion: '2.8.1',
+          offline: false,
+          geofenceDistanceMeters: 42 + index * 7,
+        },
+      })
+    }
+
+    return {
+      id,
+      type: isAbsence ? 'ABSENCE' as const : 'WORK' as const,
+      status: isAbsence || endTime ? 'CLOSED' as const : 'OPEN' as const,
+      startTime,
+      endTime,
+      absenceReason: isAbsence && Number(summary.id.slice(-2)) % 2 === 0 ? 'ILLNESS' as const : null,
+      observations: isAbsence ? 'Ausencia registrada por el empleado.' : null,
+      origin: summary.origin,
+      reviewStatus: summary.reviewStatus,
+      attendanceEvents,
+    }
+  })
+
+  return {
+    id: summary.id,
+    date: day.date,
+    employee: row.employee,
+    workplace: row.workplace,
+    client: row.client,
+    site: row.site,
+    totalWorkMinutes: summary.totalWorkMinutes,
+    recordStatus: summary.recordStatus,
+    reviewStatus: summary.reviewStatus,
+    origin: summary.origin,
+    hasAbsence: summary.hasAbsence,
+    observations: summary.reviewStatus === 'REJECTED' ? 'Revisar la consistencia de las marcaciones.' : null,
+    version: 1 + Number(summary.id.slice(-2)) % 4,
+    intervals,
+    createdAt: timestamp(day.date, 11, 55),
+    updatedAt: timestamp(day.date, 21, 5),
+  }
 }
 
 function createDays(rowIndex: number, year: number, month: number): MonthlyDay[] {
@@ -128,6 +233,9 @@ function snapshotFor(query: MonthlyQuery) {
 }
 
 export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () => Date = () => new Date()) {
+  const recordContexts = new Map<string, RecordContext>()
+  const eventDetails = new Map<string, AttendanceEventDetail>()
+
   adapter.register('GET', '/records/monthly', (request: ServiceRequest) => {
     const query: MonthlyQuery = {
       year: parseInteger(request.query?.year, 0),
@@ -151,6 +259,11 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
     if (query.snapshotToken && query.snapshotToken !== expectedSnapshot) throw apiError('MONTHLY_SNAPSHOT_MISMATCH', 'Los filtros ya no coinciden con la consulta mensual.', 400)
 
     const rows = createRows(query.year, query.month, query)
+    for (const row of rows) {
+      for (const day of row.days) {
+        if (day.state === 'PRESENT') recordContexts.set(day.record.id, { row, day })
+      }
+    }
     const page = query.page ?? 1
     const pageSize = query.pageSize ?? 50
     const totalItems = rows.length
@@ -173,5 +286,19 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
         totals,
       },
     }
+  })
+
+  adapter.registerPattern('GET', /^\/records\/[0-9a-f-]{36}$/i, (request) => {
+    const recordIdentifier = request.path.split('/').at(-1) ?? ''
+    const context = recordContexts.get(recordIdentifier)
+    if (!context) throw apiError('RECORD_NOT_FOUND', 'El registro solicitado no existe o ya no está disponible.', 404)
+    return { data: createRecordDetail(context, eventDetails) }
+  })
+
+  adapter.registerPattern('GET', /^\/attendance-events\/[0-9a-f-]{36}$/i, (request) => {
+    const eventIdentifier = request.path.split('/').at(-1) ?? ''
+    const detail = eventDetails.get(eventIdentifier)
+    if (!detail) throw apiError('ATTENDANCE_EVENT_NOT_FOUND', 'El evento de marcación solicitado no existe.', 404)
+    return { data: detail }
   })
 }

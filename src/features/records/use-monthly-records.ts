@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
 import { organizationService, recordsService, userService } from '../../services/services'
 import type { MonthlyQuery } from '../../types/records'
 
@@ -25,6 +25,24 @@ export function useMonthlyRecords(filters: Omit<MonthlyQuery, 'page' | 'pageSize
       }
     },
     enabled,
+  })
+}
+
+export function useRecordDetail(recordId: string) {
+  return useQuery({
+    queryKey: ['records', 'detail', recordId],
+    queryFn: ({ signal }) => recordsService.getDetail(recordId, signal),
+  })
+}
+
+export function useAttendanceEventDetails(eventIds: string[], enabled: boolean) {
+  return useQueries({
+    queries: eventIds.map((eventId) => ({
+      queryKey: ['attendance-events', 'detail', eventId],
+      queryFn: ({ signal }: { signal: AbortSignal }) => recordsService.getAttendanceEventDetail(eventId, signal),
+      enabled,
+      staleTime: 5 * 60 * 1000,
+    })),
   })
 }
 

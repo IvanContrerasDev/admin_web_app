@@ -43,4 +43,27 @@ describe('RecordsService', () => {
     expect(response.data.every((row) => row.days.length === 30)).toBe(true)
     expect(response.data.some((row) => row.days.some((day) => day.state === 'PRESENT' && !day.matchesFilters))).toBe(true)
   })
+
+  it('loads a record detail and then each automatic event on demand', async () => {
+    const service = setup()
+    const monthly = await service.listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID })
+    const presentDay = monthly.data[0]!.days.find((day) => day.state === 'PRESENT')
+
+    expect(presentDay?.state).toBe('PRESENT')
+    if (!presentDay || presentDay.state !== 'PRESENT') return
+
+    const detail = await service.getDetail(presentDay.record.id)
+    const event = detail.intervals.flatMap((interval) => interval.attendanceEvents)[0]
+
+    expect(detail).toMatchObject({ id: presentDay.record.id, employee: monthly.data[0]!.employee })
+    expect(detail.intervals).toHaveLength(presentDay.record.intervalCount)
+    expect(event).toBeDefined()
+    if (!event) return
+
+    await expect(service.getAttendanceEventDetail(event.id)).resolves.toMatchObject({
+      id: event.id,
+      recordId: detail.id,
+      location: { accuracyMeters: expect.any(Number) },
+    })
+  })
 })
