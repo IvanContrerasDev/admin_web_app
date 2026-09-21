@@ -6,6 +6,7 @@ import { ServiceError } from '../../services/service-error'
 import { DOCUMENT_TYPE_LABELS, documentTypeSchema, type DocumentListItem, type DocumentType } from '../../types/documents'
 import { fieldClass, labelClass } from '../organization/organization-ui'
 import { formatFileSize } from '../timesheets/use-timesheets'
+import { useToast } from '../toasts/use-toast'
 
 interface DocumentDetailDialogProps {
   document: DocumentListItem
@@ -24,6 +25,7 @@ export function DocumentDetailDialog({ document, onClose, onDeleted }: DocumentD
   const [fileName, setFileName] = useState(document.fileName)
   const [type, setType] = useState<DocumentType>(document.type)
   const [confirmingDeletion, setConfirmingDeletion] = useState(false)
+  const toast = useToast()
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -41,6 +43,10 @@ export function DocumentDetailDialog({ document, onClose, onDeleted }: DocumentD
       setFileName(updated.fileName)
       setType(updated.type)
       refresh()
+      toast.success('Los cambios se guardaron correctamente.')
+    },
+    onError: () => {
+      toast.error('No pudimos guardar los cambios. Intentá nuevamente.')
     },
   })
 

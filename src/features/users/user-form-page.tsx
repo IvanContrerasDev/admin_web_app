@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ServiceError } from '../../services/service-error'
 import { userService } from '../../services/services'
 import type { CreateUserInput, UpdateUserInput, UserDetail } from '../../types/users'
+import { useToast } from '../toasts/use-toast'
 
 const fieldClass = 'min-h-11 rounded-md border border-foreground/25 bg-background px-3 text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 const labelClass = 'flex flex-col gap-2 font-semibold'
@@ -20,6 +21,7 @@ export function UserFormPage() {
   const [dirty, setDirty] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState('')
+  const toast = useToast()
 
   const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: ({ signal }) => userService.listSites(signal) })
   const userQuery = useQuery({ queryKey: ['user', userId], queryFn: ({ signal }) => userService.get(userId!, signal), enabled: editing })
@@ -36,6 +38,7 @@ export function UserFormPage() {
       setDirty(false)
       queryClient.setQueryData(['user', user.id], user)
       await queryClient.invalidateQueries({ queryKey: ['users'] })
+      toast.success(editing ? 'Los cambios se guardaron correctamente.' : 'El empleado se creó correctamente.')
       navigate(`/usuarios/${user.id}`, { replace: true })
     },
     onError: (error) => {
@@ -45,6 +48,7 @@ export function UserFormPage() {
       else if (code === 'USER_EMPLOYEE_ID_ALREADY_EXISTS') setFieldErrors({ employeeId: 'Ese legajo ya pertenece a otro empleado.' })
       else if (code === 'WEAK_PASSWORD') setFormError('La contraseña inicial debe tener entre 12 y 128 caracteres.')
       else setFormError(error instanceof Error ? error.message : 'No pudimos guardar el empleado. Revisá los datos y volvé a intentarlo.')
+      toast.error('No pudimos guardar los cambios. Revisá los datos e intentá nuevamente.')
     },
   })
 

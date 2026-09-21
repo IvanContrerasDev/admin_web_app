@@ -126,10 +126,17 @@ export function createAppRouter() {
               },
             },
             {
-              path: 'legajos',
+              path: 'documentos',
               lazy: async () => {
                 const { DocumentsPage } = await import('../features/documents/documents-page')
                 return { Component: DocumentsPage }
+              },
+            },
+            {
+              path: 'usuarios/:userId/legajo',
+              lazy: async () => {
+                const { EmployeeDocumentsPage } = await import('../features/documents/employee-documents-page')
+                return { Component: EmployeeDocumentsPage }
               },
             },
             { path: '*', element: <NotFoundPage /> },

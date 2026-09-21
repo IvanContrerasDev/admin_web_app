@@ -7,7 +7,7 @@ export const labelClass = 'flex flex-col gap-2 font-semibold'
 
 export function StatusBadge({ status }: { status: EntityStatus }) {
   const active = status === 'ACTIVE'
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-sm font-semibold ${active ? 'bg-secondary/15 text-secondary' : 'bg-foreground/10 text-foreground/65'}`}><span className="sr-only">Estado: </span>{active ? 'Activo' : 'Inactivo'}</span>
+  return <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${active ? 'bg-secondary/15 text-secondary' : 'bg-foreground/10 text-foreground/65'}`}><span className="sr-only">Estado: </span>{active ? 'Activo' : 'Inactivo'}</span>
 }
 
 interface QueryStateProps {
