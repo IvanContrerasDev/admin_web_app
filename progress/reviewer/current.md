@@ -1,20 +1,15 @@
 # Cola actual — reviewer admin_web_app
 
-Fecha: 2026-09-17
+Fecha: 2026-09-22
 
 ## Revisiones pendientes
 
-### F-003 — Autenticación + navegación
+Ninguna. La ronda independiente del 2026-09-22 cerró F-003, F-005, F-006, F-007, F-008 y F-009 como aprobadas y F-004 como cambios requeridos (fixes en F-011).
 
-- Incremento A entregado y validado.
-- Revisar `docs/tasks/003-autenticacion-navegacion.md`.
-- Veredicto independiente pendiente porque `kimi --agent reviewer` no está disponible.
+## Próximas revisiones (cuando el implementer las entregue)
 
-### F-004 — Gestión de empleados
-
-- Contrato P-06 ratificado.
-- Listado, filtros, alta, edición, detalle y estado implementados mock-first.
-- Typecheck, 25 pruebas, build y navegador real validados.
-- Revisar `docs/tasks/004-gestion-empleados.md` y `docs/changes_proposals/20260917-p06-contrato-empleados.md`.
+- F-011 — correcciones de F-004 (bloqueantes + menores).
+- F-012 — propuestas de contrato pre-integración (documental).
+- F-013 — correcciones menores consolidadas.
 
 No aprobar por ausencia de reviewer ni sustituir independencia con auto-revisión del implementador.

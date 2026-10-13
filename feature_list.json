@@ -27,87 +27,122 @@
     {
       "id": "F-003",
       "title": "Autenticación y navegación administrativa",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": ["F-002"],
       "contract_dependencies": ["P-02", "P-03", "P-04"],
       "task_spec": "docs/tasks/003-autenticacion-navegacion.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "review_status": "pending_independent_review",
-      "notes": "Incremento A implementado y validado; revisión independiente pendiente. Los subflujos sin contrato materializado permanecen excluidos."
+      "review_status": "approved",
+      "notes": "Revisión independiente 2026-09-22: APROBADO (incremento A completo, 8 criterios cumplidos, verificación 4/4 en verde). Hallazgos menores (logout sin catch, safeReturnTo con barra invertida, tests SUPER_ADMIN, TTL 2FA hardcodeado) trackeados en F-013."
     },
     {
       "id": "F-004",
       "title": "Gestión de empleados",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": ["F-003"],
       "contract_dependencies": ["P-04", "P-06"],
       "task_spec": "docs/tasks/004-gestion-empleados.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "review_status": "pending_independent_review",
-      "notes": "P-06 ratificada. Listado, filtros, alta, edición, detalle y estado implementados mock-first; revisión independiente pendiente."
+      "review_status": "changes_required",
+      "notes": "Revisión independiente 2026-09-22: CAMBIOS REQUERIDOS — 2 bloqueantes confirmados en el árbol actual (deep links userId→employeeId rotos; tabla sin DNI ni teléfono, spec §11.2) más menores (form sin RHF/zod, fecha hardcodeada, sin toasts). Correcciones trackeadas en F-011, dependencia de F-010; la feature de implementación inicial se cierra y el fix se toma como feature nueva."
     },
     {
       "id": "F-005",
       "title": "Clientes, provincias y lugares de trabajo",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": ["F-003", "F-004"],
       "contract_dependencies": ["P-04", "P-05", "P-07"],
       "task_spec": "docs/tasks/005-clientes-lugares.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "review_status": "pending_independent_review",
-      "notes": "P-07 ratificada. Clientes, provincias y lugares implementados; Google Maps validado por el humano en dominio autorizado el 2026-09-18 sin cambios de contrato backend; revisión independiente pendiente."
+      "review_status": "approved",
+      "notes": "Revisión independiente 2026-09-22: APROBADO (12 criterios cumplidos; Google Maps conforme a la decisión humana 2026-09-18). Hallazgos menores (invalidación de workplaces al mutar cliente, código de error genérico del mock, VITE_GOOGLE_MAPS_API_KEY sin documentar) trackeados en F-013."
     },
     {
       "id": "F-006",
       "title": "Matriz mensual y edición/revisión de registros",
-      "status": "pending",
+      "status": "done",
       "dependencies": ["F-004", "F-005"],
       "contract_dependencies": ["P-01", "P-04"],
-      "task_spec": null,
-      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md"
+      "task_spec": "docs/tasks/006-matriz-mensual-registros.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "approved",
+      "notes": "Revisión independiente 2026-09-22: APROBADO (matriz, detalle bajo demanda, alta/corrección con versión, aprobación pura y DELETE de intervalos conforme a la enmienda ratificada). Se corrige la inconsistencia de tracking (figuraba pending con task_spec null pese a estar implementada). Hallazgos menores (snapshot sin caducidad en mock, WORK OPEN histórico, injerto de registros runtime, total redondeado) trackeados en F-013."
     },
     {
       "id": "F-007",
       "title": "Planillas",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": ["F-004", "F-005", "F-006"],
       "contract_dependencies": ["P-04"],
       "task_spec": "docs/tasks/007-planillas.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "review_status": "pending_independent_review",
-      "notes": "Listado con filtros (empleado/lugar/período/estado), carga multi-archivo con validación de formato y tamaño, detalle con cambio de estado, reemplazo de archivo y descarga con enlace firmado simulado. Implementado mock-first; revisión independiente pendiente."
+      "review_status": "approved",
+      "notes": "Revisión independiente 2026-09-22: APROBADO (spec §39 y decisión 11.E verificadas). Hallazgos menores (selects de filtro fuera del Form, detalle por página actual, revokeObjectURL) trackeados en F-013; la propuesta de contrato referenciada e inexistente se crea en F-012."
     },
     {
       "id": "F-008",
       "title": "Legajos digitales",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": ["F-004", "F-007"],
       "contract_dependencies": ["P-04"],
       "task_spec": "docs/tasks/008-legajos-digitales.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "review_status": "pending_independent_review",
-      "notes": "Listado con filtros (búsqueda/tipo/empleado/cargado por/rango de fechas), carga con validación, detalle con edición de nombre y tipo, eliminación con confirmación y descarga simulada. Implementado mock-first; revisión independiente pendiente."
+      "review_status": "approved",
+      "notes": "Revisión independiente 2026-09-22: CAMBIOS REQUERIDOS condicionado al gate de typecheck; el bloqueante reportado venía del commit 054af7f (renombre Legajos→Documentos) que ya no está en el árbol (HEAD 4d20511 pasa typecheck/lint/62 tests/build), por lo que la condición de aprobación se cumple en el estado vigente. Hallazgos menores (detalle por página actual, filtro de fechas UTC vs GMT-3) trackeados en F-013; expiresAt de descarga y referencia rota a propuesta se resuelven en F-012."
     },
     {
       "id": "F-009",
       "title": "Inicio operativo",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": ["F-006", "F-007", "F-008"],
       "contract_dependencies": ["P-04"],
       "task_spec": "docs/tasks/009-inicio-operativo.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "approved",
+      "notes": "Revisión independiente 2026-09-22: APROBADO (métricas por mes, enlaces con query params consumidos de verdad, semántica de contadores conforme a 11.F). Hallazgos menores (invalidación de ['dashboard'] en mutaciones de registros, mes inicial en URL) trackeados en F-013; DTO de métricas y coherencia siteId se elevan en F-012."
+    },
+    {
+      "id": "F-011",
+      "title": "Correcciones de revisión: gestión de empleados (F-004)",
+      "status": "pending",
+      "dependencies": ["F-004"],
+      "contract_dependencies": ["P-06"],
+      "task_spec": "docs/tasks/011-correcciones-f004-empleados.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
       "review_status": "pending_independent_review",
-      "notes": "Dashboard con selector de mes y 4 tarjetas de métricas (planillas pendientes, registros incompletos, pendientes de validación, registros con ausencia) que enlazan a las vistas filtradas del mismo período. Sin páginas locales nuevas. Implementado mock-first; revisión independiente pendiente."
+      "notes": "Corrige los 2 bloqueantes (deep links userId→employeeId; tabla sin DNI/teléfono) y los menores de la revisión de F-004. Debe cerrarse antes de F-010."
+    },
+    {
+      "id": "F-012",
+      "title": "Propuestas de contrato pendientes pre-integración (planillas, documentos, métricas)",
+      "status": "pending",
+      "dependencies": ["F-007", "F-008", "F-009"],
+      "contract_dependencies": ["P-04"],
+      "task_spec": "docs/tasks/012-propuestas-contrato-pre-f010.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "pending_independent_review",
+      "notes": "Crea la propuesta referenciada e inexistente 20260919-f007-f009 (DTOs de planillas/documentos/métricas, expiresAt de descarga, coherencia siteId) y la eleva al humano; corrige referencias rotas en task specs 007/008/009. Requerida por F-010 (contratos ratificados)."
+    },
+    {
+      "id": "F-013",
+      "title": "Correcciones menores de la revisión independiente (F-003, F-005, F-006, F-007, F-008, F-009)",
+      "status": "pending",
+      "dependencies": ["F-003", "F-005", "F-006", "F-007", "F-008", "F-009"],
+      "contract_dependencies": ["P-02", "P-07"],
+      "task_spec": "docs/tasks/013-correcciones-menores-revision.md",
+      "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
+      "review_status": "pending_independent_review",
+      "notes": "17 ítems menores consolidados de las revisiones del 2026-09-22. Excluye decisiones del humano (skeletons §50, naming de módulos, min-h-9) y deudas de performance (chunk >500 kB)."
     },
     {
       "id": "F-010",
       "title": "Integración real y validación del MVP",
       "status": "pending",
-      "dependencies": ["F-002", "F-003", "F-004", "F-005", "F-006", "F-007", "F-008", "F-009"],
+      "dependencies": ["F-002", "F-003", "F-004", "F-005", "F-006", "F-007", "F-008", "F-009", "F-011", "F-012", "F-013"],
       "contract_dependencies": ["P-01", "P-02", "P-03", "P-04", "P-05"],
       "task_spec": null,
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
-      "notes": "Requiere contratos ratificados y propagados, backend de prueba disponible, orígenes y mapa configurados."
+      "notes": "Requiere contratos ratificados y propagados (incl. F-012), correcciones de revisión cerradas (F-011, F-013), backend de prueba disponible, orígenes y mapa configurados."
     }
   ]
 }

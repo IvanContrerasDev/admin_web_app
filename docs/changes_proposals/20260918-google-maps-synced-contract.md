@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-09-18  
 **Origen:** admin_web_app / decisión humana  
-**Estado:** pendiente de propagación por orchestrator  
+**Estado:** aplicada en template y sincronizada el 2026-10-12; implementación/configuración local de Admin sigue sujeta a F-010
 **Archivo común afectado:** `docs/arquitectura/contratos-api.md` (`SYNCED-FROM-TEMPLATE`)
 
 ## Reemplazo solicitado

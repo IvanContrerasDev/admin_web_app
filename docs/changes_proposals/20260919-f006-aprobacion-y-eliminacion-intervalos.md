@@ -2,7 +2,7 @@
 
 **Fecha:** 2026-09-19
 
-**Estado:** ratificado por el humano; implementación mock-first aplicada; propagación por orchestrator y backend pendiente.
+**Estado:** ratificado por el humano; implementación mock-first aplicada; propagado al template y sincronizado el 2026-10-12; materialización backend pendiente.
 
 **Apps afectadas:** admin, backend y cualquier consumidor de estados de revisión.
 
