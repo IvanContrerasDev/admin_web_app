@@ -75,20 +75,6 @@ a {
   }
 }
 
-.auth-welcome-panel {
-  background-color: var(--color-primary);
-  background-image: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 65%, transparent) 0%, color-mix(in srgb, var(--color-primary) 15%, transparent) 35%, color-mix(in srgb, var(--color-primary) 95%, transparent) 75%, var(--color-primary) 100%), url('/images/bienvenida-servicios.png');
-  background-repeat: no-repeat;
-  background-position: center, center top;
-  background-size: cover;
-}
-
-@media (max-width: 1023px) {
-  .auth-welcome-panel {
-    background-position: center, center 30%;
-  }
-}
-
 .skip-link {
   position: fixed;
   top: 0.75rem;
