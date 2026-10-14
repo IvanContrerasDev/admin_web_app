@@ -1,4 +1,4 @@
-import type { UIEvent, WheelEvent } from 'react'
+import { useState, type UIEvent, type WheelEvent } from 'react'
 import { LoadingSkeleton } from '../../app/loading-skeleton'
 import type { MonthlyDay, MonthlyRow } from '../../types/records'
 
@@ -52,6 +52,8 @@ function cellClass(day: MonthlyDay) {
 }
 
 export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetchingNextPage, onEndReached, onRecordOpen, onEmptyCreate }: RecordsMatrixProps) {
+  const [selectedCell, setSelectedCell] = useState<string | null>(null)
+
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     const element = event.currentTarget
     if (element.scrollHeight - element.scrollTop - element.clientHeight < 160 && hasNextPage && !isFetchingNextPage) onEndReached()
@@ -94,19 +96,26 @@ export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetching
               </th>
               {row.days.map((day) => {
                 const state = cellState(day)
+                const cellId = `${row.employee.id}-${row.workplace.id}-${day.date}`
+                const isSelected = selectedCell === cellId
+                const selectionClass = isSelected ? 'bg-primary/15 outline-2 -outline-offset-2 outline-primary' : 'hover:bg-primary/10'
                 const detail = day.state === 'PRESENT' && !day.matchesFilters ? ' No coincide con los filtros de estado, pero se conserva para evitar duplicados.' : ''
                 return (
                   <td className={`h-12 w-14 min-w-14 border-b border-r border-foreground/15 p-0 text-center tabular-nums ${cellClass(day)} ${day.state === 'PRESENT' && !day.matchesFilters ? 'opacity-45' : ''}`} key={day.date}>
                     {day.state === 'PRESENT' ? (
                       <button
                         aria-label={`${day.date}: ${state.label}. Abrir detalle del registro`}
-                        className="size-full min-h-12 cursor-pointer px-1 transition-colors duration-150 hover:bg-primary/10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-                        title={`${state.label}${detail}. Doble clic o Enter para abrir el detalle.`}
+                        aria-pressed={isSelected}
+                        className={`size-full min-h-12 cursor-pointer px-1 transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${selectionClass}`}
+                        title={`${state.label}${detail}. Un clic para seleccionar. Doble clic o Enter para abrir el detalle.`}
                         type="button"
+                        onClick={() => setSelectedCell(cellId)}
                         onDoubleClick={() => onRecordOpen(day.record.id)}
                         onKeyDown={(event) => {
+                          if (event.nativeEvent.isComposing || event.keyCode === 229) return
                           if (event.key !== 'Enter' && event.key !== ' ') return
                           event.preventDefault()
+                          setSelectedCell(cellId)
                           onRecordOpen(day.record.id)
                         }}
                       >
@@ -116,10 +125,19 @@ export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetching
                     ) : (
                       <button
                         aria-label={`${day.date}: sin registro confirmado. Crear registro manual`}
-                        className="size-full min-h-12 px-1 font-semibold text-foreground/45 transition-colors duration-150 hover:bg-primary/10 hover:text-primary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
-                        title="Sin registro confirmado. Crear registro manual."
+                        aria-pressed={isSelected}
+                        className={`size-full min-h-12 cursor-pointer px-1 font-semibold transition-colors duration-150 hover:text-primary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${isSelected ? 'text-primary' : 'text-foreground/45'} ${selectionClass}`}
+                        title="Sin registro confirmado. Un clic para seleccionar. Doble clic o Enter para crear un registro manual."
                         type="button"
-                        onClick={() => onEmptyCreate(row.employee.id, row.workplace.id, day.date)}
+                        onClick={() => setSelectedCell(cellId)}
+                        onDoubleClick={() => onEmptyCreate(row.employee.id, row.workplace.id, day.date)}
+                        onKeyDown={(event) => {
+                          if (event.nativeEvent.isComposing || event.keyCode === 229) return
+                          if (event.key !== 'Enter' && event.key !== ' ') return
+                          event.preventDefault()
+                          setSelectedCell(cellId)
+                          onEmptyCreate(row.employee.id, row.workplace.id, day.date)
+                        }}
                       >{state.value}</button>
                     )}
                   </td>
