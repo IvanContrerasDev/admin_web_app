@@ -6,6 +6,23 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, registration = false }: AuthLayoutProps) {
+  if (!registration) {
+    return (
+      <main id="main-content" className="flex min-h-dvh flex-col bg-background text-foreground lg:flex-row">
+        <section aria-label="GdeS Grupo de Servicios — Administración" className="auth-welcome-panel min-h-80 shrink-0 lg:min-h-dvh lg:w-[38%]">
+          <div className="sr-only">
+            <p>GdeS Grupo de Servicios — Administración</p>
+            <p>Servicios Estratégicos de Limpieza y Mantenimiento.</p>
+            <p>Entorno de desarrollo con servicios mock</p>
+          </div>
+        </section>
+        <section aria-label="Ingreso a Administración" className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
+          <div className="w-full max-w-md">{children}</div>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main id="main-content" className="grid min-h-dvh bg-background lg:grid-cols-[minmax(20rem,0.9fr)_minmax(32rem,1.1fr)]">
       <section className="flex min-h-64 flex-col justify-between gap-8 bg-primary px-6 py-8 text-background sm:px-10 lg:min-h-dvh lg:px-12 lg:py-12">

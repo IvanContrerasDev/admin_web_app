@@ -75,6 +75,22 @@ a {
   }
 }
 
+.auth-welcome-panel {
+  background-color: var(--color-primary);
+  background-image: url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/imagen_modelo-fEYj2RCPBPPmVhp2ym7mvCqKAZqVgW.jpeg');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 264.4% 100%;
+}
+
+@media (max-width: 1023px) {
+  .auth-welcome-panel {
+    min-height: 14rem;
+    background-position: left top;
+    background-size: 264.4% auto;
+  }
+}
+
 .skip-link {
   position: fixed;
   top: 0.75rem;

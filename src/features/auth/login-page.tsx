@@ -59,10 +59,10 @@ function LoginForm() {
   })
 
   return (
-    <form className="flex flex-col gap-5" onSubmit={onSubmit} noValidate>
+    <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
       <div>
-        <h1 className="text-balance font-sans text-3xl font-semibold tracking-tight text-foreground">Ingresá a Administración</h1>
-        <p className="mt-2 max-w-md text-pretty font-sans text-base leading-relaxed text-foreground/70">
+        <h1 className="text-balance font-sans text-2xl font-bold tracking-tight text-foreground">Ingresar</h1>
+        <p className="mt-2 max-w-md text-pretty font-sans text-sm leading-relaxed text-foreground/70">
           Revisá registros, equipos y documentación operativa desde un único lugar.
         </p>
       </div>
@@ -87,7 +87,7 @@ function LoginForm() {
           type="email"
           autoComplete="username"
           spellCheck={false}
-          className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 py-2 font-sans text-base text-foreground shadow-sm transition-colors duration-150 placeholder:text-foreground/45 hover:border-foreground/50 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="min-h-10 rounded-md border border-foreground/25 bg-background px-3 py-2 font-sans text-sm text-foreground transition-colors duration-150 placeholder:text-foreground/45 hover:border-foreground/50 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           placeholder="nombre@empresa.com…"
           aria-invalid={Boolean(errors.identifier)}
           aria-describedby={errors.identifier ? 'identifier-error' : undefined}
@@ -102,7 +102,7 @@ function LoginForm() {
           id="password"
           type="password"
           autoComplete="current-password"
-          className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 py-2 font-sans text-base text-foreground shadow-sm transition-colors duration-150 hover:border-foreground/50 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="min-h-10 rounded-md border border-foreground/25 bg-background px-3 py-2 font-sans text-sm text-foreground transition-colors duration-150 hover:border-foreground/50 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-invalid={Boolean(errors.password)}
           aria-describedby={errors.password ? 'password-error' : undefined}
           {...register('password')}
@@ -115,18 +115,14 @@ function LoginForm() {
         Recordar sesión en este dispositivo
       </label>
 
-      <button type="submit" disabled={isSubmitting} className="min-h-11 rounded-md bg-primary px-4 py-3 font-sans text-base font-semibold text-background transition-colors duration-150 hover:bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-70">
+      <button type="submit" disabled={isSubmitting} className="min-h-10 rounded-md bg-primary px-4 py-2 font-sans text-sm font-semibold text-background transition-colors duration-150 hover:bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-70">
         {isSubmitting ? 'Validando acceso…' : 'Continuar con código'}
       </button>
-
-      <div className="flex flex-col gap-3 border-t border-foreground/15 pt-5">
-        <p className="text-center text-sm text-foreground/70">¿Todavía no tenés acceso administrativo?</p>
-        <Link to="/registro" className="flex min-h-11 items-center justify-center rounded-md border border-primary px-4 py-3 text-center font-sans text-base font-semibold text-primary transition-colors hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Crear cuenta o registrarse</Link>
-      </div>
 
       <p className="text-center text-sm text-foreground/65">
         La recuperación de contraseña se habilitará cuando el backend publique el contrato administrativo definitivo.
       </p>
+      <Link to="/registro" className="self-center rounded-sm font-sans text-sm font-medium text-primary underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Crear cuenta o registrarse</Link>
     </form>
   )
 }

@@ -38,7 +38,7 @@ describe('Administrative registration screen', () => {
     expect(screen.getByText(/requiere la aprobación del SuperAdmin/)).toBeInTheDocument()
     expect(screen.getByLabelText('Provincia')).toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Iniciar sesión' }))
-    expect(await screen.findByRole('heading', { name: 'Ingresá a Administración' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Ingresar' })).toBeInTheDocument()
   })
 
   it('focuses the first invalid field and links accessible errors', async () => {

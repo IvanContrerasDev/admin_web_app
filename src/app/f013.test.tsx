@@ -127,7 +127,7 @@ describe('F-013 interface regressions', () => {
     const expiresAt = '2026-10-13T17:23:00.000Z'
     vi.spyOn(authService, 'login').mockResolvedValue({ challengeId: 'challenge', expiresAt, message: 'Revisá tu email.' })
     renderPage('/login')
-    await screen.findByRole('heading', { name: 'Ingresá a Administración' })
+    await screen.findByRole('heading', { name: 'Ingresar' })
     await user.type(screen.getByLabelText('Email'), 'admin@example.test')
     await user.type(screen.getByLabelText('Contraseña'), 'test password')
     await user.click(screen.getByRole('button', { name: 'Continuar con código' }))
