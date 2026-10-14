@@ -1,3 +1,4 @@
+import { hasManualIntervalOverlap } from '../lib/record-interval-validation'
 import { ServiceError } from '../services/service-error'
 import { MockServiceAdapter } from '../services/mock-service-adapter'
 import type { ServiceRequest } from '../services/service-adapter'
@@ -164,11 +165,12 @@ function intervalStatus(interval: Pick<RecordIntervalInput, 'startTime' | 'endTi
   return 'CLOSED' as const
 }
 
-function validateManualIntervals(intervals: RecordIntervalInput[], requireWorkBounds = true) {
+function validateManualIntervals(intervals: RecordIntervalInput[], historicalIntervals: ReadonlySet<RecordIntervalInput> = new Set()) {
   if (intervals.length === 0) throw apiError('RECORD_INTERVALS_REQUIRED', 'Agregá al menos un intervalo.', 422)
 
   for (const interval of intervals) {
-    if (requireWorkBounds && interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) {
+    if (historicalIntervals.has(interval)) continue
+    if (interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) {
       throw apiError('WORK_INTERVAL_REQUIRES_BOUNDS', 'Los intervalos de trabajo manuales requieren entrada y salida.', 422)
     }
     if (interval.startTime && interval.endTime && new Date(interval.endTime).getTime() <= new Date(interval.startTime).getTime()) {
@@ -176,12 +178,7 @@ function validateManualIntervals(intervals: RecordIntervalInput[], requireWorkBo
     }
   }
 
-  const bounded = intervals
-    .filter((interval) => interval.startTime && interval.endTime)
-    .map((interval) => ({ start: new Date(interval.startTime!).getTime(), end: new Date(interval.endTime!).getTime() }))
-    .sort((left, right) => left.start - right.start)
-
-  if (bounded.some((interval, index) => index > 0 && interval.start < bounded[index - 1]!.end)) {
+  if (hasManualIntervalOverlap(intervals.map((interval) => ({ ...interval, changed: !historicalIntervals.has(interval) })))) {
     throw apiError('RECORD_INTERVALS_OVERLAP', 'Los intervalos manuales no pueden superponerse.', 422)
   }
 }
@@ -438,7 +435,7 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
       }
       nextIntervals[index] = toManualInterval(change.id, change.interval, nextIntervals[index])
     }
-    if (input.intervalChanges?.length) validateManualIntervals(nextIntervals, false)
+    if (input.intervalChanges?.length) validateManualIntervals(nextIntervals, new Set(current.intervals))
 
     const changed = Object.prototype.hasOwnProperty.call(input, 'observations') || Boolean(input.intervalChanges?.length)
     const next = recalculateRecord({

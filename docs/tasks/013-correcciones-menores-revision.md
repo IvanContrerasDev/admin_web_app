@@ -87,6 +87,22 @@ Son 17 ítems independientes y pequeños; conviene resolverlos en una sola pasad
 
 Se mantienen fuera de alcance todas las exclusiones originales, incluida la limitación aceptada del mock de métricas sobre cambios de registros runtime.
 
+## Autorrevisión e iteración — 2026-10-14
+
+Revisión solicitada por el humano sobre la implementación entregada. Sin modificaciones a contratos, dependencias ni archivos sincronizados.
+
+Hallazgos corregidos:
+- `src/features/records/records-page.tsx`: Reintentar solo reiniciaba registros, incluso cuando fallaba un catálogo. Ahora reconsulta los catálogos fallidos y reinicia el snapshot únicamente si la consulta mensual falló.
+- `src/features/records/records-page.tsx`: la matriz conservaba la carga automática de páginas tras un error, pudiendo volver a enviar el snapshot vencido. Se suspende hasta el reinicio explícito.
+- `src/features/records/record-editor-form.tsx` y `src/mocks/records-handlers.ts`: la validación global de solapamientos rechazaba pares históricos no tocados. Validación compartida en `src/lib/record-interval-validation.ts`: conserva pares históricos intactos, pero rechaza cualquier solapamiento que involucre un intervalo agregado/actualizado, incluidos intervalos anidados. Mantiene validaciones de extremos y al menos un intervalo.
+
+Evidencia nueva:
+- Typecheck y lint correctos; suite completa de 14 archivos y 140 tests correcta (+8 regresiones).
+- Build y `git diff --check` correctos. Permanece el warning conocido de chunk >500 kB reservado a F-010.
+- Navegador real Vite, 384×588, esquema dark solicitado (la app conserva su tema claro de MVP): login/2FA, matriz y total con minutos, apertura por teclado y guardado de observaciones sin alterar un WORK OPEN histórico; sin errores de página. Reintento de los cuatro catálogos y suspensión/reinicio de paginación caducada comprobados mediante tests de UI. El fallo de catálogo inducido en navegador se recuperó automáticamente antes de poder comprobar allí el botón; no se declara validación de ese botón en navegador.
+
+Pendientes de decisión humana fuera de F-010: skeletons transversales, nombres de navegación Clientes/Documentos frente a §45 y normalización de áreas de clic de 36 px. Se consultan sin introducir cambios globales de UX por iniciativa del agente.
+
 ## Review
 
-Pendiente de revisión independiente. No se declara aprobación del reviewer.
+Autorrevisión completada con correcciones. Sigue pendiente la revisión independiente del reviewer del harness; no se declara su aprobación.

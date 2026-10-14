@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, renderHook, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, renderHook, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { PropsWithChildren } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
@@ -213,6 +213,36 @@ describe('F-013 interface regressions', () => {
     expect(screen.getByRole('button', { name: 'Cerrar detalle' })).toBeInTheDocument()
   })
 
+  it.each(['sites', 'clients', 'workplaces', 'employees'] as const)('retries a failed %s catalog instead of only resetting monthly records', async (catalog) => {
+    const method = { sites: organizationService.listSites, clients: organizationService.listClients, workplaces: organizationService.listWorkplaces, employees: userService.list }[catalog]
+    vi.mocked(method).mockRejectedValueOnce(new Error('Offline'))
+    renderPage(`/registros?month=2026-09&siteId=${siteId}`)
+    expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar la matriz mensual')
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Reintentar' }))
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    expect(method).toHaveBeenCalledTimes(2)
+    expect(screen.getByRole('table')).toBeInTheDocument()
+  })
+
+  it('stops automatic pagination after snapshot expiration until the user restarts', async () => {
+    const monthly = await recordsService.listMonthly({ year: 2026, month: 9, siteId })
+    monthly.pagination.totalPages = 2
+    vi.mocked(recordsService.listMonthly).mockClear().mockImplementation(async (query) => {
+      if (query.page === 2) throw new ServiceError({ code: 'MONTHLY_SNAPSHOT_EXPIRED', message: 'Venció', kind: 'api', status: 410, retryable: false })
+      return monthly
+    })
+    renderPage(`/registros?month=2026-09&siteId=${siteId}`)
+    const table = await screen.findByRole('table')
+    fireEvent.scroll(table.parentElement!)
+    await screen.findByRole('alert')
+    expect(recordsService.listMonthly).toHaveBeenCalledTimes(2)
+    fireEvent.scroll(table.parentElement!)
+    expect(recordsService.listMonthly).toHaveBeenCalledTimes(2)
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Reintentar' }))
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    expect(recordsService.listMonthly).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, snapshotToken: undefined }), expect.any(AbortSignal))
+  })
+
   it('renders official total minutes as h:mm rather than rounded hours', async () => {
     const monthly = await recordsService.listMonthly({ year: 2026, month: 9, siteId })
     monthly.meta.totals.monthWorkMinutes = 151
@@ -248,6 +278,26 @@ describe('F-013 interface regressions', () => {
     await waitFor(() => expect(saved).toHaveBeenCalled())
     expect(recordsService.update).toHaveBeenCalledWith(detail.id, { expectedVersion: detail.version, observations: 'Aclaración administrativa' })
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['dashboard'] })
+  })
+
+  it('can add an untimed absence without rejecting overlapping untouched historical intervals', async () => {
+    const monthly = await recordsService.listMonthly({ year: 2026, month: 9, siteId })
+    const day = monthly.data.flatMap((row) => row.days).find((item) => item.state === 'PRESENT' && item.record.intervalCount === 2 && item.record.recordStatus === 'COMPLETE' && !item.record.hasAbsence)
+    if (!day || day.state !== 'PRESENT') throw new Error('Missing fixture')
+    const detail = await recordsService.getDetail(day.record.id)
+    detail.intervals[0]!.endTime = detail.intervals[1]!.endTime
+    vi.mocked(recordsService.update).mockResolvedValue(detail)
+    const saved = vi.fn()
+    render(<QueryClientProvider client={createClient()}><RecordEditorForm record={detail} initialDate={detail.date} employees={[]} workplaces={[]} onCancel={vi.fn()} onSaved={saved} /></QueryClientProvider>)
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Agregar intervalo' }))
+    await user.selectOptions(screen.getByLabelText('Tipo', { selector: 'select[name="interval-2-type"]' }), 'ABSENCE')
+    await user.click(screen.getByRole('button', { name: 'Guardar corrección' }))
+    await waitFor(() => expect(saved).toHaveBeenCalled())
+    expect(recordsService.update).toHaveBeenCalledWith(detail.id, {
+      expectedVersion: detail.version,
+      intervalChanges: [{ operation: 'ADD', interval: { type: 'ABSENCE', startTime: null, endTime: null, absenceReason: null, observations: null } }],
+    })
   })
 
   it('restarts an expired infinite query from page 1 without its old snapshot', async () => {

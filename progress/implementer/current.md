@@ -12,9 +12,16 @@ F-013 implementada y entregada para revisión independiente (2026-10-13).
 - Fechas civiles Argentina para documentos; cleanup de blob de planilla al expirar su vigencia; mes inicial del dashboard reflejado en URL.
 - Sin cambios de contratos ratificados, dependencias ni integración real: se mantiene mock-first.
 
+## Autorrevisión — 2026-10-14
+- Recuperación de catálogos fallidos mediante Reintentar, sin reiniciar consultas mensuales sanas.
+- Paginación automática suspendida tras error de snapshot hasta reinicio explícito.
+- Solapamientos históricos intactos preservados; validación compartida UI/mock rechaza solapamientos nuevos o modificados, incluidos anidados.
+- Se mantienen pendientes de decisión humana skeletons, naming de navegación y tamaño mínimo de clic; no se amplía el alcance global sin consultarlo.
+
 ## Verificación
-- Typecheck, lint, 132 tests (14 archivos) y build correctos; `git diff --check` correcto.
-- Navegador real de preview Vite, 1048×800 dark: login/2FA, mes en URL, filtros de planillas, detalle de documento con lista vacía y edición persistente, logout. Sin errores de página.
+- Typecheck, lint, 140 tests (14 archivos) y build correctos; `git diff --check` correcto (+8 regresiones en esta revisión).
+- Navegador real Vite 384×588, esquema dark solicitado y tema claro MVP: login/2FA, matriz con minutos, apertura por teclado y corrección de observaciones preservando WORK OPEN histórico. Sin errores de página.
+- Reintento de catálogos y suspensión/reinicio de paginación caducada cubiertos por tests de UI; la inducción de catálogo fallido en navegador se recuperó automáticamente y no confirmó allí el botón.
 
 ## Pendientes / fuera de alcance
 - Revisión independiente de F-013; no se declara aprobación propia.

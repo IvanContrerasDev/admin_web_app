@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { hasManualIntervalOverlap } from '../../lib/record-interval-validation'
 import { ServiceError } from '../../services/service-error'
 import { recordsService } from '../../services/services'
 import type { WorkplaceListItem } from '../../types/organization'
@@ -85,12 +86,17 @@ function editorSignature(employeeId: string, workplaceId: string, date: string, 
 
 function validateIntervals(intervals: EditableInterval[]) {
   const errors: string[] = []
+  const bounds = intervals.map((interval) => ({
+    startTime: interval.startTime ? `${interval.startTime}:00-03:00` : null,
+    endTime: interval.endTime ? `${interval.endTime}:00-03:00` : null,
+    changed: !interval.id || interval.original !== intervalSignature(interval),
+  }))
   intervals.forEach((interval, index) => {
-    if ((!interval.id || interval.original !== intervalSignature(interval)) && interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) errors.push(`Intervalo ${index + 1}: completá entrada y salida.`)
+    if (!bounds[index]!.changed) return
+    if (interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) errors.push(`Intervalo ${index + 1}: completá entrada y salida.`)
     if (interval.startTime && interval.endTime && new Date(`${interval.endTime}:00-03:00`) <= new Date(`${interval.startTime}:00-03:00`)) errors.push(`Intervalo ${index + 1}: la salida debe ser posterior a la entrada.`)
   })
-  const bounded = intervals.filter((interval) => interval.startTime && interval.endTime).map((interval) => ({ start: new Date(`${interval.startTime}:00-03:00`).getTime(), end: new Date(`${interval.endTime}:00-03:00`).getTime() })).sort((left, right) => left.start - right.start)
-  if (bounded.some((interval, index) => index > 0 && interval.start < bounded[index - 1]!.end)) errors.push('Los intervalos manuales no pueden superponerse.')
+  if (hasManualIntervalOverlap(bounds)) errors.push('Los intervalos manuales no pueden superponerse.')
   return errors
 }
 

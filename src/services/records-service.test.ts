@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { hasManualIntervalOverlap } from '../lib/record-interval-validation'
 import { registerRecordsMockRoutes } from '../mocks/records-handlers'
 import { MockServiceAdapter } from './mock-service-adapter'
 import { RecordsService } from './records-service'
@@ -149,6 +150,28 @@ describe('RecordsService', () => {
         { type: 'WORK', startTime: '2026-09-03T17:00:00.000Z', endTime: '2026-09-03T20:00:00.000Z', absenceReason: null, observations: null },
       ],
     })).rejects.toMatchObject({ code: 'RECORD_INTERVALS_OVERLAP', status: 422 })
+  })
+
+  it('preserves historical overlaps but rejects new or changed bounds overlapping any retained interval', () => {
+    const historical = [
+      { startTime: '2026-09-03T12:00:00.000Z', endTime: '2026-09-03T21:00:00.000Z', changed: false },
+      { startTime: '2026-09-03T13:00:00.000Z', endTime: '2026-09-03T14:00:00.000Z', changed: false },
+    ]
+    expect(hasManualIntervalOverlap(historical)).toBe(false)
+    expect(hasManualIntervalOverlap([...historical, { startTime: null, endTime: null, changed: true }])).toBe(false)
+    expect(hasManualIntervalOverlap([...historical, { startTime: '2026-09-03T15:00:00.000Z', endTime: '2026-09-03T16:00:00.000Z', changed: true }])).toBe(true)
+    expect(hasManualIntervalOverlap(historical.map((interval, index) => ({ ...interval, changed: index === 1 })))).toBe(true)
+    expect(hasManualIntervalOverlap([...historical, { startTime: '2026-09-03T21:00:00.000Z', endTime: '2026-09-03T22:00:00.000Z', changed: true }])).toBe(false)
+  })
+
+  it('rejects a newly added manual interval overlapping an unchanged existing interval', async () => {
+    const service = setup()
+    const created = await service.create({
+      userId: '22000000-0000-4000-8000-000000000001', workplaceId: '44000000-0000-4000-8000-000000000001', date: '2026-09-04', observations: null,
+      intervals: [{ type: 'WORK', startTime: '2026-09-04T12:00:00.000Z', endTime: '2026-09-04T16:00:00.000Z', absenceReason: null, observations: null }],
+    })
+    await expect(service.update(created.id, { expectedVersion: created.version, intervalChanges: [{ operation: 'ADD', interval: { type: 'WORK', startTime: '2026-09-04T15:00:00.000Z', endTime: '2026-09-04T17:00:00.000Z', absenceReason: null, observations: null } }] })).rejects.toMatchObject({ code: 'RECORD_INTERVALS_OVERLAP', status: 422 })
+    expect(await service.getDetail(created.id)).toEqual(created)
   })
 
   it('loads a record detail and then each automatic event on demand', async () => {
