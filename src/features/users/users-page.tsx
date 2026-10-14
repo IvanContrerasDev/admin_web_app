@@ -52,6 +52,13 @@ export function UsersPage() {
   const response = usersQuery.data
   const users = response?.data ?? []
   const pagination = response?.pagination
+  const hasError = sitesQuery.isError || usersQuery.isError
+  const isLoading = !hasError && (sitesQuery.isPending || usersQuery.isPending)
+
+  const retryFailedQuery = () => {
+    if (sitesQuery.isError) void sitesQuery.refetch()
+    else if (usersQuery.isError) void usersQuery.refetch()
+  }
 
   useEffect(() => {
     if (usersQuery.isPlaceholderData || !pagination || pagination.page === page) return
@@ -93,13 +100,13 @@ export function UsersPage() {
       </div>
 
       <div aria-live="polite">
-        {usersQuery.isPending ? <LoadingSkeleton label="Cargando empleados…" variant="table" /> : null}
-        {usersQuery.isError ? <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert"><p className="font-semibold">No pudimos cargar los empleados.</p><button className="mt-3 min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive" type="button" onClick={() => void usersQuery.refetch()}>Reintentar</button></div> : null}
-        {!usersQuery.isPending && !usersQuery.isError && users.length === 0 ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otro término o restablecé los filtros predeterminados.</p><button className="mt-4 min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setSearchParams({})}>Limpiar filtros</button></div> : null}
-        {users.length > 0 ? <UsersTable users={users} /> : null}
+        {isLoading ? <LoadingSkeleton label="Cargando empleados…" variant="table" /> : null}
+        {hasError ? <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert"><p className="font-semibold">{sitesQuery.isError ? 'No pudimos cargar las provincias.' : 'No pudimos cargar los empleados.'}</p><button className="mt-3 min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive" type="button" onClick={retryFailedQuery}>Reintentar</button></div> : null}
+        {!isLoading && !hasError && users.length === 0 ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otro término o restablecé los filtros predeterminados.</p><button className="mt-4 min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setSearchParams({})}>Limpiar filtros</button></div> : null}
+        {!isLoading && !hasError && users.length > 0 ? <UsersTable users={users} /> : null}
       </div>
 
-      {pagination && pagination.totalItems > 0 ? (
+      {!hasError && pagination && pagination.totalItems > 0 ? (
         <nav aria-label="Paginación de empleados" className="flex flex-col gap-3 border-t border-foreground/15 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-foreground/65"><span className="font-semibold text-foreground tabular-nums">{pagination.totalItems}</span> empleados · Página <span className="tabular-nums">{pagination.page}</span> de <span className="tabular-nums">{Math.max(1, pagination.totalPages)}</span></p>
           <div className="flex gap-2">

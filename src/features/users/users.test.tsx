@@ -65,6 +65,35 @@ describe('F-011 employee regressions', () => {
     }
   })
 
+  it('shows a recoverable error instead of loading forever when provinces fail', async () => {
+    vi.mocked(userService.listSites).mockRejectedValueOnce(new Error('Catálogo no disponible'))
+    const user = userEvent.setup()
+    renderUsers()
+    expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar las provincias.')
+    expect(screen.queryByLabelText('Cargando empleados…')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'No hay resultados' })).not.toBeInTheDocument()
+    expect(userService.list).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByRole('table')).toHaveTextContent('Lucía')
+    expect(userService.listSites).toHaveBeenCalledTimes(2)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['USER_DNI_ALREADY_EXISTS', 'DNI'],
+    ['USER_EMPLOYEE_ID_ALREADY_EXISTS', 'Legajo'],
+    ['INVALID_SITE', 'Provincia'],
+  ])('maps %s to its field with keyboard focus', async (code, label) => {
+    vi.mocked(userService.update).mockRejectedValueOnce(new ServiceError({ code, message: 'Revisá este campo.', retryable: false, kind: 'api', status: 409 }))
+    const user = userEvent.setup()
+    renderUsers(`/usuarios/${firstId}/editar`)
+    await screen.findByRole('heading', { name: 'Editar a Lucía Álvarez' })
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }))
+    expect(await screen.findByText('Revisá este campo.')).toHaveAttribute('role', 'alert')
+    expect(screen.getByLabelText(label)).toHaveFocus()
+    expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true')
+  })
+
   it('keeps related links scoped to the employee UUID', async () => {
     renderUsers(`/usuarios/${firstId}`)
     expect(await screen.findByRole('link', { name: 'Ver planillas' })).toHaveAttribute('href', `/planillas?employeeId=${firstId}`)

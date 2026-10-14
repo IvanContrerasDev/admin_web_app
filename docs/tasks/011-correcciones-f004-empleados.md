@@ -58,6 +58,20 @@ Veredicto completo de la revisión en `progress/reviewer/history.md` (entrada 20
 - Build conserva la advertencia preexistente del chunk principal mayor a 500 kB; fuera del alcance de F-011.
 - Verificación en navegador intentada, pero bloqueada por `404 SANDBOX_NOT_FOUND` del enrutamiento del preview, incluso tras comprobar el puerto activo. No se afirma smoke visual/real exitoso.
 
+## Autorrevisión e iteración — 2026-10-14
+
+Contrastados los criterios con la spec §11.2, los DTOs P-06 y la implementación activa, incluidos RHF/Zod, fechas Argentina, enlaces por UUID, feedback, búsqueda/historial, paginación y remount por empleado. No se modifican contratos ni archivos sincronizados.
+
+Hallazgo corregido:
+- `src/features/users/users-page.tsx`: si fallaba el catálogo de provincias, la consulta de empleados permanecía deshabilitada y `isPending` mostraba un skeleton indefinidamente, sin error ni recuperación. Ahora el estado deriva de ambas consultas, informa qué recurso falló y Reintentar reconsulta solo ese recurso; errores no muestran resultados/paginación antiguos ni un falso vacío.
+- Regresión reproduce el fallo antes del fix y verifica error → reintento → listado. Añadida cobertura del foco/errores accesibles para conflictos de DNI, legajo y provincia.
+
+Evidencia actual:
+- 47 pruebas focalizadas F-011 correctas; `npm run typecheck` y `npm run lint` correctos.
+- Suite completa: 15 archivos, 157 tests correctos (+4); `npm run build` y `git diff --check` correctos. Permanece la advertencia conocida del chunk principal >500 kB, fuera de este alcance.
+- Smoke en navegador real Vite completado: login/2FA, empleados en 384×588 y 1280×800 con esquema dark solicitado (tema claro de MVP conservado), DNI/teléfono visibles y sin overflow horizontal de página desktop; búsqueda sin resultados y Limpiar filtros; detalle → planillas con `employeeId` UUID y selector aplicado; detalle → legajo de Lucía con sus documentos; alta vacía muestra 10 errores y foco en Nombre, límite de nacimiento `2026-10-14`. Sin errores de página.
+- La inyección puntual del fallo de catálogo en navegador no expuso el error esperado durante el intento; su recuperación se acredita por el test de UI, no por ese smoke. Alta/edición/cambio de estado con toasts, historial y navegación entre empleados se acreditan por pruebas automatizadas, no por nuevas mutaciones en navegador.
+
 ## Review
 
-Pendiente de revisión independiente por el reviewer del harness. Los checks automáticos no sustituyen su veredicto; falta además completar el smoke en navegador cuando el preview esté disponible.
+Autorrevisión completada con corrección y smoke disponible. Sigue pendiente la revisión independiente del reviewer del harness; no se declara aprobación ni se cambia el backlog, cuyo owner es el leader.

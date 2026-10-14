@@ -48,6 +48,18 @@ Tarea documental; la ratificación es humana. La feature puede cerrarse con la p
 - El backlog `feature_list.json` se mantiene intacto: el inbox solicita al leader, su owner, actualizar el estado tras procesar la entrega.
 - Validación documental: enlaces relativos/anchors de los 6 documentos editados o creados, presencia de DTOs/rutas y decisiones, `git diff --check` y alcance sin cambios a frontend/TypeScript/Parte 8/SYNCED. Sin cambios de ejecución: no corresponde repetir tests/build ni smoke UI.
 
+## Autorrevisión e iteración — 2026-10-14
+
+Contrastada la propuesta con `src/types/timesheets.ts`, `src/types/documents.ts`, servicios/mocks y decisiones 8, 11 y 14 del contrato sincronizado. DTOs, 9 tipos, rutas, envelopes y `expiresAt` están descritos como candidatos, diferenciados de lo ya ratificado. La política de reemplazo y la coherencia provincial se elevan explícitamente, sin tomar decisiones en código.
+
+Hallazgo corregido:
+- La sección C todavía afirmaba que el mock filtraba fechas por recorte UTC. F-013 ya usa `getArgentinaCivilDate(document.createdAt)`; se actualizó esa evidencia manteniendo el filtro GMT-3 como candidato pendiente de ratificación/backend. No se alteran DTOs ni decisiones propuestas.
+
+Evidencia:
+- Validación de los 6 documentos de la entrega: 11 enlaces relativos/anchors válidos, incluidas las referencias de F-007/F-008/F-009 y el inbox del leader.
+- La elevación al humano sigue disponible en `progress/leader/inbox/20261013-f012-ratificacion-planillas-documentos-metricas.md`. F-012 puede cerrarse documentalmente cuando el leader/reviewer procesen la entrega; eso no equivale a ratificar contratos.
+- Sin cambios a frontend atribuibles a F-012, Parte 8, contratos TypeScript o archivos SYNCED; solo se actualizan la evidencia de la propuesta y este registro. El backlog se conserva: el leader sigue siendo su owner.
+
 ## Review
 
-Pendiente del reviewer independiente del harness. Ratificación humana, propagación por orchestrator y materialización backend siguen pendientes; F-010 no queda desbloqueada.
+Autorrevisión documental completada con corrección. Pendiente del reviewer independiente del harness. Ratificación humana, propagación por orchestrator y materialización backend siguen pendientes; F-010 no queda desbloqueada.

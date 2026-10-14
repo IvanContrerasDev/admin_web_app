@@ -160,7 +160,7 @@ Catálogo candidato fijo y etiquetas UI: DNI; certificado médico; contrato; ART
 - Orden `createdAt` DESC; desempate UUID ASC del mock a ratificar. Una entidad por archivo, todos con el tipo/lugar elegidos en el lote.
 - Edición solo nombre visible/tipo: omitir conserva, null no válido. `fileExtension` y bytes reales no cambian al renombrar. El mock normaliza espacios y admite nombre visible 1–120 caracteres; backend debe ratificar límites/normalización y comportamiento de PATCH vacío.
 - `uploadedBy` **query** es hoy texto parcial sobre nombre completo del cargador, no su UUID. Ratificar esta semántica o publicar un contrato alternativo explícito; no hay endpoint de catálogo de cargadores.
-- `uploadedFrom`/`uploadedTo`: candidatos de fecha civil YYYY-MM-DD, inclusivos sobre fecha de carga en GMT-3. El mock actual usa recorte UTC, limitación identificada y corrección trackeada en F-013; no elevarla a regla contractual. Backend debe validar fechas reales/rango invertido y convertir sus límites a instantes correctamente.
+- `uploadedFrom`/`uploadedTo`: candidatos de fecha civil YYYY-MM-DD, inclusivos sobre fecha de carga en GMT-3. F-013 ya corrigió el mock para comparar `getArgentinaCivilDate(document.createdAt)` (GMT-3), con cobertura del borde de medianoche; esta evidencia mock no equivale a ratificación ni prueba del backend real. Backend debe validar fechas reales/rango invertido y convertir sus límites a instantes correctamente.
 - No se propone reemplazo/versionado de documentos, aprobación, vencimientos ni enlaces técnicos a ausencias.
 
 ### D. Transporte de archivos y errores por materializar
