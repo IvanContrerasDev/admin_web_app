@@ -9,11 +9,22 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
   if (!registration) {
     return (
       <main id="main-content" className="flex min-h-dvh flex-col bg-background text-foreground lg:flex-row">
-        <section aria-label="GdeS Grupo de Servicios — Administración" className="auth-welcome-panel min-h-80 shrink-0 lg:min-h-dvh lg:w-[38%]">
-          <div className="sr-only">
-            <p>GdeS Grupo de Servicios — Administración</p>
-            <p>Servicios Estratégicos de Limpieza y Mantenimiento.</p>
-            <p>Entorno de desarrollo con servicios mock</p>
+        <section aria-label="GdeS Grupo de Servicios — Administración" className="auth-welcome-panel flex min-h-80 shrink-0 flex-col justify-between gap-10 px-6 py-8 text-surface sm:px-10 lg:min-h-dvh lg:w-[38%] lg:py-10">
+          <div className="flex items-center gap-4">
+            <div className="flex shrink-0 flex-col gap-1 border-r border-surface/35 pr-4">
+              <span className="font-sans text-3xl font-semibold tracking-tight">GdeS</span>
+              <span className="font-sans text-sm leading-tight">Grupo de<br />Servicios</span>
+            </div>
+            <div className="flex flex-col gap-1 font-sans text-sm font-semibold leading-relaxed">
+              <p>GdeS Grupo de Servicios</p>
+              <p>Administración</p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-10 lg:gap-20">
+            <p className="max-w-sm text-balance font-sans text-3xl font-bold leading-tight lg:text-4xl">
+              Servicios Estratégicos de Limpieza y Mantenimiento.
+            </p>
+            <p className="font-sans text-sm leading-relaxed text-surface/80">Entorno de desarrollo con servicios mock</p>
           </div>
         </section>
         <section aria-label="Ingreso a Administración" className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
