@@ -3,9 +3,9 @@ import { registerUserMockRoutes } from '../mocks/user-handlers'
 import { MockServiceAdapter } from './mock-service-adapter'
 import { UserService } from './user-service'
 
-function setup() {
+function setup(now = () => new Date('2026-09-17T15:00:00.000Z')) {
   const adapter = new MockServiceAdapter()
-  registerUserMockRoutes(adapter, () => new Date('2026-09-17T15:00:00.000Z'))
+  registerUserMockRoutes(adapter, now)
   return new UserService(adapter)
 }
 
@@ -39,6 +39,36 @@ describe('UserService', () => {
     const id = '22000000-0000-4000-8000-000000000001'
     await expect(service.update(id, { position: 'Jefa operativa' })).resolves.toMatchObject({ position: 'Jefa operativa', accountStatus: 'ACTIVE' })
     await expect(service.setAccountStatus(id, 'INACTIVE')).resolves.toMatchObject({ accountStatus: 'INACTIVE' })
+  })
+
+  it('clamps out-of-range pages and returns the final page instead of an empty result', async () => {
+    const result = await setup().list({ page: 999, pageSize: 2 })
+    expect(result.pagination).toEqual({ page: 3, pageSize: 2, totalItems: 6, totalPages: 3 })
+    expect(result.data).toHaveLength(2)
+    const empty = await setup().list({ search: 'inexistente', page: 999 })
+    expect(empty.pagination).toMatchObject({ page: 1, totalItems: 0, totalPages: 0 })
+  })
+
+  it.each([NaN, Infinity, -4, 0, 1.9])('normalizes invalid page %s', async (page) => {
+    expect((await setup().list({ page })).pagination.page).toBe(1)
+  })
+
+  it('validates creation and editing against the injected Argentina calendar date', async () => {
+    const service = setup(() => new Date('2026-10-14T01:00:00Z'))
+    const created = await service.create({ ...newUser, birthDate: '2026-10-13' })
+    expect(created.birthDate).toBe('2026-10-13')
+    await expect(service.update(created.id, { hireDate: '2026-10-13' })).resolves.toMatchObject({ hireDate: '2026-10-13' })
+    await expect(service.update(created.id, { birthDate: '2026-10-14' })).rejects.toMatchObject({ code: 'INVALID_USER_DATA' })
+    await expect(service.update(created.id, { hireDate: '2026-10-14' })).rejects.toMatchObject({ code: 'INVALID_USER_DATA' })
+    await expect(service.create({ ...newUser, birthDate: '2026-10-14' })).rejects.toMatchObject({ code: 'INVALID_USER_DATA' })
+  })
+
+  it('reads the injected clock anew for each request', async () => {
+    let now = new Date('2026-10-13T15:00:00Z')
+    const service = setup(() => now)
+    await expect(service.create({ ...newUser, birthDate: '2026-10-14' })).rejects.toMatchObject({ code: 'INVALID_USER_DATA' })
+    now = new Date('2026-10-14T15:00:00Z')
+    await expect(service.create({ ...newUser, birthDate: '2026-10-14' })).resolves.toMatchObject({ birthDate: '2026-10-14' })
   })
 
   it('rejects invalid civil dates and weak passwords', async () => {

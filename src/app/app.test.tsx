@@ -41,6 +41,8 @@ describe('administrative authentication and navigation', () => {
     expect(screen.getByRole('navigation', { name: /navegación principal/i })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /cerrar sesión/i }))
+    expect(screen.getByRole('group', { name: 'Confirmar cierre de sesión' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Confirmar' }))
     expect(await screen.findByRole('heading', { name: /ingresá a administración/i })).toBeInTheDocument()
   })
 

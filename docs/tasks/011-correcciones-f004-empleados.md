@@ -1,6 +1,6 @@
 # F-011 — Correcciones de revisión: gestión de empleados (F-004)
 
-**Estado:** pending
+**Estado:** pending_review
 **App(s):** admin
 **Creada:** 2026-09-22
 
@@ -32,12 +32,12 @@ La revisión independiente de F-004 (2026-09-22) arrojó veredicto **cambios req
 
 ## Criterios de aceptación
 
-- [ ] "Ver planillas" y "Ver legajo digital" desde el detalle abren los listados filtrados por ese empleado.
-- [ ] La tabla muestra nombre completo, legajo, DNI, email, teléfono, provincia y estado (desktop y mobile).
-- [ ] Formulario con RHF + zod, errores por campo; sin fechas hardcodeadas (mock usa `now` inyectado).
-- [ ] Toasts de éxito en alta/edición/cambio de estado.
-- [ ] Estado vacío con acción de limpiar filtros; búsqueda sincronizada con la URL; paginación clampeada.
-- [ ] `npm run typecheck`, `npm run lint`, `npx vitest run` y `npm run build` en verde; tests nuevos/actualizados para lo que aplique.
+- [x] "Ver planillas" y "Ver legajo digital" desde el detalle abren los listados filtrados por ese empleado.
+- [x] La tabla muestra nombre completo, legajo, DNI, email, teléfono, provincia y estado (desktop y mobile).
+- [x] Formulario con RHF + zod, errores por campo; sin fechas hardcodeadas (mock usa `now` inyectado).
+- [x] Toasts de éxito en alta/edición/cambio de estado.
+- [x] Estado vacío con acción de limpiar filtros; búsqueda sincronizada con la URL; paginación clampeada.
+- [x] `npm run typecheck`, `npm run lint`, `npx vitest run` y `npm run build` en verde; tests nuevos/actualizados para lo que aplique.
 
 ## Notas de implementación
 
@@ -45,8 +45,19 @@ Veredicto completo de la revisión en `progress/reviewer/history.md` (entrada 20
 
 ## Registro de implementación
 
-(pendiente)
+- Implementada el 2026-10-13 sin cambios de contratos P-06 ni archivos sincronizados.
+- El árbol actual ya enlazaba planillas con `employeeId` y legajo con `/usuarios/:userId/legajo`; se conservaron las rutas activas y se agregaron tests de regresión.
+- DNI y teléfono visibles en tabla desktop y tarjetas mobile, conservando los demás datos mínimos.
+- Página separada del formulario RHF + Zod; validación de todos los campos, errores inline accesibles y foco en el primer error. El formulario se remonta por UUID al navegar entre empleados.
+- Conflictos de unicidad, provincia y contraseña asociados al campo correspondiente. `INVALID_USER_DATA` revalida el esquema o identifica CUIL/fecha de ingreso/puesto cuando el mensaje permite hacerlo; el resto mantiene un error general, sin inventar campos del envelope.
+- Fechas no futuras según calendario Argentina: límites UI dinámicos y mock usando `now` inyectado por request. Los timestamps históricos del seed siguen siendo fixtures, no la fecha actual.
+- Conservados toasts existentes de alta/edición y agregado éxito de activación/desactivación.
+- Estado vacío con "Limpiar filtros", búsqueda remontada al cambiar `search` en la URL, mock clampeado a última página válida y normalización de URL sin agregar historial extra.
+- Tests nuevos: validaciones Zod, flujos UI, links, navegación entre empleados, errores por campo, toasts, historial de búsqueda y paginación. Servicio prueba también fechas con reloj inyectado y borde UTC/Argentina.
+- Validación: `npm run typecheck`, `npm run lint`, `npx vitest run` (100 pruebas) y `npm run build` exitosos. Se actualizó el test de autenticación existente para confirmar el cierre de sesión, como exige el shell actual.
+- Build conserva la advertencia preexistente del chunk principal mayor a 500 kB; fuera del alcance de F-011.
+- Verificación en navegador intentada, pero bloqueada por `404 SANDBOX_NOT_FOUND` del enrutamiento del preview, incluso tras comprobar el puerto activo. No se afirma smoke visual/real exitoso.
 
 ## Review
 
-(pendiente)
+Pendiente de revisión independiente por el reviewer del harness. Los checks automáticos no sustituyen su veredicto; falta además completar el smoke en navegador cuando el preview esté disponible.

@@ -1,3 +1,4 @@
+import { getArgentinaCivilDate, isValidCivilDate } from '../lib/dates'
 import { ServiceError } from '../services/service-error'
 import { MockServiceAdapter } from '../services/mock-service-adapter'
 import type { ServiceRequest } from '../services/service-adapter'
@@ -73,14 +74,7 @@ function normalizeRequired(value: unknown, max: number): string | null {
   return normalized.length >= 1 && normalized.length <= max ? normalized : null
 }
 
-function isValidCivilDate(value: unknown): value is string {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value > '2026-09-17') return false
-  const [year, month, day] = value.split('-').map(Number)
-  const date = new Date(Date.UTC(year!, month! - 1, day))
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month! - 1 && date.getUTCDate() === day
-}
-
-function validateCommon(input: CreateUserInput | UpdateUserInput, users: UserDetail[], currentId?: string) {
+function validateCommon(input: CreateUserInput | UpdateUserInput, users: UserDetail[], today: string, currentId?: string) {
   const firstName = normalizeRequired(input.firstName, 100)
   const lastName = normalizeRequired(input.lastName, 100)
   const employeeId = normalizeRequired(input.employeeId, 50)
@@ -88,7 +82,7 @@ function validateCommon(input: CreateUserInput | UpdateUserInput, users: UserDet
   const email = typeof input.email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email.trim()) && input.email.trim().length <= 254 ? input.email.trim().toLowerCase() : null
   const phone = typeof input.phone === 'string' && /^\d{10,13}$/.test(input.phone.trim()) ? input.phone.trim() : null
   const address = normalizeRequired(input.address, 200)
-  const birthDate = isValidCivilDate(input.birthDate) ? input.birthDate : null
+  const birthDate = isValidCivilDate(input.birthDate, today) ? input.birthDate : null
   const site = typeof input.siteId === 'string' ? SITES.find((item) => item.id === input.siteId) : undefined
   const creating = 'initialPassword' in input
 
@@ -111,8 +105,10 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
     const search = String(request.query?.search ?? '').trim().toLocaleLowerCase('es-AR')
     const status = request.query?.accountStatus as AccountStatus | undefined
     const siteId = typeof request.query?.siteId === 'string' ? request.query.siteId : ''
-    const page = Math.max(1, Number(request.query?.page ?? 1))
-    const pageSize = Math.min(100, Math.max(1, Number(request.query?.pageSize ?? 25)))
+    const pageParam = Number(request.query?.page ?? 1)
+    const requestedPage = Number.isFinite(pageParam) ? Math.max(1, Math.floor(pageParam)) : 1
+    const sizeParam = Number(request.query?.pageSize ?? 25)
+    const pageSize = Number.isFinite(sizeParam) ? Math.min(100, Math.max(1, Math.floor(sizeParam))) : 25
     const filtered = users
       .filter((user) => !status || user.accountStatus === status)
       .filter((user) => !siteId || user.site.id === siteId)
@@ -120,6 +116,7 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
       .sort((a, b) => a.lastName.localeCompare(b.lastName, 'es-AR') || a.firstName.localeCompare(b.firstName, 'es-AR') || a.id.localeCompare(b.id))
     const totalItems = filtered.length
     const totalPages = totalItems === 0 ? 0 : Math.ceil(totalItems / pageSize)
+    const page = Math.min(requestedPage, Math.max(1, totalPages))
     const start = (page - 1) * pageSize
     return { data: filtered.slice(start, start + pageSize).map(toListItem), pagination: { page, pageSize, totalItems, totalPages } }
   })
@@ -132,7 +129,7 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
 
   adapter.register('POST', '/users', (request) => {
     const input = requireBody<CreateUserInput>(request)
-    const valid = validateCommon(input, users)
+    const valid = validateCommon(input, users, getArgentinaCivilDate(now()))
     if (typeof input.initialPassword !== 'string' || input.initialPassword.length < 12 || input.initialPassword.length > 128) throw apiError('WEAK_PASSWORD', 'La contraseña inicial debe tener entre 12 y 128 caracteres.')
     const timestamp = now().toISOString()
     const user: UserDetail = {
@@ -147,9 +144,10 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
     const current = users[index]
     if (!current) throw apiError('USER_NOT_FOUND', 'El empleado solicitado no existe.', 404)
     const input = requireBody<UpdateUserInput>(request)
-    const valid = validateCommon(input, users, current.id)
+    const today = getArgentinaCivilDate(now())
+    const valid = validateCommon(input, users, today, current.id)
     if (input.cuil !== undefined && input.cuil !== null && !/^\d{11}$/.test(input.cuil)) throw apiError('INVALID_USER_DATA', 'El CUIL debe contener 11 dígitos.')
-    if (input.hireDate !== undefined && input.hireDate !== null && !isValidCivilDate(input.hireDate)) throw apiError('INVALID_USER_DATA', 'Ingresá una fecha de ingreso válida.')
+    if (input.hireDate !== undefined && input.hireDate !== null && !isValidCivilDate(input.hireDate, today)) throw apiError('INVALID_USER_DATA', 'Ingresá una fecha de ingreso válida.')
     const position = input.position === null || input.position === undefined ? input.position : normalizeRequired(input.position, 100)
     if (input.position !== undefined && input.position !== null && !position) throw apiError('INVALID_USER_DATA', 'El puesto debe contener entre 1 y 100 caracteres.')
     const updated: UserDetail = {

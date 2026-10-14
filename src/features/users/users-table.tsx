@@ -26,6 +26,8 @@ export function UsersTable({ users }: UsersTableProps) {
             <tr>
               <th className="px-4 py-2 font-semibold" scope="col">Empleado</th>
               <th className="px-4 py-2 font-semibold" scope="col">Legajo</th>
+              <th className="px-4 py-2 font-semibold" scope="col">DNI</th>
+              <th className="px-4 py-2 font-semibold" scope="col">Teléfono</th>
               <th className="px-4 py-2 font-semibold" scope="col">Provincia</th>
               <th className="px-4 py-2 font-semibold" scope="col">Estado</th>
               <th className="px-4 py-2 font-semibold" scope="col">Ver Legajo</th>
@@ -41,6 +43,8 @@ export function UsersTable({ users }: UsersTableProps) {
                   <p className="break-all text-xs text-foreground/60">{user.email}</p>
                 </td>
                 <td className="px-4 py-2 font-medium tabular-nums">{user.employeeId}</td>
+                <td className="px-4 py-2 tabular-nums">{user.dni}</td>
+                <td className="px-4 py-2 tabular-nums">{user.phone}</td>
                 <td className="px-4 py-2">{user.site.name}</td>
                 <td className="px-4 py-2"><StatusBadge status={user.accountStatus} /></td>
                 <td className="px-4 py-2">
@@ -71,6 +75,8 @@ export function UsersTable({ users }: UsersTableProps) {
             <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
               <div><dt className="text-foreground/60">Legajo</dt><dd className="font-medium tabular-nums">{user.employeeId}</dd></div>
               <div><dt className="text-foreground/60">Provincia</dt><dd className="font-medium">{user.site.name}</dd></div>
+              <div><dt className="text-foreground/60">DNI</dt><dd className="font-medium tabular-nums">{user.dni}</dd></div>
+              <div><dt className="text-foreground/60">Teléfono</dt><dd className="font-medium tabular-nums">{user.phone}</dd></div>
             </dl>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link className="flex min-h-10 flex-1 items-center justify-center rounded-md border border-primary px-3 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={`/usuarios/${user.id}`}>Detalle</Link>

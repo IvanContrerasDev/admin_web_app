@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { userService } from '../../services/services'
+import { useToast } from '../toasts/use-toast'
 
 const dateFormatter = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })
 
@@ -13,6 +14,7 @@ export function UserDetailPage() {
   const { userId = '' } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const toast = useToast()
   const [confirmingStatus, setConfirmingStatus] = useState(false)
   const userQuery = useQuery({ queryKey: ['user', userId], queryFn: ({ signal }) => userService.get(userId, signal), enabled: Boolean(userId) })
   const statusMutation = useMutation({
@@ -21,6 +23,7 @@ export function UserDetailPage() {
       queryClient.setQueryData(['user', userId], user)
       await queryClient.invalidateQueries({ queryKey: ['users'] })
       setConfirmingStatus(false)
+      toast.success(user.accountStatus === 'ACTIVE' ? 'La cuenta se reactivó correctamente.' : 'La cuenta se desactivó correctamente.')
     },
   })
 

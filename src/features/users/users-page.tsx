@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Form, Link, useSearchParams } from 'react-router-dom'
 import { userService } from '../../services/services'
 import type { AccountStatus } from '../../types/users'
@@ -11,8 +12,9 @@ export function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('search') ?? ''
   const statusParam = searchParams.get('status')
-  const accountStatus: AccountStatus = statusParam === 'INACTIVE' || statusParam === 'ALL' ? statusParam : 'ACTIVE'
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1)
+  const accountStatus: AccountStatus | 'ALL' = statusParam === 'INACTIVE' || statusParam === 'ALL' ? statusParam : 'ACTIVE'
+  const pageParam = Number(searchParams.get('page') ?? 1)
+  const page = Number.isFinite(pageParam) ? Math.max(1, Math.floor(pageParam)) : 1
 
   const sitesQuery = useQuery({
     queryKey: ['sites'],
@@ -50,6 +52,13 @@ export function UsersPage() {
   const users = response?.data ?? []
   const pagination = response?.pagination
 
+  useEffect(() => {
+    if (usersQuery.isPlaceholderData || !pagination || pagination.page === page) return
+    const next = new URLSearchParams(searchParams)
+    next.set('page', String(pagination.page))
+    setSearchParams(next, { replace: true })
+  }, [page, pagination, searchParams, setSearchParams, usersQuery.isPlaceholderData])
+
   return (
     <section className="flex flex-col gap-6">
       <header className="flex flex-col gap-4 border-b border-foreground/15 pb-6 sm:flex-row sm:items-end sm:justify-between">
@@ -64,7 +73,7 @@ export function UsersPage() {
         <Form className="flex flex-col gap-4 sm:flex-row sm:items-end" method="get">
           <label className="flex min-w-0 flex-1 flex-col gap-2 font-semibold" htmlFor="employee-search">
             Buscar empleado
-            <input className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 font-normal text-foreground placeholder:text-foreground/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" defaultValue={search} id="employee-search" name="search" placeholder="Nombre, email, legajo o DNI…" type="search" autoComplete="off" />
+            <input className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 font-normal text-foreground placeholder:text-foreground/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" key={search} defaultValue={search} id="employee-search" name="search" placeholder="Nombre, email, legajo o DNI…" type="search" autoComplete="off" />
           </label>
           <label className="flex flex-col gap-2 font-semibold" htmlFor="employee-site">
             Provincia
@@ -85,7 +94,7 @@ export function UsersPage() {
       <div aria-live="polite">
         {usersQuery.isPending ? <p className="rounded-lg border border-foreground/15 bg-background p-6 text-foreground/65">Cargando empleados…</p> : null}
         {usersQuery.isError ? <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert"><p className="font-semibold">No pudimos cargar los empleados.</p><button className="mt-3 min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive" type="button" onClick={() => void usersQuery.refetch()}>Reintentar</button></div> : null}
-        {!usersQuery.isPending && !usersQuery.isError && users.length === 0 ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otro término o quitá el filtro de estado.</p></div> : null}
+        {!usersQuery.isPending && !usersQuery.isError && users.length === 0 ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otro término o restablecé los filtros predeterminados.</p><button className="mt-4 min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setSearchParams({})}>Limpiar filtros</button></div> : null}
         {users.length > 0 ? <UsersTable users={users} /> : null}
       </div>
 

@@ -104,13 +104,13 @@
     {
       "id": "F-011",
       "title": "Correcciones de revisión: gestión de empleados (F-004)",
-      "status": "pending",
+      "status": "pending_review",
       "dependencies": ["F-004"],
       "contract_dependencies": ["P-06"],
       "task_spec": "docs/tasks/011-correcciones-f004-empleados.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
       "review_status": "pending_independent_review",
-      "notes": "Corrige los 2 bloqueantes (deep links userId→employeeId; tabla sin DNI/teléfono) y los menores de la revisión de F-004. Debe cerrarse antes de F-010."
+      "notes": "Implementada F-011: DNI/teléfono desktop y mobile, RHF+Zod, reloj dinámico Argentina en UI/mock, toast de estado, filtros/búsqueda URL y paginación clampeada. Deep links ya corregidos en el árbol actual, cubiertos por regresión. Typecheck, lint, 100 tests y build en verde. Verificación browser bloqueada por SANDBOX_NOT_FOUND del preview; revisión independiente pendiente. Debe cerrarse antes de F-010."
     },
     {
       "id": "F-012",
