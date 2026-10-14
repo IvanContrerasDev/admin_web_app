@@ -31,7 +31,7 @@ export function RecordsFilters({ values, sites, clients, workplaces, employees, 
   const hasAdvancedFilters = Boolean(values.status || values.reviewStatus || values.origin || values.hasAbsence)
 
   return (
-    <section aria-label="Filtros de registros" className="rounded-md border border-foreground/15 bg-background px-3 py-3">
+    <section aria-label="Filtros de registros" className="rounded-md border border-foreground/25 bg-foreground/10 px-3 py-3 text-foreground">
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[9rem_10rem_minmax(9rem,1fr)_minmax(11rem,1.25fr)_minmax(11rem,1.25fr)]">
         <label className="flex min-w-0 flex-col gap-1 text-sm font-semibold" htmlFor="records-month">
           Mes
