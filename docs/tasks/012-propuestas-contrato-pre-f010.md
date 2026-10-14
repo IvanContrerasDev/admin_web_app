@@ -1,6 +1,6 @@
 # F-012 — Propuestas de contrato pendientes pre-integración (planillas, documentos, métricas)
 
-**Estado:** pending
+**Estado:** pending_review (entrega documental; ratificación humana pendiente)
 **App(s):** admin
 **Creada:** 2026-09-22
 
@@ -29,10 +29,10 @@ Las revisiones independientes de F-007, F-008 y F-009 (2026-09-22) detectaron qu
 
 ## Criterios de aceptación
 
-- [ ] Existe la propuesta con los DTOs candidatos de planillas, documentos (incl. `expiresAt`) y métricas, siguiendo el formato de las propuestas existentes.
-- [ ] Las 3 referencias rotas en task specs apuntan al archivo creado.
-- [ ] La propuesta queda elevada al humano (registro en `progress/`).
-- [ ] Ningún contrato de la Parte 8 ni archivo SYNCED fue modificado.
+- [x] Existe la propuesta con los DTOs candidatos de planillas, documentos (incl. `expiresAt`) y métricas, siguiendo el formato de las propuestas existentes.
+- [x] Las 3 referencias rotas en task specs apuntan al archivo creado.
+- [x] La propuesta queda elevada al humano (registro en `progress/`).
+- [x] Ningún contrato de la Parte 8 ni archivo SYNCED fue modificado.
 
 ## Notas de implementación
 
@@ -40,8 +40,14 @@ Tarea documental; la ratificación es humana. La feature puede cerrarse con la p
 
 ## Registro de implementación
 
-(pendiente)
+- Entrega documental realizada el 2026-10-13: [propuesta F-007–F-009](../changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md). Se conserva el nombre histórico referenciado, pero la fecha efectiva y la ratificación pendiente quedan explícitas.
+- DTOs candidatos contrastados con los tipos, servicios y mocks actuales de planillas/documentos/métricas. Incluye todas las rutas, envelopes, 9 tipos documentales, orden, filtros, límites de archivos, metadata vs multipart y errores candidatos.
+- Se propone `expiresAt` obligatorio en ambas descargas; conservar estado al reemplazar se identifica como decisión no ratificada. La duda de `siteId` ofrece opciones y recomendación sin alterar el contrato vigente.
+- Las referencias de tasks 007/008/009 se convirtieron en enlaces relativos al archivo real y sus secciones correspondientes.
+- Propuesta elevada al humano a través de [inbox del leader](../../progress/leader/inbox/20261013-f012-ratificacion-planillas-documentos-metricas.md), con decisiones solicitadas y gate de F-010. Crear la propuesta no implica ratificación ni disponibilidad de API real.
+- El backlog `feature_list.json` se mantiene intacto: el inbox solicita al leader, su owner, actualizar el estado tras procesar la entrega.
+- Validación documental: enlaces relativos/anchors de los 6 documentos editados o creados, presencia de DTOs/rutas y decisiones, `git diff --check` y alcance sin cambios a frontend/TypeScript/Parte 8/SYNCED. Sin cambios de ejecución: no corresponde repetir tests/build ni smoke UI.
 
 ## Review
 
-(pendiente)
+Pendiente del reviewer independiente del harness. Ratificación humana, propagación por orchestrator y materialización backend siguen pendientes; F-010 no queda desbloqueada.

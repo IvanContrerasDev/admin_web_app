@@ -25,7 +25,7 @@ El legajo digital reúne la documentación personal y laboral del empleado (DNI,
 - Subida real de bytes ni multipart (F-010 con backend).
 - Vencimientos, alertas, versionado, solicitudes de documentación ni flujos de aprobación (spec §40.6).
 - Vinculación de certificados con ausencias ni procesamiento de contenido.
-- Cambios al contrato sincronizado: DTOs y códigos candidatos en `docs/changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md`.
+- Cambios al contrato sincronizado: DTOs y códigos candidatos en la [propuesta F-007–F-009, sección C (documentos)](../changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md#c-documentos--legajo-digital), creada por F-012 el 2026-10-13 y pendiente de ratificación humana. La sección A solicita `expiresAt` obligatorio en la descarga, sin modificar contratos vigentes.
 
 ## Referencias (fuente de verdad)
 

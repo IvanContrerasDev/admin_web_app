@@ -20,7 +20,7 @@ La página de Inicio debe mostrar el estado general de la operación como vista 
 **NO incluye:**
 - Gráficos analíticos, tendencias ni métricas históricas acumuladas (spec §47 y §56).
 - Filtro por provincia en métricas: `siteId` no fue ratificado para este endpoint (P-04.F); los contadores son globales del mes y la matriz de registros aplica su provincia por defecto al navegar.
-- Cambios al contrato sincronizado: el DTO es candidato en `docs/changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md`.
+- Cambios al contrato sincronizado: el DTO es candidato en la [propuesta F-007–F-009, sección E (métricas)](../changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md#e-métricas-del-inicio), creada por F-012 el 2026-10-13 y pendiente de ratificación humana. Esa sección eleva también la coherencia provincial contador → destino; no agrega `siteId` al contrato vigente.
 
 ## Referencias (fuente de verdad)
 

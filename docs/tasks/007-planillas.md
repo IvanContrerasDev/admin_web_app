@@ -25,7 +25,7 @@ Las planillas de horas son el soporte documental del control de asistencia: la a
 - Subida real de bytes ni multipart: el mock persiste metadata del archivo; la materialización multipart corresponde a F-010 con backend.
 - Eliminación de planillas: prohibida en el MVP (spec §39.5).
 - Procesamiento OCR, generación automática de registros ni vinculación con ausencias.
-- Cambios al contrato sincronizado: los DTOs y códigos de error son candidatos documentados en `docs/changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md`.
+- Cambios al contrato sincronizado: los DTOs y códigos de error son candidatos documentados en la [propuesta F-007–F-009, sección B (planillas)](../changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md#b-planillas), creada por F-012 el 2026-10-13 y pendiente de ratificación humana.
 
 ## Referencias (fuente de verdad)
 
