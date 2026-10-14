@@ -104,13 +104,13 @@ describe('F-013 interface regressions', () => {
   it.each(['ADMIN', 'SUPER_ADMIN'] as const)('gives %s the same navigation access', async (role) => {
     vi.mocked(authService.bootstrap).mockResolvedValue({ ...session, user: { ...session.user, role } })
     renderPage('/')
-    await screen.findByRole('heading', { name: 'Buen día, Marina' })
+    await screen.findByRole('heading', { name: '¡Hola, Marina!' })
     expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toHaveTextContent('InicioRegistrosUsuariosClientesLugares de trabajoPlanillasDocumentos')
   })
 
   it.each(['/\\evil.test', '//evil.test', '/registros\\evil.test', '/login?returnTo=/login', '/\t/evil.test'])('rejects unsafe returnTo %s', async (returnTo) => {
     const { router } = renderPage(`/login?returnTo=${encodeURIComponent(returnTo)}`)
-    await screen.findByRole('heading', { name: 'Buen día, Marina' })
+    await screen.findByRole('heading', { name: '¡Hola, Marina!' })
     expect(router.state.location.pathname).toBe('/')
   })
 
@@ -138,7 +138,7 @@ describe('F-013 interface regressions', () => {
     const user = userEvent.setup()
     vi.mocked(authService.logout).mockRejectedValueOnce(new Error('Offline')).mockResolvedValue(undefined)
     const { router, queryClient } = renderPage('/')
-    await screen.findByRole('heading', { name: 'Buen día, Marina' })
+    await screen.findByRole('heading', { name: '¡Hola, Marina!' })
     queryClient.setQueryData(['private-data'], { secret: 'not persisted' })
     await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
     await user.click(screen.getByRole('button', { name: 'Confirmar' }))
@@ -153,7 +153,7 @@ describe('F-013 interface regressions', () => {
 
   it('writes the initial Argentina month into the dashboard URL without losing filters', async () => {
     const { router } = renderPage('/?extra=preserved')
-    await screen.findByRole('heading', { name: 'Buen día, Marina' })
+    await screen.findByRole('heading', { name: '¡Hola, Marina!' })
     await waitFor(() => expect(new URLSearchParams(router.state.location.search).get('month')).toBe(getArgentinaCivilDate().slice(0, 7)))
     expect(new URLSearchParams(router.state.location.search).get('extra')).toBe('preserved')
   })

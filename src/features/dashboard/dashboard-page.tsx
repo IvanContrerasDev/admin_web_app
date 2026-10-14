@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { ArrowRight, CalendarDays, ChevronRight, ClipboardCheck, File, Link as LinkIcon, Users } from 'lucide-react'
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { dashboardService } from '../../services/services'
@@ -9,9 +10,9 @@ import { DashboardMetricCard } from './dashboard-metric-card'
 const monthFormatter = new Intl.DateTimeFormat('es-AR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
 const primaryActions = [
-  { title: 'Revisar registros', description: 'Consultá la matriz mensual y atendé pendientes.', href: '/registros' },
-  { title: 'Gestionar usuarios', description: 'Accedé al equipo y sus datos administrativos.', href: '/usuarios' },
-  { title: 'Ver planillas', description: 'Organizá las cargas mensuales por empleado y lugar.', href: '/planillas' },
+  { title: 'Revisar registros', description: 'Consultá la matriz mensual y atendé pendientes.', href: '/registros', icon: File, badge: 'bg-primary/10 text-primary' },
+  { title: 'Gestionar usuarios', description: 'Accedé al equipo y sus datos administrativos.', href: '/usuarios', icon: Users, badge: 'bg-secondary/10 text-secondary' },
+  { title: 'Ver planillas', description: 'Organizá las cargas mensuales por empleado y lugar.', href: '/planillas', icon: CalendarDays, badge: 'bg-accent/10 text-accent' },
 ]
 
 function currentMonthValue() {
@@ -62,27 +63,30 @@ export function DashboardPage() {
     : []
 
   return (
-    <div className="flex flex-col gap-8">
-      <section className="border-b border-foreground/15 pb-8">
-        <p className="font-sans text-sm font-semibold text-primary">Inicio</p>
-        <h1 className="mt-2 text-balance font-sans text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Buen día, {session?.user.firstName}
+    <div className="flex min-h-full flex-col bg-dashboard text-foreground">
+      <section className="dashboard-welcome flex min-h-40 flex-col justify-center gap-2 px-5 py-8 sm:px-8">
+        <h1 className="text-balance font-sans text-3xl font-bold tracking-tight sm:text-4xl">
+          ¡Hola, {session?.user.firstName}!
         </h1>
-        <p className="mt-3 max-w-2xl text-pretty font-sans text-base leading-relaxed text-foreground/70">
+        <p className="max-w-lg text-pretty font-sans text-base leading-relaxed text-foreground/65">
           Estado general de la operación y accesos a las tareas pendientes.
         </p>
       </section>
 
+      <div className="flex flex-col gap-7 px-5 py-6 sm:px-8">
       <section aria-labelledby="metricas-title" className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 id="metricas-title" className="text-balance font-sans text-xl font-semibold text-foreground">Tareas pendientes</h2>
-            <p className="mt-1 text-pretty font-sans text-sm leading-relaxed text-foreground/65">Contadores del mes seleccionado. Cada tarjeta abre la vista filtrada del mismo período.</p>
+          <div className="flex items-start gap-3">
+            <ClipboardCheck className="mt-1 shrink-0 text-primary" size={24} aria-hidden="true" />
+            <div className="flex flex-col gap-1">
+              <h2 id="metricas-title" className="text-balance font-sans text-xl font-semibold text-foreground">Tareas pendientes</h2>
+              <p className="text-pretty font-sans text-sm leading-relaxed text-foreground/60">Contadores del mes seleccionado. Cada tarjeta abre la vista filtrada del mismo período.</p>
+            </div>
           </div>
           <label className="flex flex-col gap-2 font-sans text-sm font-semibold" htmlFor="dashboard-month">
             Mes
             <input
-              className="h-11 rounded-md border border-foreground/25 bg-background px-3 font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="h-10 w-full rounded-md border border-foreground/15 bg-surface px-3 font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-56"
               id="dashboard-month"
               name="month"
               type="month"
@@ -101,29 +105,57 @@ export function DashboardPage() {
             </div>
           ) : null}
           {metrics ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {cards.map((card) => (
-                <DashboardMetricCard key={card.metric} {...card} provinces={metrics.byProvince} />
+                <DashboardMetricCard key={card.metric} {...card} />
               ))}
             </div>
           ) : null}
         </div>
       </section>
 
-      <section aria-labelledby="acciones-title" className="flex flex-col gap-4">
-        <h2 id="acciones-title" className="text-balance font-sans text-xl font-semibold text-foreground">Accesos principales</h2>
+      <section aria-labelledby="acciones-title" className="flex flex-col gap-4 border-t border-foreground/5 pt-5">
+        <h2 id="acciones-title" className="flex items-center gap-3 text-balance font-sans text-xl font-semibold text-foreground"><LinkIcon size={24} className="shrink-0 text-primary" aria-hidden="true" />Accesos principales</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          {primaryActions.map((action) => (
-            <Link key={action.href} to={action.href} className="group flex min-h-32 flex-col justify-between gap-6 rounded-md border border-foreground/15 bg-background p-5 transition-colors duration-150 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-              <div>
-                <h3 className="font-sans text-lg font-semibold text-foreground group-hover:text-primary">{action.title}</h3>
-                <p className="mt-2 text-pretty font-sans text-sm leading-relaxed text-foreground/65">{action.description}</p>
+          {primaryActions.map(({ icon: Icon, ...action }) => (
+            <Link key={action.href} to={action.href} className="group flex min-h-32 flex-col justify-between gap-5 rounded-md border border-foreground/10 bg-surface p-4 text-foreground transition-colors duration-150 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+              <div className="flex items-start gap-3">
+                <span className={`flex size-11 shrink-0 items-center justify-center rounded-full ${action.badge}`}><Icon size={23} strokeWidth={1.8} aria-hidden="true" /></span>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <h3 className="font-sans text-sm font-semibold group-hover:text-primary">{action.title}</h3>
+                  <p className="text-pretty font-sans text-sm leading-relaxed text-foreground/60">{action.description}</p>
+                </div>
+                <ChevronRight size={16} className="mt-1 shrink-0 text-foreground/45" aria-hidden="true" />
               </div>
-              <span className="font-sans text-sm font-semibold text-primary">Abrir sección</span>
+              <span className="flex items-center gap-2 font-sans text-sm font-medium text-primary">Abrir sección <ArrowRight size={14} aria-hidden="true" /></span>
             </Link>
           ))}
         </div>
       </section>
+
+      {metrics ? (
+        <details className="border-t border-foreground/10 pt-4 font-sans text-sm">
+          <summary className="w-fit cursor-pointer rounded-sm font-medium text-foreground/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Desglose por provincia</summary>
+          <div className="grid gap-5 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+            {cards.map((card) => (
+              <div key={card.metric} className="flex flex-col gap-3">
+                <h3 className="font-semibold">{card.title}</h3>
+                {metrics.byProvince.length ? (
+                  <dl aria-label={`${card.title} por provincia`} className="flex flex-col gap-2">
+                    {metrics.byProvince.map((province) => (
+                      <div key={province.id} className="flex items-baseline justify-between gap-3">
+                        <dt className="min-w-0 break-words text-foreground/70">{province.name}</dt>
+                        <dd className="shrink-0 font-semibold tabular-nums">{new Intl.NumberFormat('es-AR').format(province[card.metric])}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : <p className="text-foreground/65">Sin provincias para este período.</p>}
+              </div>
+            ))}
+          </div>
+        </details>
+      ) : null}
+      </div>
     </div>
   )
 }

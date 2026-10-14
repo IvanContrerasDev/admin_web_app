@@ -7,6 +7,8 @@
   --color-foreground: #0f172a;
   --color-muted: #edf2f5;
   --color-background: var(--color-muted);
+  --color-surface: #ffffff;
+  --color-dashboard: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));
   --color-success: var(--color-secondary);
   --color-destructive: var(--color-accent);
   --font-sans: 'Work Sans Variable', ui-sans-serif, system-ui, sans-serif;
@@ -56,7 +58,19 @@ a {
 }
 
 @media (min-width: 1024px) {
-  .records-matrix-viewport {
+.dashboard-welcome {
+  background-image: linear-gradient(90deg, var(--color-dashboard) 0%, color-mix(in srgb, var(--color-dashboard) 92%, transparent) 30%, transparent 75%), url('/images/inicio-limpieza.png');
+  background-position: center, right center;
+  background-size: cover;
+}
+
+@media (max-width: 639px) {
+  .dashboard-welcome {
+    background-image: linear-gradient(90deg, color-mix(in srgb, var(--color-dashboard) 96%, transparent), color-mix(in srgb, var(--color-dashboard) 80%, transparent)), url('/images/inicio-limpieza.png');
+  }
+}
+
+.records-matrix-viewport {
     max-height: calc(100dvh - 16.5rem);
   }
 }

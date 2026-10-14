@@ -1,15 +1,16 @@
+import { Building2, CalendarDays, File, FileText, Home, LogOut, Users, UsersRound } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../features/auth/use-auth'
 
 const navigation = [
-  { label: 'Inicio', href: '/' },
-  { label: 'Registros', href: '/registros' },
-  { label: 'Usuarios', href: '/usuarios' },
-  { label: 'Clientes', href: '/clientes' },
-  { label: 'Lugares de trabajo', href: '/lugares' },
-  { label: 'Planillas', href: '/planillas' },
-  { label: 'Documentos', href: '/documentos' },
+  { label: 'Inicio', href: '/', icon: Home },
+  { label: 'Registros', href: '/registros', icon: FileText },
+  { label: 'Usuarios', href: '/usuarios', icon: Users },
+  { label: 'Clientes', href: '/clientes', icon: UsersRound },
+  { label: 'Lugares de trabajo', href: '/lugares', icon: Building2 },
+  { label: 'Planillas', href: '/planillas', icon: CalendarDays },
+  { label: 'Documentos', href: '/documentos', icon: File },
 ]
 
 export function AppShell() {
@@ -20,12 +21,12 @@ export function AppShell() {
   const isRecordsPage = location.pathname === '/registros'
 
   return (
-    <div className="min-h-dvh bg-background text-foreground lg:grid lg:grid-cols-[16rem_minmax(0,1fr)]">
+    <div className={`min-h-dvh bg-background text-foreground lg:grid ${location.pathname === '/' ? 'lg:grid-cols-[12rem_minmax(0,1fr)]' : 'lg:grid-cols-[16rem_minmax(0,1fr)]'}`}>
       <a className="skip-link" href="#main-content">Saltar al contenido principal</a>
 
       <aside className="border-b border-foreground/15 bg-foreground text-background lg:min-h-dvh lg:border-b-0 lg:border-r lg:border-background/15">
         <div className="flex items-center gap-3 px-5 py-5 lg:px-6 lg:py-6">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary font-sans text-sm font-bold text-background" aria-hidden="true">G</span>
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary font-sans text-sm font-bold text-background" aria-hidden="true"><UsersRound size={24} strokeWidth={1.8} /></span>
           <div className="min-w-0">
             <p className="truncate font-sans text-base font-semibold">GdeS Administración</p>
             <p className="truncate font-sans text-sm text-background/65">Gestión operativa</p>
@@ -33,13 +34,14 @@ export function AppShell() {
         </div>
         <nav aria-label="Navegación principal" className="overflow-x-auto px-3 pb-4 lg:overflow-visible lg:px-4 lg:pb-6">
           <ul className="flex min-w-max gap-1 lg:min-w-0 lg:flex-col">
-            {navigation.map((item) => (
+            {navigation.map(({ icon: Icon, ...item }) => (
               <li key={item.href}>
                 <NavLink
                   to={item.href}
                   end={item.href === '/'}
-                  className={({ isActive }) => `flex min-h-11 items-center rounded-md px-3 py-2 font-sans text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive ? 'bg-primary text-background' : 'text-background/80 hover:bg-background/10 hover:text-background'}`}
+                  className={({ isActive }) => `flex min-h-11 items-center gap-3 rounded-md px-3 py-2 font-sans text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${isActive ? 'bg-primary text-background' : 'text-background/80 hover:bg-background/10 hover:text-background'}`}
                 >
+                  <Icon size={20} strokeWidth={1.7} aria-hidden="true" />
                   {item.label}
                 </NavLink>
               </li>
@@ -49,8 +51,8 @@ export function AppShell() {
       </aside>
 
       <div className="min-w-0">
-        <header className="border-b border-foreground/15 bg-background">
-          <div className="flex min-h-20 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <header className="border-b border-foreground/5 bg-surface text-foreground">
+          <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div className="min-w-0">
               <p className="truncate font-sans text-sm font-semibold text-foreground">{fullName}</p>
               <p className="truncate font-sans text-sm text-foreground/60">{session?.user.role === 'SUPER_ADMIN' ? 'Superadministración' : 'Administración'} · Legajo {session?.user.employeeId}</p>
@@ -61,7 +63,7 @@ export function AppShell() {
                 onClick={() => setConfirmingLogout(true)}
                 className="min-h-11 shrink-0 rounded-md border border-foreground/25 px-4 py-2 font-sans text-sm font-semibold text-foreground transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
-                Cerrar sesión
+                <span className="flex items-center gap-2"><LogOut size={16} aria-hidden="true" />Cerrar sesión</span>
               </button>
             ) : (
               <div className="flex shrink-0 items-center gap-2" role="group" aria-label="Confirmar cierre de sesión">
@@ -86,7 +88,7 @@ export function AppShell() {
             )}
           </div>
         </header>
-        <main id="main-content" className={isRecordsPage ? 'w-full min-w-0 px-3 py-4 sm:px-4 lg:px-5 lg:py-5' : 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10'}>
+        <main id="main-content" className={location.pathname === '/' ? 'min-h-[calc(100dvh-4rem)] w-full min-w-0 bg-dashboard text-foreground' : isRecordsPage ? 'w-full min-w-0 px-3 py-4 sm:px-4 lg:px-5 lg:py-5' : 'mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10'}>
           <Outlet />
         </main>
       </div>
