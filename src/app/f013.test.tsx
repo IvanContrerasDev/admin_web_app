@@ -28,7 +28,7 @@ import { MockServiceAdapter } from '../services/mock-service-adapter'
 import { OrganizationService } from '../services/organization-service'
 import { RecordsService } from '../services/records-service'
 import { ServiceError } from '../services/service-error'
-import { authService, documentsService, organizationService, recordsService, timesheetsService, userService } from '../services/services'
+import { authService, dashboardService, documentsService, organizationService, recordsService, timesheetsService, userService } from '../services/services'
 import { TimesheetsService } from '../services/timesheets-service'
 import { UserService } from '../services/user-service'
 import type { AuthenticatedSession } from '../types/auth'
@@ -149,6 +149,33 @@ describe('F-013 interface regressions', () => {
     expect(authService.bootstrap).toHaveBeenCalledTimes(1)
     await user.click(screen.getByRole('button', { name: 'Reintentar cierre remoto' }))
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+  })
+
+  it('shows each total and its province breakdown inside the corresponding card', async () => {
+    const metrics = await dashboardService.getMetrics({ month: 9, year: 2026 })
+    renderPage('/?month=2026-09')
+    const formatter = new Intl.NumberFormat('es-AR')
+    const cards = [
+      { title: 'Planillas pendientes', metric: 'pendingTimesheets' },
+      { title: 'Registros incompletos', metric: 'incompleteRecords' },
+      { title: 'Pendientes de validación', metric: 'pendingReviewRecords' },
+      { title: 'Registros con ausencia', metric: 'recordsWithAbsence' },
+    ] as const
+    for (const { title, metric } of cards) {
+      const heading = await screen.findByRole('heading', { name: title })
+      const card = heading.closest('a')!
+      expect(within(card).getByText('Total de todas las provincias')).toBeVisible()
+      expect(within(card).getByText('Desglose por provincia')).toBeVisible()
+      expect(card).toHaveTextContent(formatter.format(metrics[metric]))
+      const breakdown = within(card).getByLabelText(`${title} por provincia`)
+      expect(breakdown).toBeVisible()
+      for (const province of metrics.byProvince) {
+        const row = within(breakdown).getByText(province.name).parentElement!
+        expect(row).toBeVisible()
+        expect(row.querySelector('dd')).toHaveTextContent(formatter.format(province[metric]))
+      }
+    }
+    expect(document.querySelector('details')).not.toBeInTheDocument()
   })
 
   it('writes the initial Argentina month into the dashboard URL without losing filters', async () => {

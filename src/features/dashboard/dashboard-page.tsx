@@ -107,7 +107,7 @@ export function DashboardPage() {
           {metrics ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {cards.map((card) => (
-                <DashboardMetricCard key={card.metric} {...card} />
+                <DashboardMetricCard key={card.metric} {...card} provinces={metrics.byProvince} />
               ))}
             </div>
           ) : null}
@@ -133,28 +133,6 @@ export function DashboardPage() {
         </div>
       </section>
 
-      {metrics ? (
-        <details className="border-t border-foreground/10 pt-4 font-sans text-sm">
-          <summary className="w-fit cursor-pointer rounded-sm font-medium text-foreground/65 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Desglose por provincia</summary>
-          <div className="grid gap-5 pt-4 sm:grid-cols-2 lg:grid-cols-4">
-            {cards.map((card) => (
-              <div key={card.metric} className="flex flex-col gap-3">
-                <h3 className="font-semibold">{card.title}</h3>
-                {metrics.byProvince.length ? (
-                  <dl aria-label={`${card.title} por provincia`} className="flex flex-col gap-2">
-                    {metrics.byProvince.map((province) => (
-                      <div key={province.id} className="flex items-baseline justify-between gap-3">
-                        <dt className="min-w-0 break-words text-foreground/70">{province.name}</dt>
-                        <dd className="shrink-0 font-semibold tabular-nums">{new Intl.NumberFormat('es-AR').format(province[card.metric])}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : <p className="text-foreground/65">Sin provincias para este período.</p>}
-              </div>
-            ))}
-          </div>
-        </details>
-      ) : null}
       </div>
     </div>
   )
