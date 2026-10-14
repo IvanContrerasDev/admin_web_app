@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
+import { formatArgentinaDateTime } from '../../lib/dates'
 import { ServiceError } from '../../services/service-error'
 import { useAuth } from './use-auth'
 
@@ -26,12 +27,12 @@ function getErrorMessage(error: unknown) {
 }
 
 function safeReturnTo(value: string | null) {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/login')) return '/'
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\') || Array.from(value).some((character) => character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) || value.startsWith('/login')) return '/'
   return value
 }
 
 function LoginForm() {
-  const { login, isSubmitting } = useAuth()
+  const { login, logout, logoutWarning, isSubmitting } = useAuth()
   const errorSummaryRef = useRef<HTMLDivElement>(null)
   const {
     register,
@@ -63,6 +64,13 @@ function LoginForm() {
           Revisá registros, equipos y documentación operativa desde un único lugar.
         </p>
       </div>
+
+      {logoutWarning ? (
+        <div role="alert" className="rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm text-foreground">
+          <p>{logoutWarning}</p>
+          <button type="button" disabled={isSubmitting} onClick={() => void logout().catch(() => undefined)} className="mt-3 min-h-11 rounded-md border border-accent px-3 font-semibold hover:bg-accent/10 disabled:opacity-60">Reintentar cierre remoto</button>
+        </div>
+      ) : null}
 
       {errors.root ? (
         <div ref={errorSummaryRef} tabIndex={-1} role="alert" className="rounded-md border border-accent bg-accent/10 px-4 py-3 text-sm font-medium text-foreground">
@@ -171,7 +179,7 @@ function ChallengeForm() {
           aria-describedby={errors.code ? 'code-error' : 'code-help'}
           {...register('code')}
         />
-        <p id="code-help" className="text-sm text-foreground/65">El código vence a los 10 minutos.</p>
+        <p id="code-help" className="text-sm text-foreground/65">El código vence el {formatArgentinaDateTime(challenge.expiresAt)} (hora Argentina).</p>
         {errors.code ? <p id="code-error" className="text-sm font-medium text-accent">{errors.code.message}</p> : null}
       </div>
 

@@ -76,7 +76,7 @@ export function AppShell() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => void logout()}
+                  onClick={() => void logout().catch(() => undefined)}
                   disabled={isSubmitting}
                   className="min-h-11 rounded-md bg-accent px-3 py-2 font-sans text-sm font-semibold text-background hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-60"
                 >

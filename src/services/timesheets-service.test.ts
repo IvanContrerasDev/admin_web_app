@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createTimesheetsStore, registerTimesheetsMockRoutes } from '../mocks/timesheets-handlers'
 import { MockServiceAdapter } from './mock-service-adapter'
 import { TimesheetsService } from './timesheets-service'
@@ -114,5 +114,24 @@ describe('TimesheetsService', () => {
 
     expect(download.downloadUrl.length).toBeGreaterThan(0)
     expect(new Date(download.expiresAt).getTime() - NOW().getTime()).toBe(15 * 60 * 1000)
+  })
+  it('releases a simulated blob after the download validity period', async () => {
+    vi.useFakeTimers()
+    const revokeObjectURL = vi.fn()
+    vi.stubGlobal('URL', class extends URL {
+      static createObjectURL = vi.fn(() => 'blob:mock-timesheet')
+      static revokeObjectURL = revokeObjectURL
+    })
+    try {
+      const { service } = setup()
+      await expect(service.getDownload('66000000-0000-4000-8000-000000000001')).resolves.toMatchObject({ downloadUrl: 'blob:mock-timesheet' })
+      vi.advanceTimersByTime(15 * 60 * 1000 - 1)
+      expect(revokeObjectURL).not.toHaveBeenCalled()
+      vi.advanceTimersByTime(1)
+      expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-timesheet')
+    } finally {
+      vi.useRealTimers()
+      vi.unstubAllGlobals()
+    }
   })
 })

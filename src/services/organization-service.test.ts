@@ -47,4 +47,14 @@ describe('OrganizationService', () => {
     await expect(service.createWorkplace({ ...workplaceInput, clientId: '33000000-0000-4000-8000-000000000004' })).rejects.toMatchObject({ code: 'CLIENT_INACTIVE' })
     await expect(service.createWorkplace({ ...workplaceInput, name: 'Centro de distribución San Juan' })).rejects.toMatchObject({ code: 'WORKPLACE_NAME_ALREADY_EXISTS' })
   })
+  it('uses the resource-specific error for malformed bodies', async () => {
+    const adapter = new MockServiceAdapter()
+    registerOrganizationMockRoutes(adapter)
+    for (const body of [undefined, null, 'invalid', []]) {
+      await expect(adapter.request({ method: 'POST', path: '/clients', body })).rejects.toMatchObject({ code: 'INVALID_CLIENT_DATA', status: 400 })
+      await expect(adapter.request({ method: 'POST', path: '/workplaces', body })).rejects.toMatchObject({ code: 'INVALID_WORKPLACE_DATA', status: 400 })
+      await expect(adapter.request({ method: 'PUT', path: '/workplaces/44000000-0000-4000-8000-000000000001', body })).rejects.toMatchObject({ code: 'INVALID_WORKPLACE_DATA' })
+      await expect(adapter.request({ method: 'PATCH', path: '/workplaces/44000000-0000-4000-8000-000000000001/status', body })).rejects.toMatchObject({ code: 'INVALID_WORKPLACE_DATA' })
+    }
+  })
 })

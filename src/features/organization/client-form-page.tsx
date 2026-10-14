@@ -18,7 +18,7 @@ export function ClientFormPage() {
 
   const mutation = useMutation({
     mutationFn: (name: string) => editing ? organizationService.updateClient(clientId!, { name }) : organizationService.createClient({ name }),
-    onSuccess: async (client) => { setDirty(false); queryClient.setQueryData(['client', client.id], client); await queryClient.invalidateQueries({ queryKey: ['clients'] }); navigate(`/clientes/${client.id}`, { replace: true }) },
+    onSuccess: async (client) => { setDirty(false); queryClient.setQueryData(['client', client.id], client); await Promise.all([queryClient.invalidateQueries({ queryKey: ['clients'] }), queryClient.invalidateQueries({ queryKey: ['workplaces'] })]); navigate(`/clientes/${client.id}`, { replace: true }) },
     onError: (caught) => setError(caught instanceof ServiceError && caught.code === 'CLIENT_NAME_ALREADY_EXISTS' ? 'Ya existe un cliente con ese nombre.' : caught instanceof Error ? caught.message : 'No pudimos guardar el cliente.'),
   })
 

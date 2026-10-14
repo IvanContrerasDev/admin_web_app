@@ -9,6 +9,7 @@ const sessionQueryKey = ['auth', 'session'] as const
 export function AuthProvider({ children }: PropsWithChildren) {
   const queryClient = useQueryClient()
   const [challenge, setChallenge] = useState<LoginChallenge | null>(null)
+  const [logoutWarning, setLogoutWarning] = useState<string | null>(null)
   const sessionQuery = useQuery({
     queryKey: sessionQueryKey,
     queryFn: () => authService.bootstrap(),
@@ -31,10 +32,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const logoutMutation = useMutation({
     mutationFn: () => authService.logout(),
+    onSuccess: () => setLogoutWarning(null),
+    onError: () => setLogoutWarning('La sesión se cerró en este dispositivo, pero no pudimos confirmar la revocación remota. Revisá tu conexión y cerrá la sesión nuevamente antes de dejar un dispositivo compartido.'),
     onSettled: async () => {
       setChallenge(null)
       await queryClient.cancelQueries()
       queryClient.clear()
+      queryClient.setQueryData(sessionQueryKey, null)
     },
   })
 
@@ -58,6 +62,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     },
     cancelChallenge: () => setChallenge(null),
     logout: async () => logoutMutation.mutateAsync(),
+    logoutWarning,
     isSubmitting: loginMutation.isPending || verifyMutation.isPending || logoutMutation.isPending,
   }
 

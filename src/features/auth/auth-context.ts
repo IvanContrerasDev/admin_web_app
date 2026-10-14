@@ -11,6 +11,7 @@ export interface AuthContextValue {
   verify: (code: string) => Promise<AuthenticatedSession>
   cancelChallenge: () => void
   logout: () => Promise<void>
+  logoutWarning: string | null
   isSubmitting: boolean
 }
 

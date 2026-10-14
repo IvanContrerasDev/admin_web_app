@@ -164,11 +164,11 @@ function intervalStatus(interval: Pick<RecordIntervalInput, 'startTime' | 'endTi
   return 'CLOSED' as const
 }
 
-function validateManualIntervals(intervals: RecordIntervalInput[]) {
+function validateManualIntervals(intervals: RecordIntervalInput[], requireWorkBounds = true) {
   if (intervals.length === 0) throw apiError('RECORD_INTERVALS_REQUIRED', 'Agregá al menos un intervalo.', 422)
 
   for (const interval of intervals) {
-    if (interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) {
+    if (requireWorkBounds && interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) {
       throw apiError('WORK_INTERVAL_REQUIRES_BOUNDS', 'Los intervalos de trabajo manuales requieren entrada y salida.', 422)
     }
     if (interval.startTime && interval.endTime && new Date(interval.endTime).getTime() <= new Date(interval.startTime).getTime()) {
@@ -267,9 +267,14 @@ function hasDayFilters(query: MonthlyQuery) {
   return Boolean(query.status || query.reviewStatus || query.origin || query.hasAbsence)
 }
 
-function createRows(year: number, month: number, query: MonthlyQuery): MonthlyRow[] {
+function createRows(year: number, month: number, query: MonthlyQuery, storedRecords: RecordDetail[] = []): MonthlyRow[] {
   const rows = employees.flatMap((employee, employeeIndex) => workplaces.map((workplace, workplaceIndex) => {
     const days = createDays(employeeIndex * workplaces.length + workplaceIndex, year, month)
+    for (const detail of storedRecords) {
+      if (detail.employee.id !== employee.id || detail.workplace.id !== workplace.id) continue
+      if (Number(detail.date.slice(0, 4)) !== year || Number(detail.date.slice(5, 7)) !== month) continue
+      days[Number(detail.date.slice(-2)) - 1] = { date: detail.date, state: 'PRESENT', matchesFilters: true, record: detailSummary(detail) }
+    }
     const filteredDays = days.map((day) => day.state === 'PRESENT' ? { ...day, matchesFilters: dayMatches(day, query) } : day)
     const monthWorkMinutes = filteredDays.reduce((total, day) => total + (day.state === 'PRESENT' ? day.record.totalWorkMinutes : 0), 0)
     const matchingWorkMinutes = filteredDays.reduce((total, day) => total + (day.state === 'PRESENT' && day.matchesFilters ? day.record.totalWorkMinutes : 0), 0)
@@ -297,14 +302,14 @@ function createRows(year: number, month: number, query: MonthlyQuery): MonthlyRo
 }
 
 function snapshotFor(query: MonthlyQuery) {
-  return ['mock', query.year, query.month, query.siteId ?? 'all', query.employeeId ?? 'all', query.workplaceId ?? 'all', query.clientId ?? 'all', query.status ?? 'all', query.reviewStatus ?? 'all', query.origin ?? 'all', query.hasAbsence ? 'absence' : 'all'].join(':')
+  return ['mock', query.year, query.month, query.pageSize ?? 50, query.siteId ?? 'all', query.employeeId ?? 'all', query.workplaceId ?? 'all', query.clientId ?? 'all', query.status ?? 'all', query.reviewStatus ?? 'all', query.origin ?? 'all', query.hasAbsence ? 'absence' : 'all'].join(':')
 }
 
 export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () => Date = () => new Date()) {
   const recordContexts = new Map<string, RecordContext>()
   const eventDetails = new Map<string, AttendanceEventDetail>()
   const storedRecords = new Map<string, RecordDetail>()
-  const createdRecordIds = new Set<string>()
+  const snapshots = new Map<string, { signature: string; expiresAt: number; rows: MonthlyRow[] }>()
   let manualRecordSequence = 1
   let manualIntervalSequence = 1
 
@@ -326,26 +331,24 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
     }
 
     if (query.year < 2000 || query.month < 1 || query.month > 12) throw apiError('INVALID_MONTH', 'Seleccioná un mes válido.', 400)
-    const expectedSnapshot = snapshotFor(query)
+    const signature = snapshotFor(query)
+    const timestamp = now().getTime()
     if ((query.page ?? 1) > 1 && !query.snapshotToken) throw apiError('MONTHLY_SNAPSHOT_MISMATCH', 'La consulta mensual perdió su referencia. Reiniciá la carga.', 400)
-    if (query.snapshotToken && query.snapshotToken !== expectedSnapshot) throw apiError('MONTHLY_SNAPSHOT_MISMATCH', 'Los filtros ya no coinciden con la consulta mensual.', 400)
-
-    const rows = createRows(query.year, query.month, query)
+    const token = query.snapshotToken ?? crypto.randomUUID()
+    let snapshot = snapshots.get(token)
+    if (query.snapshotToken) {
+      if (!snapshot || timestamp >= snapshot.expiresAt) throw apiError('MONTHLY_SNAPSHOT_EXPIRED', 'La consulta mensual venció. Reiniciá desde la primera página.', 410)
+      if (snapshot.signature !== signature) throw apiError('MONTHLY_SNAPSHOT_MISMATCH', 'Los filtros ya no coinciden con la consulta mensual.', 400)
+    } else {
+      for (const [key, value] of snapshots) if (timestamp >= value.expiresAt) snapshots.delete(key)
+      snapshot = { signature, expiresAt: timestamp + 15 * 60 * 1000, rows: createRows(query.year, query.month, query, [...storedRecords.values()]) }
+      snapshots.set(token, snapshot)
+    }
+    const rows = structuredClone(snapshot!.rows)
     for (const row of rows) {
-      for (const detail of storedRecords.values()) {
-        if (!createdRecordIds.has(detail.id) || detail.employee.id !== row.employee.id || detail.workplace.id !== row.workplace.id) continue
-        if (Number(detail.date.slice(0, 4)) !== query.year || Number(detail.date.slice(5, 7)) !== query.month) continue
-        const dayIndex = Number(detail.date.slice(-2)) - 1
-        row.days[dayIndex] = { date: detail.date, state: 'PRESENT', matchesFilters: dayMatches({ date: detail.date, state: 'PRESENT', matchesFilters: true, record: detailSummary(detail) }, query), record: detailSummary(detail) }
-      }
       for (const day of row.days) {
-        if (day.state !== 'PRESENT') continue
-        const stored = storedRecords.get(day.record.id)
-        if (stored) day.record = detailSummary(stored)
-        recordContexts.set(day.record.id, { row, day })
+        if (day.state === 'PRESENT') recordContexts.set(day.record.id, { row, day })
       }
-      row.totals.monthWorkMinutes = row.days.reduce((total, day) => total + (day.state === 'PRESENT' ? day.record.totalWorkMinutes : 0), 0)
-      row.totals.matchingWorkMinutes = row.days.reduce((total, day) => total + (day.state === 'PRESENT' && day.matchesFilters ? day.record.totalWorkMinutes : 0), 0)
     }
     const page = query.page ?? 1
     const pageSize = query.pageSize ?? 50
@@ -364,8 +367,8 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
         month: query.month,
         year: query.year,
         timeZone: '-03:00',
-        snapshotToken: expectedSnapshot,
-        snapshotExpiresAt: new Date(now().getTime() + 15 * 60 * 1000).toISOString(),
+        snapshotToken: token,
+        snapshotExpiresAt: new Date(snapshot!.expiresAt).toISOString(),
         totals,
       },
     }
@@ -408,7 +411,6 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
       updatedAt: createdAt,
     })
     storedRecords.set(id, detail)
-    createdRecordIds.add(id)
     return { data: detail }
   })
 
@@ -420,6 +422,8 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
     if (!current) throw apiError('RECORD_NOT_FOUND', 'El registro solicitado no existe o ya no está disponible.', 404)
     if (input.expectedVersion !== current.version) throw apiError('RECORD_VERSION_CONFLICT', 'El registro cambió desde que lo abriste. Recargá para comparar la versión actual.', 409)
 
+    const writtenIntervals = (input.intervalChanges ?? []).flatMap((change) => change.operation === 'DELETE' ? [] : [change.interval])
+    if (writtenIntervals.length) validateManualIntervals(writtenIntervals)
     const nextIntervals = [...current.intervals]
     for (const change of input.intervalChanges ?? []) {
       if (change.operation === 'ADD') {
@@ -434,7 +438,7 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
       }
       nextIntervals[index] = toManualInterval(change.id, change.interval, nextIntervals[index])
     }
-    if (input.intervalChanges?.length) validateManualIntervals(nextIntervals)
+    if (input.intervalChanges?.length) validateManualIntervals(nextIntervals, false)
 
     const changed = Object.prototype.hasOwnProperty.call(input, 'observations') || Boolean(input.intervalChanges?.length)
     const next = recalculateRecord({

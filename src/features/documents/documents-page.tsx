@@ -5,7 +5,7 @@ import { DOCUMENT_TYPE_LABELS, documentTypeSchema, type DocumentType } from '../
 import { PaginationNav, QueryState, fieldClass, labelClass } from '../organization/organization-ui'
 import { DocumentDetailDialog } from './document-detail-dialog'
 import { DocumentUploadDialog } from './document-upload-dialog'
-import { useDocumentList, useDocumentOptions } from './use-documents'
+import { useDocumentDetail, useDocumentList, useDocumentOptions } from './use-documents'
 import { formatFileSize } from '../timesheets/use-timesheets'
 
 const pageSize = 25
@@ -83,7 +83,9 @@ export function DocumentsPage() {
 
   const documents = documentsQuery.data?.data ?? []
   const pagination = documentsQuery.data?.pagination
-  const selectedDocument = documents.find((item) => item.id === searchParams.get('documentId'))
+  const documentId = searchParams.get('documentId')
+  const detailQuery = useDocumentDetail(documentId)
+  const selectedDocument = detailQuery.data
 
   return (
     <section className="flex flex-col gap-6">
@@ -188,6 +190,13 @@ export function DocumentsPage() {
             setNotice(createdCount === 1 ? 'Se cargó 1 documento al legajo.' : `Se cargaron ${createdCount} documentos al legajo.`)
           }}
         />
+      ) : null}
+      {documentId && !selectedDocument ? (
+        <div aria-live="polite" className="rounded-md border border-foreground/15 p-4">
+          <p role={detailQuery.isError ? 'alert' : 'status'}>{detailQuery.isError ? 'No pudimos abrir el documento. Verificá el enlace o reintentá.' : 'Cargando detalle de documento…'}</p>
+          {detailQuery.isError ? <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={() => void detailQuery.refetch()}>Reintentar detalle</button> : null}
+          <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={closeDetail}>Cerrar detalle</button>
+        </div>
       ) : null}
       {selectedDocument ? (
         <DocumentDetailDialog

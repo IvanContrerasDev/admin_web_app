@@ -173,4 +173,67 @@ describe('RecordsService', () => {
       location: { accuracyMeters: expect.any(Number) },
     })
   })
+  it('expires snapshots after 15 minutes without extending the TTL on later pages', async () => {
+    let clock = new Date('2026-09-18T12:00:00.000Z')
+    const adapter = new MockServiceAdapter()
+    registerRecordsMockRoutes(adapter, () => clock)
+    const service = new RecordsService(adapter)
+    const filters = { year: 2026, month: 9, siteId: SAN_JUAN_ID, pageSize: 5 }
+    const first = await service.listMonthly(filters)
+    clock = new Date('2026-09-18T12:14:59.000Z')
+    const second = await service.listMonthly({ ...filters, page: 2, snapshotToken: first.meta.snapshotToken })
+    expect(second.meta.snapshotExpiresAt).toBe(first.meta.snapshotExpiresAt)
+    await expect(service.listMonthly({ ...filters, page: 2, reviewStatus: 'APPROVED', snapshotToken: first.meta.snapshotToken })).rejects.toMatchObject({ code: 'MONTHLY_SNAPSHOT_MISMATCH', retryable: false })
+    clock = new Date('2026-09-18T12:15:00.000Z')
+    await expect(service.listMonthly({ ...filters, page: 2, snapshotToken: first.meta.snapshotToken })).rejects.toMatchObject({ code: 'MONTHLY_SNAPSHOT_EXPIRED', status: 410, retryable: false })
+    const restarted = await service.listMonthly(filters)
+    expect(restarted.pagination.page).toBe(1)
+    expect(restarted.meta.snapshotToken).not.toBe(first.meta.snapshotToken)
+  })
+
+  it('freezes a snapshot while new queries reflect corrections and recalculate day matches', async () => {
+    const service = setup()
+    const filters = { year: 2026, month: 9, siteId: SAN_JUAN_ID, reviewStatus: 'PENDING' as const }
+    const first = await service.listMonthly(filters)
+    const day = first.data.flatMap((row) => row.days).find((item) => item.state === 'PRESENT' && item.matchesFilters)
+    expect(day?.state).toBe('PRESENT')
+    if (!day || day.state !== 'PRESENT') throw new Error('Missing fixture')
+    const detail = await service.getDetail(day.record.id)
+    await service.approve(detail.id, { expectedVersion: detail.version, reviewStatus: 'APPROVED' })
+    const frozen = await service.listMonthly({ ...filters, snapshotToken: first.meta.snapshotToken })
+    expect(frozen.data).toEqual(first.data)
+    const fresh = await service.listMonthly(filters)
+    const refreshedDay = fresh.data.flatMap((row) => row.days).find((item) => item.state === 'PRESENT' && item.record.id === detail.id)
+    if (refreshedDay) expect(refreshedDay).toMatchObject({ matchesFilters: false, record: { reviewStatus: 'APPROVED' } })
+  })
+
+  it('injects runtime records before day-level row filtering', async () => {
+    const service = setup()
+    const filters = { year: 2026, month: 9, employeeId: '22000000-0000-4000-8000-000000000001', workplaceId: '44000000-0000-4000-8000-000000000001', reviewStatus: 'MANUAL_LOADED' as const }
+    const created = await service.create({
+      userId: filters.employeeId, workplaceId: filters.workplaceId, date: '2026-09-04', observations: null,
+      intervals: [{ type: 'WORK', startTime: '2026-09-04T12:00:00.000Z', endTime: '2026-09-04T13:31:00.000Z', absenceReason: null, observations: null }],
+    })
+    const response = await service.listMonthly(filters)
+    expect(response.data).toHaveLength(1)
+    const day = response.data[0]!.days[3]
+    expect(day).toMatchObject({ state: 'PRESENT', matchesFilters: true, record: { id: created.id, totalWorkMinutes: 91 } })
+    expect(response.meta.totals.matchingWorkMinutes).toBe(response.data[0]!.totals.matchingWorkMinutes)
+  })
+
+  it('allows ADD and DELETE without rewriting an untouched historical open WORK interval', async () => {
+    const service = setup()
+    const monthly = await service.listMonthly({ year: 2026, month: 9, siteId: SAN_JUAN_ID, status: 'INCOMPLETE' })
+    const day = monthly.data.flatMap((row) => row.days).find((item) => item.state === 'PRESENT' && item.record.recordStatus === 'INCOMPLETE' && !item.record.hasAbsence)
+    if (!day || day.state !== 'PRESENT') throw new Error('Missing incomplete fixture')
+    const detail = await service.getDetail(day.record.id)
+    const open = detail.intervals.find((interval) => interval.type === 'WORK' && interval.status === 'OPEN')!
+    expect(open).toBeDefined()
+    const added = await service.update(detail.id, { expectedVersion: detail.version, intervalChanges: [{ operation: 'ADD', interval: { type: 'ABSENCE', startTime: null, endTime: null, absenceReason: 'LEAVE', observations: null } }] })
+    expect(added.intervals.find((interval) => interval.id === open.id)).toEqual(open)
+    const newInterval = added.intervals.find((interval) => !detail.intervals.some((existing) => existing.id === interval.id))!
+    const removed = await service.update(detail.id, { expectedVersion: added.version, intervalChanges: [{ operation: 'DELETE', id: newInterval.id }] })
+    expect(removed.intervals.find((interval) => interval.id === open.id)).toEqual(open)
+    await expect(service.update(detail.id, { expectedVersion: removed.version, intervalChanges: [{ operation: 'UPDATE', id: open.id, interval: { type: 'WORK', startTime: open.startTime, endTime: null, absenceReason: null, observations: null } }] })).rejects.toMatchObject({ code: 'WORK_INTERVAL_REQUIRES_BOUNDS' })
+  })
 })

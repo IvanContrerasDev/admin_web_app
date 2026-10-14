@@ -1,6 +1,6 @@
 # F-013 — Correcciones menores de la revisión independiente (F-003, F-005, F-006, F-007, F-008, F-009)
 
-**Estado:** pending
+**Estado:** pending_review
 **App(s):** admin
 **Creada:** 2026-09-22
 
@@ -56,9 +56,9 @@ De F-009 (inicio operativo):
 
 ## Criterios de aceptación
 
-- [ ] Cada ítem "Incluye" resuelto o descartado con justificación registrada.
-- [ ] Tests nuevos/actualizados donde aplique (snapshot expirado, invalidaciones, safeReturnTo).
-- [ ] `npm run typecheck`, `npm run lint`, `npx vitest run` y `npm run build` en verde.
+- [x] Cada ítem "Incluye" resuelto o descartado con justificación registrada.
+- [x] Tests nuevos/actualizados donde aplique (snapshot expirado, invalidaciones, safeReturnTo).
+- [x] `npm run typecheck`, `npm run lint`, `npx vitest run` y `npm run build` en verde.
 
 ## Notas de implementación
 
@@ -66,8 +66,27 @@ Son 17 ítems independientes y pequeños; conviene resolverlos en una sola pasad
 
 ## Registro de implementación
 
-(pendiente)
+2026-10-13 — Implementación entregada, sin cambios en contratos TypeScript/API ratificados y manteniendo el modo mock-first.
+
+- F-003: logout captura el rechazo, limpia sesión/datos locales incluso ante fallo remoto, evita restauración automática y muestra advertencia persistente con reintento en login; retorno interno rechaza barras invertidas y caracteres de control; ADMIN/SUPER_ADMIN tienen cobertura equivalente y roles no administrativos se rechazan por Zod; vencimiento 2FA mostrado a partir de `expiresAt` en hora Argentina.
+- F-005: crear/editar cliente invalida clientes y lugares; cambio de estado ya lo hacía y se conserva; cuerpos inválidos devuelven código específico de cliente/lugar (incluidos PUT y PATCH de estado); clave pública Maps comentada en `.env.example`, con restricciones de referrer/API.
+- F-006: total global conserva minutos (`h:mm`); snapshots opacos congelan filas/totales con TTL fijo de 15 minutos, validan filtros/tamaño de página y devuelven 410 no reintentable al caducar; botón Reintentar restablece desde página 1 sin token anterior; registros creados/modificados se injertan antes de filtrar filas y recalculan `matchesFilters`; ADD/DELETE/observaciones conservan WORK OPEN histórico no tocado, tanto en mock como en validación del editor; las escrituras nuevas/modificadas siguen exigiendo extremos y validación de superposición.
+- F-007: búsqueda preserva provincia/cliente/lugar/empleado mediante campos ocultos; detalle por ID se obtiene del servicio independientemente de la página visible, con carga/error/reintento/cierre; URLs blob se revocan al terminar sus 15 minutos de vigencia, no antes para no romper el contrato ni la apertura/descarga.
+- F-008: listado global y legajo consultan detalle por ID, sin desmontarlo cuando una edición lo excluye de filtros; el legajo verifica pertenencia al empleado; rango inclusivo de fechas comparado por fecha civil Argentina, probado a ambos lados de medianoche UTC/GMT-3.
+- F-009: editar/crear/aprobar registros invalida también dashboard; mes inicial/ inválido del dashboard se normaliza en URL con replace preservando otros parámetros.
+
+### Evidencia
+
+- `npm run typecheck`: correcto.
+- `npm run lint`: correcto, cero warnings.
+- `npx vitest run`: 14 archivos, 132 tests correctos (32 adicionales respecto de los 100 previos).
+- `npm run build`: correcto; permanece el warning conocido de chunk principal >500 kB, excluido expresamente de esta feature y reservado a F-010.
+- `git diff --check`: correcto.
+- Navegador real, preview Vite, 1048×800, esquema dark del usuario: login y vencimiento 2FA, dashboard con mes inicial en URL, búsqueda de planillas preservando los cuatro filtros organizacionales, documento por deep link con listado vacío, edición de tipo sin desmontar diálogo y logout confirmado hacia login. Sin errores de página.
+- Regresiones de UI/servicio adicionales: fallo remoto de logout y reintento, SUPER_ADMIN, retorno seguro/válido, invalidación de lugares/métricas, totales con minutos, planillas/documentos fuera de página y detalle inexistente, snapshot fijo/expirado/con filtros distintos/reinicio, runtime y WORK OPEN histórico.
+
+Se mantienen fuera de alcance todas las exclusiones originales, incluida la limitación aceptada del mock de métricas sobre cambios de registros runtime.
 
 ## Review
 
-(pendiente)
+Pendiente de revisión independiente. No se declara aprobación del reviewer.

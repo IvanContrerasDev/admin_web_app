@@ -1,4 +1,5 @@
 import { attachmentExtension, validateAttachmentBatch } from '../lib/attachments'
+import { getArgentinaCivilDate } from '../lib/dates'
 import { MockServiceAdapter } from '../services/mock-service-adapter'
 import type { ServiceRequest } from '../services/service-adapter'
 import { ServiceError } from '../services/service-error'
@@ -143,8 +144,8 @@ export function registerDocumentsMockRoutes(
       .filter((document) =>
         (!employeeId || document.employee.id === employeeId)
         && (!type || document.type === type)
-        && (!uploadedFrom || document.createdAt.slice(0, 10) >= uploadedFrom)
-        && (!uploadedTo || document.createdAt.slice(0, 10) <= uploadedTo)
+        && (!uploadedFrom || getArgentinaCivilDate(document.createdAt) >= uploadedFrom)
+        && (!uploadedTo || getArgentinaCivilDate(document.createdAt) <= uploadedTo)
         && (!uploadedBy || normalize(`${document.uploadedBy.firstName} ${document.uploadedBy.lastName}`).includes(uploadedBy))
         && (!search
           || normalize(document.fileName).includes(search)

@@ -126,13 +126,13 @@
     {
       "id": "F-013",
       "title": "Correcciones menores de la revisión independiente (F-003, F-005, F-006, F-007, F-008, F-009)",
-      "status": "pending",
+      "status": "pending_review",
       "dependencies": ["F-003", "F-005", "F-006", "F-007", "F-008", "F-009"],
       "contract_dependencies": ["P-02", "P-07"],
       "task_spec": "docs/tasks/013-correcciones-menores-revision.md",
       "plan": "docs/tasks/001-acuerdos-y-ejecucion-plan.md",
       "review_status": "pending_independent_review",
-      "notes": "17 ítems menores consolidados de las revisiones del 2026-09-22. Excluye decisiones del humano (skeletons §50, naming de módulos, min-h-9) y deudas de performance (chunk >500 kB)."
+      "notes": "Implementada F-013: correcciones de auth/logout/2FA, invalidaciones, snapshots TTL fijo y reinicio, runtime/históricos, filtros y detalles por ID, fechas Argentina y cleanup de blobs. Sin cambios de contratos; mock-first. Typecheck, lint, 132 tests y build correctos; navegador 1048x800 validado sin errores. Warning de chunk >500 kB permanece fuera de alcance. Revisión independiente pendiente; detalle en task_spec."
     },
     {
       "id": "F-010",

@@ -86,7 +86,7 @@ function editorSignature(employeeId: string, workplaceId: string, date: string, 
 function validateIntervals(intervals: EditableInterval[]) {
   const errors: string[] = []
   intervals.forEach((interval, index) => {
-    if (interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) errors.push(`Intervalo ${index + 1}: completá entrada y salida.`)
+    if ((!interval.id || interval.original !== intervalSignature(interval)) && interval.type === 'WORK' && (!interval.startTime || !interval.endTime)) errors.push(`Intervalo ${index + 1}: completá entrada y salida.`)
     if (interval.startTime && interval.endTime && new Date(`${interval.endTime}:00-03:00`) <= new Date(`${interval.startTime}:00-03:00`)) errors.push(`Intervalo ${index + 1}: la salida debe ser posterior a la entrada.`)
   })
   const bounded = intervals.filter((interval) => interval.startTime && interval.endTime).map((interval) => ({ start: new Date(`${interval.startTime}:00-03:00`).getTime(), end: new Date(`${interval.endTime}:00-03:00`).getTime() })).sort((left, right) => left.start - right.start)
@@ -144,7 +144,10 @@ export function RecordEditorForm({ record, initialEmployeeId = '', initialWorkpl
     },
     onSuccess: async (saved) => {
       queryClient.setQueryData(['records', 'detail', saved.id], saved)
-      await queryClient.invalidateQueries({ queryKey: ['records', 'monthly'] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['records', 'monthly'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+      ])
       onSaved(saved)
     },
     onError: (caught) => {

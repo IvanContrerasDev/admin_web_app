@@ -125,7 +125,10 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
     onSuccess: async (saved) => {
       setApprovalError('')
       queryClient.setQueryData(['records', 'detail', saved.id], saved)
-      await queryClient.invalidateQueries({ queryKey: ['records', 'monthly'] })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['records', 'monthly'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+      ])
     },
     onError: (caught) => {
       setApprovalError(caught instanceof ServiceError && caught.code === 'RECORD_VERSION_CONFLICT'

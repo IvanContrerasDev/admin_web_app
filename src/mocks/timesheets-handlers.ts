@@ -130,7 +130,10 @@ function validateFiles(files: { fileName: string; fileSizeBytes: number }[]) {
 function downloadUrlFor(timesheet: TimesheetDetail) {
   try {
     if (typeof Blob !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
-      return URL.createObjectURL(new Blob([`Contenido simulado de ${timesheet.fileName}`], { type: 'text/plain' }))
+      const url = URL.createObjectURL(new Blob([`Contenido simulado de ${timesheet.fileName}`], { type: 'text/plain' }))
+      // Conservar la URL durante los 15 minutos del contrato de descarga.
+      setTimeout(() => URL.revokeObjectURL(url), 15 * 60 * 1000)
+      return url
     }
   } catch {
     // jsdom declara createObjectURL pero no lo implementa: se usa la URL simulada

@@ -98,4 +98,16 @@ describe('DocumentsService', () => {
     expect(download.downloadUrl.length).toBeGreaterThan(0)
     expect(new Date(download.expiresAt).getTime() - NOW().getTime()).toBe(15 * 60 * 1000)
   })
+  it('filters inclusive civil dates in Argentina around UTC midnight', async () => {
+    const { service, store } = setup()
+    const document = store.items[0]!
+    document.createdAt = '2026-09-20T02:59:59.000Z'
+    const previousDay = await service.list({ uploadedFrom: '2026-09-19', uploadedTo: '2026-09-19' })
+    const utcDay = await service.list({ uploadedFrom: '2026-09-20', uploadedTo: '2026-09-20' })
+    expect(previousDay.data.map((item) => item.id)).toContain(document.id)
+    expect(utcDay.data.map((item) => item.id)).not.toContain(document.id)
+    document.createdAt = '2026-09-20T03:00:00.000Z'
+    const midnight = await service.list({ uploadedFrom: '2026-09-20', uploadedTo: '2026-09-20' })
+    expect(midnight.data.map((item) => item.id)).toContain(document.id)
+  })
 })

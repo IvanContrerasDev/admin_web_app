@@ -6,7 +6,7 @@ import { PaginationNav, QueryState, fieldClass, labelClass } from '../organizati
 import { TimesheetDetailDialog } from './timesheet-detail-dialog'
 import { TimesheetStatusBadge } from './timesheet-status-badge'
 import { TimesheetUploadDialog } from './timesheet-upload-dialog'
-import { formatFileSize, formatPeriod, useTimesheetList, useTimesheetOptions } from './use-timesheets'
+import { formatFileSize, formatPeriod, useTimesheetDetail, useTimesheetList, useTimesheetOptions } from './use-timesheets'
 
 const pageSize = 25
 
@@ -87,7 +87,9 @@ export function TimesheetsPage() {
 
   const timesheets = timesheetsQuery.data?.data ?? []
   const pagination = timesheetsQuery.data?.pagination
-  const selectedTimesheet = timesheets.find((item) => item.id === searchParams.get('timesheetId'))
+  const timesheetId = searchParams.get('timesheetId')
+  const detailQuery = useTimesheetDetail(timesheetId)
+  const selectedTimesheet = detailQuery.data
   const visibleWorkplaces = (options.workplaces.data?.data ?? []).filter((workplace) => (!siteId || workplace.site.id === siteId) && (!clientId || workplace.client.id === clientId))
 
   return (
@@ -102,6 +104,10 @@ export function TimesheetsPage() {
 
       <div className="rounded-lg border border-foreground/15 bg-background p-4 sm:p-5">
         <Form className="flex flex-col gap-4 lg:flex-row lg:items-end" method="get">
+          <input type="hidden" name="siteId" value={siteId} />
+          <input type="hidden" name="clientId" value={clientId} />
+          <input type="hidden" name="workplaceId" value={workplaceId} />
+          <input type="hidden" name="employeeId" value={employeeId} />
           <label className={`${labelClass} min-w-0 flex-1`} htmlFor="timesheet-search">
             Buscar
             <input className={`${fieldClass} font-normal placeholder:text-foreground/45`} defaultValue={search} id="timesheet-search" name="search" placeholder="Archivo, empleado o legajo…" type="search" autoComplete="off" />
@@ -218,6 +224,13 @@ export function TimesheetsPage() {
             setNotice(createdCount === 1 ? 'Se cargó 1 planilla y quedó pendiente de procesamiento.' : `Se cargaron ${createdCount} planillas y quedaron pendientes de procesamiento.`)
           }}
         />
+      ) : null}
+      {timesheetId && !selectedTimesheet ? (
+        <div aria-live="polite" className="rounded-md border border-foreground/15 p-4">
+          <p role={detailQuery.isError ? 'alert' : 'status'}>{detailQuery.isError ? 'No pudimos abrir la planilla. Verificá el enlace o reintentá.' : 'Cargando detalle de planilla…'}</p>
+          {detailQuery.isError ? <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={() => void detailQuery.refetch()}>Reintentar detalle</button> : null}
+          <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={closeDetail}>Cerrar detalle</button>
+        </div>
       ) : null}
       {selectedTimesheet ? <TimesheetDetailDialog key={selectedTimesheet.id} timesheet={selectedTimesheet} onClose={closeDetail} /> : null}
     </section>

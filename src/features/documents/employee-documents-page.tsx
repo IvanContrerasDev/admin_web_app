@@ -7,7 +7,7 @@ import { DOCUMENT_TYPE_LABELS } from '../../types/documents'
 import { PaginationNav, QueryState } from '../organization/organization-ui'
 import { formatFileSize } from '../timesheets/use-timesheets'
 import { DocumentDetailDialog } from './document-detail-dialog'
-import { useDocumentList } from './use-documents'
+import { useDocumentDetail, useDocumentList } from './use-documents'
 
 const pageSize = 25
 
@@ -24,6 +24,8 @@ export function EmployeeDocumentsPage() {
   })
 
   const documentsQuery = useDocumentList({ employeeId: userId || undefined, page, pageSize })
+  const documentId = searchParams.get('documentId')
+  const detailQuery = useDocumentDetail(documentId)
 
   const goToPage = (nextPage: number) => {
     const next = new URLSearchParams(searchParams)
@@ -57,7 +59,7 @@ export function EmployeeDocumentsPage() {
   const user = userQuery.data
   const documents = documentsQuery.data?.data ?? []
   const pagination = documentsQuery.data?.pagination
-  const selectedDocument = documents.find((item) => item.id === searchParams.get('documentId'))
+  const selectedDocument = detailQuery.data?.employee.id === userId ? detailQuery.data : undefined
 
   return (
     <section className="flex flex-col gap-6">
@@ -118,6 +120,13 @@ export function EmployeeDocumentsPage() {
 
       <PaginationNav pagination={pagination} label="documentos" onPage={goToPage} />
 
+      {documentId && !selectedDocument ? (
+        <div aria-live="polite" className="rounded-md border border-foreground/15 p-4">
+          <p role={detailQuery.isError || detailQuery.data ? 'alert' : 'status'}>{detailQuery.isError || detailQuery.data ? 'No pudimos abrir este documento del legajo. Verificá el enlace.' : 'Cargando detalle de documento…'}</p>
+          {detailQuery.isError ? <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={() => void detailQuery.refetch()}>Reintentar detalle</button> : null}
+          <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={closeDetail}>Cerrar detalle</button>
+        </div>
+      ) : null}
       {selectedDocument ? (
         <DocumentDetailDialog
           key={selectedDocument.id}

@@ -42,8 +42,8 @@ function apiError(code: string, message: string, status = 400): ServiceError {
   return new ServiceError({ code, message, retryable: false, kind: 'api', status })
 }
 
-function requireBody<T>(request: ServiceRequest): T {
-  if (!request.body || typeof request.body !== 'object') throw apiError('INVALID_CLIENT_DATA', 'Revisá los datos ingresados.')
+function requireBody<T>(request: ServiceRequest, code = 'INVALID_CLIENT_DATA'): T {
+  if (!request.body || typeof request.body !== 'object' || Array.isArray(request.body)) throw apiError(code, 'Revisá los datos ingresados.')
   return request.body as T
 }
 
@@ -153,7 +153,7 @@ export function registerOrganizationMockRoutes(adapter: MockServiceAdapter, now:
   }
 
   adapter.register('POST', '/workplaces', (request) => {
-    const input = requireBody<CreateWorkplaceInput>(request)
+    const input = requireBody<CreateWorkplaceInput>(request, 'INVALID_WORKPLACE_DATA')
     const valid = validateWorkplace(input)
     const timestamp = now().toISOString()
     const workplace: WorkplaceDetail = { id: crypto.randomUUID(), name: valid.name, client: clientReference(valid.client), site: valid.site, status: 'ACTIVE', shapeType: 'CIRCLE', latitude: input.latitude, longitude: input.longitude, radiusMeters: input.radiusMeters, gpsAccuracyThreshold: input.gpsAccuracyThreshold, createdAt: timestamp, updatedAt: timestamp }
@@ -165,7 +165,7 @@ export function registerOrganizationMockRoutes(adapter: MockServiceAdapter, now:
     const index = workplaces.findIndex((item) => item.id === entityId(request.path))
     const current = workplaces[index]
     if (!current) throw apiError('WORKPLACE_NOT_FOUND', 'El lugar de trabajo solicitado no existe.', 404)
-    const input = requireBody<UpdateWorkplaceInput>(request)
+    const input = requireBody<UpdateWorkplaceInput>(request, 'INVALID_WORKPLACE_DATA')
     const valid = validateWorkplace(input, current)
     const updated: WorkplaceDetail = { ...current, name: valid.name, client: clientReference(valid.client), site: valid.site, latitude: input.latitude, longitude: input.longitude, radiusMeters: input.radiusMeters, gpsAccuracyThreshold: input.gpsAccuracyThreshold, updatedAt: now().toISOString() }
     workplaces[index] = updated
@@ -176,7 +176,7 @@ export function registerOrganizationMockRoutes(adapter: MockServiceAdapter, now:
     const index = workplaces.findIndex((item) => item.id === entityId(request.path))
     const current = workplaces[index]
     if (!current) throw apiError('WORKPLACE_NOT_FOUND', 'El lugar de trabajo solicitado no existe.', 404)
-    const { status } = requireBody<{ status: EntityStatus }>(request)
+    const { status } = requireBody<{ status: EntityStatus }>(request, 'INVALID_WORKPLACE_DATA')
     if (status !== 'ACTIVE' && status !== 'INACTIVE') throw apiError('INVALID_WORKPLACE_DATA', 'Seleccioná un estado válido.')
     const updated = { ...current, status, updatedAt: now().toISOString() }
     workplaces[index] = updated

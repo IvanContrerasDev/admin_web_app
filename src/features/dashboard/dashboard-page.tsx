@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { dashboardService } from '../../services/services'
 import { useAuth } from '../auth/use-auth'
@@ -29,6 +30,13 @@ export function DashboardPage() {
   const monthValue = validMonthValue(searchParams.get('month'))
   const [year, month] = monthValue.split('-').map(Number) as [number, number]
   const periodLabel = monthFormatter.format(new Date(Date.UTC(year, month - 1, 1)))
+
+  useEffect(() => {
+    if (searchParams.get('month') === monthValue) return
+    const next = new URLSearchParams(searchParams)
+    next.set('month', monthValue)
+    setSearchParams(next, { replace: true })
+  }, [monthValue, searchParams, setSearchParams])
 
   const metricsQuery = useQuery({
     queryKey: ['dashboard', 'metrics', { month, year }],

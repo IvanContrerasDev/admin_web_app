@@ -10,6 +10,14 @@ export function useDocumentList(query: DocumentListQuery) {
   })
 }
 
+export function useDocumentDetail(id: string | null) {
+  return useQuery({
+    queryKey: ['documents', 'detail', id],
+    queryFn: ({ signal }) => documentsService.get(id!, signal),
+    enabled: Boolean(id),
+  })
+}
+
 export function useDocumentOptions() {
   const workplaces = useQuery({
     queryKey: ['workplaces', 'documents-options'],

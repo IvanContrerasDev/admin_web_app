@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQueries, useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { organizationService, recordsService, userService } from '../../services/services'
 import type { MonthlyQuery } from '../../types/records'
 
@@ -8,8 +8,10 @@ interface PageParameter {
 }
 
 export function useMonthlyRecords(filters: Omit<MonthlyQuery, 'page' | 'pageSize' | 'snapshotToken'>, enabled: boolean) {
-  return useInfiniteQuery({
-    queryKey: ['records', 'monthly', filters],
+  const queryClient = useQueryClient()
+  const queryKey = ['records', 'monthly', filters] as const
+  const query = useInfiniteQuery({
+    queryKey,
     queryFn: ({ pageParam, signal }) => recordsService.listMonthly({
       ...filters,
       page: pageParam.page,
@@ -26,6 +28,7 @@ export function useMonthlyRecords(filters: Omit<MonthlyQuery, 'page' | 'pageSize
     },
     enabled,
   })
+  return { ...query, restart: () => queryClient.resetQueries({ queryKey, exact: true }) }
 }
 
 export function useRecordDetail(recordId: string) {

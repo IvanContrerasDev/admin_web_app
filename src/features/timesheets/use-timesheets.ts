@@ -10,6 +10,14 @@ export function useTimesheetList(query: TimesheetListQuery) {
   })
 }
 
+export function useTimesheetDetail(id: string | null) {
+  return useQuery({
+    queryKey: ['timesheets', 'detail', id],
+    queryFn: ({ signal }) => timesheetsService.get(id!, signal),
+    enabled: Boolean(id),
+  })
+}
+
 export function useTimesheetOptions() {
   const sites = useQuery({
     queryKey: ['sites'],
