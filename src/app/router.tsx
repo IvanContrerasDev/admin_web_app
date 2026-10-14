@@ -13,6 +13,14 @@ export function createAppRouter() {
       errorElement: <RouteErrorPage />,
     },
     {
+      path: '/registro',
+      lazy: async () => {
+        const { RegistrationPage } = await import('../features/auth/registration-page')
+        return { Component: RegistrationPage }
+      },
+      errorElement: <RouteErrorPage />,
+    },
+    {
       element: <ProtectedRoute />,
       errorElement: <RouteErrorPage />,
       children: [

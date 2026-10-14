@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { formatArgentinaDateTime } from '../../lib/dates'
 import { ServiceError } from '../../services/service-error'
 import { useAuth } from './use-auth'
 import { LoadingSkeleton } from '../../app/loading-skeleton'
+import { AuthLayout } from './auth-layout'
 
 const loginSchema = z.object({
   identifier: z.string().trim().email('Ingresá un email válido.'),
@@ -118,6 +119,11 @@ function LoginForm() {
         {isSubmitting ? 'Validando acceso…' : 'Continuar con código'}
       </button>
 
+      <div className="flex flex-col gap-3 border-t border-foreground/15 pt-5">
+        <p className="text-center text-sm text-foreground/70">¿Todavía no tenés acceso administrativo?</p>
+        <Link to="/registro" className="flex min-h-11 items-center justify-center rounded-md border border-primary px-4 py-3 text-center font-sans text-base font-semibold text-primary transition-colors hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Crear cuenta o registrarse</Link>
+      </div>
+
       <p className="text-center text-sm text-foreground/65">
         La recuperación de contraseña se habilitará cuando el backend publique el contrato administrativo definitivo.
       </p>
@@ -206,26 +212,5 @@ export function LoginPage() {
     return <Navigate to={safeReturnTo(searchParams.get('returnTo'))} replace />
   }
 
-  return (
-    <main className="grid min-h-dvh bg-background lg:grid-cols-[minmax(20rem,0.9fr)_minmax(32rem,1.1fr)]">
-      <section className="flex min-h-64 flex-col justify-between gap-8 bg-primary px-6 py-8 text-background sm:px-10 lg:min-h-dvh lg:px-12 lg:py-12">
-        <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-md border border-background/40 font-sans text-lg font-bold" aria-hidden="true">G</span>
-          <div>
-            <p className="font-sans text-base font-semibold">GdeS Administración</p>
-            <p className="font-sans text-sm text-background/80">Gestión operativa</p>
-          </div>
-        </div>
-        <div className="max-w-xl">
-          <p className="text-balance font-sans text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">El trabajo diario, ordenado para decidir mejor.</p>
-          <p className="mt-4 max-w-lg text-pretty font-sans text-base leading-relaxed text-background/85">Acceso exclusivo para responsables de administración y gerencia.</p>
-        </div>
-        <p className="font-sans text-sm text-background/75">Entorno de desarrollo con servicios mock</p>
-      </section>
-
-      <section className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16">
-        <div className="w-full max-w-md">{status === 'challenge' ? <ChallengeForm /> : <LoginForm />}</div>
-      </section>
-    </main>
-  )
+  return <AuthLayout>{status === 'challenge' ? <ChallengeForm /> : <LoginForm />}</AuthLayout>
 }
