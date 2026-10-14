@@ -9,13 +9,13 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
   if (!registration) {
     return (
       <main id="main-content" className="flex min-h-dvh flex-col bg-background text-foreground md:flex-row">
-        <section aria-label="GdeS Grupo de Servicios — Administración" className="flex shrink-0 items-center justify-center md:w-1/2">
+        <section aria-label="GdeS Grupo de Servicios — Administración" className="flex h-[50dvh] shrink-0 overflow-hidden md:h-dvh md:w-1/2">
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/imagen_oficial-GcqRWPfK9G5lKvq8IVXbAbcBuIo2NL.jpeg"
             alt="GdeS Administración. Técnico realizando mantenimiento de un radiador. Servicios Estratégicos de Limpieza y Mantenimiento."
             width={903}
             height={1600}
-            className="h-auto max-h-dvh w-full object-contain md:h-dvh"
+            className="h-full w-full object-cover object-center"
           />
         </section>
         <section aria-label="Ingreso a Administración" className="flex min-w-0 flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
