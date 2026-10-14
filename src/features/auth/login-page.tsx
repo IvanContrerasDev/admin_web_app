@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { formatArgentinaDateTime } from '../../lib/dates'
 import { ServiceError } from '../../services/service-error'
 import { useAuth } from './use-auth'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 
 const loginSchema = z.object({
   identifier: z.string().trim().email('Ingresá un email válido.'),
@@ -198,7 +199,7 @@ export function LoginPage() {
   const [searchParams] = useSearchParams()
 
   if (status === 'checking') {
-    return <main className="flex min-h-dvh items-center justify-center bg-background" aria-live="polite">Verificando sesión…</main>
+    return <main className="flex min-h-dvh items-center justify-center bg-background px-4"><LoadingSkeleton label="Verificando sesión…" variant="session" /></main>
   }
 
   if (status === 'authenticated') {

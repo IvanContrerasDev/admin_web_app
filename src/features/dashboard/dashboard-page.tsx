@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { dashboardService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { useAuth } from '../auth/use-auth'
 
 const numberFormatter = new Intl.NumberFormat('es-AR')
@@ -92,7 +93,7 @@ export function DashboardPage() {
         </div>
 
         <div aria-live="polite">
-          {metricsQuery.isPending ? <p className="rounded-lg border border-foreground/15 bg-background p-6 text-foreground/65">Cargando métricas de <span className="capitalize">{periodLabel}</span>…</p> : null}
+          {metricsQuery.isPending ? <LoadingSkeleton label={`Cargando métricas de ${periodLabel}…`} variant="metrics" /> : null}
           {metricsQuery.isError ? (
             <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert">
               <p className="font-semibold">No pudimos cargar las métricas del mes.</p>

@@ -46,6 +46,15 @@ a {
   scrollbar-gutter: stable;
 }
 
+@layer base {
+  @media (min-width: 1024px) {
+    button,
+    a.inline-flex {
+      min-height: 2.25rem;
+    }
+  }
+}
+
 @media (min-width: 1024px) {
   .records-matrix-viewport {
     max-height: calc(100dvh - 16.5rem);

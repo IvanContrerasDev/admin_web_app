@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { userService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { UserForm } from './user-form'
 
 export function UserFormPage() {
@@ -9,7 +10,7 @@ export function UserFormPage() {
   const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: ({ signal }) => userService.listSites(signal) })
   const userQuery = useQuery({ queryKey: ['user', userId], queryFn: ({ signal }) => userService.get(userId!, signal), enabled: editing })
 
-  if (sitesQuery.isPending || editing && userQuery.isPending) return <p aria-live="polite">Cargando formulario…</p>
+  if (sitesQuery.isPending || editing && userQuery.isPending) return <LoadingSkeleton label="Cargando formulario…" variant="form" />
   if (sitesQuery.isError || editing && (userQuery.isError || !userQuery.data)) return <div className="rounded-lg border border-destructive/35 bg-background p-6" role="alert"><h1 className="text-2xl font-bold">No pudimos preparar el formulario</h1><p className="mt-2 text-foreground/65">Volvé al listado e intentá nuevamente.</p></div>
 
   const current = editing ? userQuery.data : undefined

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { formatArgentinaDateTime } from '../../lib/dates'
 import { userService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { DOCUMENT_TYPE_LABELS } from '../../types/documents'
 import { PaginationNav, QueryState } from '../organization/organization-ui'
 import { formatFileSize } from '../timesheets/use-timesheets'
@@ -45,7 +46,7 @@ export function EmployeeDocumentsPage() {
     setSearchParams(next, { replace: true })
   }
 
-  if (userQuery.isPending) return <p aria-live="polite">Cargando legajo…</p>
+  if (userQuery.isPending) return <LoadingSkeleton label="Cargando legajo…" variant="detail" />
   if (userQuery.isError || !userQuery.data) {
     return (
       <section className="rounded-lg border border-destructive/35 bg-background p-6" role="alert">
@@ -122,7 +123,7 @@ export function EmployeeDocumentsPage() {
 
       {documentId && !selectedDocument ? (
         <div aria-live="polite" className="rounded-md border border-foreground/15 p-4">
-          <p role={detailQuery.isError || detailQuery.data ? 'alert' : 'status'}>{detailQuery.isError || detailQuery.data ? 'No pudimos abrir este documento del legajo. Verificá el enlace.' : 'Cargando detalle de documento…'}</p>
+          {detailQuery.isError || detailQuery.data ? <p role="alert">No pudimos abrir este documento del legajo. Verificá el enlace.</p> : <LoadingSkeleton label="Cargando detalle de documento…" variant="detail" />}
           {detailQuery.isError ? <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={() => void detailQuery.refetch()}>Reintentar detalle</button> : null}
           <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={closeDetail}>Cerrar detalle</button>
         </div>

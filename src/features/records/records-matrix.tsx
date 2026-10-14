@@ -1,4 +1,5 @@
 import type { UIEvent, WheelEvent } from 'react'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import type { MonthlyDay, MonthlyRow } from '../../types/records'
 
 interface RecordsMatrixProps {
@@ -130,7 +131,7 @@ export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetching
         </tbody>
       </table>
       <div aria-live="polite" className="sticky bottom-0 left-0 flex min-h-8 w-full items-center justify-center border-t border-foreground/10 bg-background px-3 text-sm text-foreground/65">
-        {isFetchingNextPage ? 'Cargando más filas…' : hasNextPage ? 'Desplazate hacia abajo para cargar más filas' : `${rows.length} de ${totalItems} filas`}
+        {isFetchingNextPage ? <LoadingSkeleton label="Cargando más filas…" variant="inline" /> : hasNextPage ? 'Desplazate hacia abajo para cargar más filas' : `${rows.length} de ${totalItems} filas`}
       </div>
     </div>
   )

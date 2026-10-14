@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ServiceError } from '../../services/service-error'
 import { organizationService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import type { ClientListItem, CreateWorkplaceInput, SiteReference, WorkplaceDetail } from '../../types/organization'
 import { fieldClass, labelClass } from './organization-ui'
 
@@ -130,7 +131,7 @@ function WorkplaceFormContent({ current, clients, sites }: FormContentProps) {
       <fieldset className="rounded-lg border border-foreground/15 bg-background p-5 sm:p-6">
         <legend className="px-2 text-lg font-bold">Zona permitida</legend>
         <div className="flex flex-col gap-6">
-          <Suspense fallback={<p className="rounded-lg border border-foreground/15 p-6 text-foreground/65">Cargando Google Maps…</p>}>
+          <Suspense fallback={<LoadingSkeleton label="Cargando Google Maps…" variant="map" />}>
             <WorkplaceMap location={location} radiusMeters={Number.isFinite(radiusMeters) ? radiusMeters : 100} onLocationChange={setLocation} />
           </Suspense>
 
@@ -179,7 +180,7 @@ export function WorkplaceFormPage() {
   const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: ({ signal }) => organizationService.listSites(signal) })
   const workplaceQuery = useQuery({ queryKey: ['workplace', workplaceId], queryFn: ({ signal }) => organizationService.getWorkplace(workplaceId!, signal), enabled: editing })
 
-  if (clientsQuery.isPending || sitesQuery.isPending || editing && workplaceQuery.isPending) return <p aria-live="polite">Cargando formulario…</p>
+  if (clientsQuery.isPending || sitesQuery.isPending || editing && workplaceQuery.isPending) return <LoadingSkeleton label="Cargando formulario…" variant="form" />
   if (clientsQuery.isError || sitesQuery.isError || editing && (workplaceQuery.isError || !workplaceQuery.data)) {
     return <section role="alert"><h1 className="text-2xl font-bold">No pudimos preparar el formulario</h1><Link className="mt-4 inline-flex text-primary hover:underline" to="/lugares">Volver a lugares</Link></section>
   }

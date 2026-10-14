@@ -16,12 +16,18 @@ F-013 implementada y entregada para revisión independiente (2026-10-13).
 - Recuperación de catálogos fallidos mediante Reintentar, sin reiniciar consultas mensuales sanas.
 - Paginación automática suspendida tras error de snapshot hasta reinicio explícito.
 - Solapamientos históricos intactos preservados; validación compartida UI/mock rechaza solapamientos nuevos o modificados, incluidos anidados.
-- Se mantienen pendientes de decisión humana skeletons, naming de navegación y tamaño mínimo de clic; no se amplía el alcance global sin consultarlo.
+- Decisiones humanas aprobadas: implementar skeletons ahora, conservar Clientes/Documentos y mínimo desktop de 36 px para controles compactos. Se agregan skeletons accesibles por estructura, conservando errores/reintentos, estados vacíos y feedback de mutaciones; no se reducen controles de 44 px ni se alteran contratos.
 
 ## Verificación
 - Typecheck, lint, 140 tests (14 archivos) y build correctos; `git diff --check` correcto (+8 regresiones en esta revisión).
 - Navegador real Vite 384×588, esquema dark solicitado y tema claro MVP: login/2FA, matriz con minutos, apertura por teclado y corrección de observaciones preservando WORK OPEN histórico. Sin errores de página.
 - Reintento de catálogos y suspensión/reinicio de paginación caducada cubiertos por tests de UI; la inducción de catálogo fallido en navegador se recuperó automáticamente y no confirmó allí el botón.
+
+## Ampliación aprobada — skeletons y decisiones UX
+- Skeletons transversales por estructura: métricas, tablas/matriz, formularios, detalles, mapas lazy, sesión y metadata/paginación; reduced-motion y anuncios solo accesibles.
+- Clientes/Documentos conservados; mínimo desktop de 36 px en capa base sin sobrescribir controles de 44 px.
+- Typecheck, lint, build y diff correctos; 153 tests en 15 archivos (+13). Persiste warning de chunk >500 kB.
+- Navegador Vite, dark solicitado y tema claro MVP: skeleton de métricas 384×588 y tabla 1280×800 con consultas mock demoradas y posterior resolución; sin errores de página. Mediciones desktop confirman mínimo de 36 px y controles existentes de 44 px sin reducción.
 
 ## Pendientes / fuera de alcance
 - Revisión independiente de F-013; no se declara aprobación propia.

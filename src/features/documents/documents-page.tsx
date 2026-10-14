@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { Form, useSearchParams } from 'react-router-dom'
 import { formatArgentinaDateTime } from '../../lib/dates'
 import { DOCUMENT_TYPE_LABELS, documentTypeSchema, type DocumentType } from '../../types/documents'
@@ -193,7 +194,7 @@ export function DocumentsPage() {
       ) : null}
       {documentId && !selectedDocument ? (
         <div aria-live="polite" className="rounded-md border border-foreground/15 p-4">
-          <p role={detailQuery.isError ? 'alert' : 'status'}>{detailQuery.isError ? 'No pudimos abrir el documento. Verificá el enlace o reintentá.' : 'Cargando detalle de documento…'}</p>
+          {detailQuery.isError ? <p role="alert">No pudimos abrir el documento. Verificá el enlace o reintentá.</p> : <LoadingSkeleton label="Cargando detalle de documento…" variant="detail" />}
           {detailQuery.isError ? <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={() => void detailQuery.refetch()}>Reintentar detalle</button> : null}
           <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={closeDetail}>Cerrar detalle</button>
         </div>

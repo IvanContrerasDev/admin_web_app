@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { userService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { useToast } from '../toasts/use-toast'
 
 const dateFormatter = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' })
@@ -27,7 +28,7 @@ export function UserDetailPage() {
     },
   })
 
-  if (userQuery.isPending) return <p aria-live="polite">Cargando empleado…</p>
+  if (userQuery.isPending) return <LoadingSkeleton label="Cargando empleado…" variant="detail" />
   if (userQuery.isError || !userQuery.data) return <section className="rounded-lg border border-destructive/35 bg-background p-6" role="alert"><h1 className="text-2xl font-bold">No pudimos abrir este empleado</h1><p className="mt-2 text-foreground/65">Verificá el enlace o volvé al listado.</p><button className="mt-5 min-h-11 rounded-md border border-foreground/25 px-4 font-semibold" onClick={() => navigate('/usuarios')} type="button">Volver a empleados</button></section>
 
   const user = userQuery.data

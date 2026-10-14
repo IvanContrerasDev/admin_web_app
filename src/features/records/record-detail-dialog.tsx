@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ServiceError } from '../../services/service-error'
 import { recordsService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import type { AttendanceEventDetail, RecordInterval, ReviewStatus } from '../../types/records'
 import { RecordEditorForm } from './record-editor-form'
 import { useAttendanceEventDetails, useRecordDetail, useRecordsFilterOptions } from './use-monthly-records'
@@ -116,7 +117,6 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
   const eventIds = useMemo(() => detailQuery.data?.intervals.flatMap((interval) => interval.attendanceEvents.map((event) => event.id)) ?? [], [detailQuery.data])
   const eventQueries = useAttendanceEventDetails(eventIds, showEventDetails)
   const eventQueryById = new Map(eventIds.map((eventId, index) => [eventId, eventQueries[index]]))
-  const loadingEvents = showEventDetails && eventQueries.some((query) => query.isPending)
   const approvalMutation = useMutation({
     mutationFn: () => recordsService.approve(recordId, {
       expectedVersion: detailQuery.data!.version,
@@ -173,7 +173,7 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
       </div>
 
       <div className="flex flex-col gap-5 p-4 sm:p-5">
-        {detailQuery.isPending ? <div aria-live="polite" className="flex min-h-64 items-center justify-center text-sm text-foreground/65">Cargando detalle del registro…</div> : null}
+        {detailQuery.isPending ? <LoadingSkeleton label="Cargando detalle del registro…" variant="detail" /> : null}
         {detailQuery.isError ? (
           <div className="rounded-md border border-accent/40 p-4" role="alert">
             <p className="font-semibold">No pudimos cargar el detalle.</p>
@@ -267,7 +267,7 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
                         {interval.attendanceEvents.length === 0 ? <p className="text-sm text-foreground/65">Este intervalo no tiene eventos automáticos asociados.</p> : null}
                         {interval.attendanceEvents.map((event) => {
                           const eventQuery = eventQueryById.get(event.id)
-                          if (eventQuery?.isPending) return <p aria-live="polite" className="text-sm text-foreground/65" key={event.id}>Cargando metadata de {eventTypeLabel(event.type).toLowerCase()}…</p>
+                          if (eventQuery?.isPending) return <LoadingSkeleton label={`Cargando metadata de ${eventTypeLabel(event.type).toLowerCase()}…`} variant="inline" key={event.id} />
                           if (eventQuery?.isError) return <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-accent/35 p-3 text-sm" key={event.id}><p>No pudimos cargar la metadata de {eventTypeLabel(event.type).toLowerCase()}.</p><button className="font-semibold text-accent underline underline-offset-4" type="button" onClick={() => void eventQuery.refetch()}>Reintentar</button></div>
                           return eventQuery?.data ? <EventMetadata event={eventQuery.data} key={event.id} /> : null
                         })}
@@ -276,7 +276,6 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
                   </article>
                 ))}
               </div>
-              {loadingEvents ? <p aria-live="polite" className="text-sm text-foreground/65">Consultando la metadata de los eventos…</p> : null}
             </section>
           </>
         ) : null}

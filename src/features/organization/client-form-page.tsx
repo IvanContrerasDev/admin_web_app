@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ServiceError } from '../../services/service-error'
 import { organizationService } from '../../services/services'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { fieldClass, labelClass } from './organization-ui'
 
 export function ClientFormPage() {
@@ -23,7 +24,7 @@ export function ClientFormPage() {
   })
 
   const submit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setError(''); const name = String(new FormData(event.currentTarget).get('name') ?? '').trim(); mutation.mutate(name) }
-  if (editing && query.isPending) return <p aria-live="polite">Cargando cliente…</p>
+  if (editing && query.isPending) return <LoadingSkeleton label="Cargando cliente…" variant="form" />
   if (editing && (query.isError || !query.data)) return <div role="alert"><h1 className="text-2xl font-bold">No pudimos abrir este cliente</h1><Link className="mt-4 inline-flex text-primary hover:underline" to="/clientes">Volver a clientes</Link></div>
   const client = query.data
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { Form, useSearchParams } from 'react-router-dom'
 import { formatArgentinaDateTime } from '../../lib/dates'
 import type { TimesheetStatus } from '../../types/timesheets'
@@ -227,7 +228,7 @@ export function TimesheetsPage() {
       ) : null}
       {timesheetId && !selectedTimesheet ? (
         <div aria-live="polite" className="rounded-md border border-foreground/15 p-4">
-          <p role={detailQuery.isError ? 'alert' : 'status'}>{detailQuery.isError ? 'No pudimos abrir la planilla. Verificá el enlace o reintentá.' : 'Cargando detalle de planilla…'}</p>
+          {detailQuery.isError ? <p role="alert">No pudimos abrir la planilla. Verificá el enlace o reintentá.</p> : <LoadingSkeleton label="Cargando detalle de planilla…" variant="detail" />}
           {detailQuery.isError ? <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={() => void detailQuery.refetch()}>Reintentar detalle</button> : null}
           <button type="button" className="mt-3 min-h-11 rounded-md border border-foreground/25 px-4 hover:border-primary" onClick={closeDetail}>Cerrar detalle</button>
         </div>

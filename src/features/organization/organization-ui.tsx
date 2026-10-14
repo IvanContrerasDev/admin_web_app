@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { LoadingSkeleton } from '../../app/loading-skeleton'
 import type { Pagination } from '../../types/api'
 import type { EntityStatus } from '../../types/organization'
 
@@ -22,10 +23,10 @@ interface QueryStateProps {
 export function QueryState({ pending, error, empty, subject, onRetry, children }: QueryStateProps) {
   return (
     <div aria-live="polite">
-      {pending ? <p className="rounded-lg border border-foreground/15 bg-background p-6 text-foreground/65">Cargando {subject}…</p> : null}
+      {pending ? <LoadingSkeleton label={`Cargando ${subject}…`} variant="table" /> : null}
       {error ? <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert"><p className="font-semibold">No pudimos cargar {subject}.</p><button className="mt-3 min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive" type="button" onClick={onRetry}>Reintentar</button></div> : null}
       {!pending && !error && empty ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otros filtros o una búsqueda diferente.</p></div> : null}
-      {!empty ? children : null}
+      {!pending && !error && !empty ? children : null}
     </div>
   )
 }

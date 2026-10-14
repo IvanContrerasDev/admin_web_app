@@ -101,7 +101,16 @@ Evidencia nueva:
 - Build y `git diff --check` correctos. Permanece el warning conocido de chunk >500 kB reservado a F-010.
 - Navegador real Vite, 384×588, esquema dark solicitado (la app conserva su tema claro de MVP): login/2FA, matriz y total con minutos, apertura por teclado y guardado de observaciones sin alterar un WORK OPEN histórico; sin errores de página. Reintento de los cuatro catálogos y suspensión/reinicio de paginación caducada comprobados mediante tests de UI. El fallo de catálogo inducido en navegador se recuperó automáticamente antes de poder comprobar allí el botón; no se declara validación de ese botón en navegador.
 
-Pendientes de decisión humana fuera de F-010: skeletons transversales, nombres de navegación Clientes/Documentos frente a §45 y normalización de áreas de clic de 36 px. Se consultan sin introducir cambios globales de UX por iniciativa del agente.
+Decisiones humanas recibidas el 2026-10-14: implementar ahora los skeletons transversales como ampliación aprobada fuera del alcance original de F-013; conservar Clientes y Documentos en la navegación; aceptar 36 px como mínimo desktop para controles compactos (sin reducir controles existentes de 44 px).
+
+Implementación adicional: skeletons reutilizables por estructura (métricas, tablas, matriz, formularios, detalles, mapas lazy, sesión y metadata/paginación); mensajes de carga solo para lectores de pantalla; placeholders no interactivos y animación respetando reduced-motion. Los botones de mutación mantienen su feedback Guardando/Cargando, no se reemplazan por skeletons. QueryState evita mostrar tablas incompletas durante la carga inicial y conserva errores/reintentos y estados vacíos. No se modifican contratos ni integraciones. El estilo compartido garantiza al menos 36 px para botones y enlaces de acción inline-flex en el breakpoint desktop (1024 px), sin reducir los controles que ya miden 44 px.
+
+### Evidencia de la ampliación aprobada
+
+- Typecheck y lint correctos; suite completa: 15 archivos y 153 tests (+13 de skeletons, estados carga/error/vacío y transición del formulario con catálogo demorado).
+- Build y `git diff --check` correctos; permanece el warning conocido de chunk principal >500 kB reservado a F-010.
+- Navegador real Vite: métricas en 384×588 y tabla de empleados en 1280×800, esquema dark del usuario y tema claro MVP. Consultas mock pausadas solo en la sesión de prueba para observar placeholders y restauradas para comprobar el reemplazo por datos; sin errores de página ni overflow horizontal desktop.
+- Medición desktop: mínimo compartido 36 px; Cerrar sesión, Buscar, Anterior y Siguiente conservan 44 px. La regla vive en `@layer base` para no sobrescribir utilidades de tamaño mayor.
 
 ## Review
 
