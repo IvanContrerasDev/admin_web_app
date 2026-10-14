@@ -22,10 +22,23 @@ export function registerDashboardMockRoutes(
     const month = parseInteger(request.query?.month, 0)
     if (year < 2000 || month < 1 || month > 12) throw apiError('INVALID_MONTH', 'Seleccioná un mes válido.', 400)
 
-    const pendingTimesheets = timesheetsStore.items.filter(
-      (timesheet) => timesheet.year === year && timesheet.month === month && timesheet.status === 'PENDING',
-    ).length
+    const recordMetrics = computeMonthlyRecordMetrics(year, month)
+    const provinces = new Map(recordMetrics.byProvince.map((province) => [province.id, {
+      ...province, pendingTimesheets: 0,
+    }]))
+    let pendingTimesheets = 0
+    for (const timesheet of timesheetsStore.items) {
+      if (timesheet.year !== year || timesheet.month !== month || timesheet.status !== 'PENDING') continue
+      pendingTimesheets += 1
+      let province = provinces.get(timesheet.site.id)
+      if (!province) {
+        province = { ...timesheet.site, pendingTimesheets: 0, incompleteRecords: 0, pendingReviewRecords: 0, recordsWithAbsence: 0 }
+        provinces.set(timesheet.site.id, province)
+      }
+      province.pendingTimesheets += 1
+    }
+    const byProvince = [...provinces.values()].sort((left, right) => left.name.localeCompare(right.name, 'es-AR'))
 
-    return { data: { pendingTimesheets, ...computeMonthlyRecordMetrics(year, month) } }
+    return { data: { ...recordMetrics, pendingTimesheets, byProvince } }
   })
 }

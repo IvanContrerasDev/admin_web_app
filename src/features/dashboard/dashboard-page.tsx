@@ -4,8 +4,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { dashboardService } from '../../services/services'
 import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { useAuth } from '../auth/use-auth'
-
-const numberFormatter = new Intl.NumberFormat('es-AR')
+import type { DashboardMetricKey } from '../../types/dashboard'
+import { DashboardMetricCard } from './dashboard-metric-card'
 const monthFormatter = new Intl.DateTimeFormat('es-AR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
 const primaryActions = [
@@ -52,12 +52,12 @@ export function DashboardPage() {
   }
 
   const metrics = metricsQuery.data
-  const cards = metrics
+  const cards: { title: string; value: number; description: string; href: string; metric: DashboardMetricKey }[] = metrics
     ? [
-      { title: 'Planillas pendientes', value: metrics.pendingTimesheets, description: 'Planillas del mes sin procesar.', href: `/planillas?month=${monthValue}&status=PENDING` },
-      { title: 'Registros incompletos', value: metrics.incompleteRecords, description: 'Registros del mes con información faltante.', href: `/registros?month=${monthValue}&status=INCOMPLETE` },
-      { title: 'Pendientes de validación', value: metrics.pendingReviewRecords, description: 'Registros del mes que esperan revisión.', href: `/registros?month=${monthValue}&reviewStatus=PENDING` },
-      { title: 'Registros con ausencia', value: metrics.recordsWithAbsence, description: 'Registros del mes con al menos una ausencia.', href: `/registros?month=${monthValue}&hasAbsence=true` },
+      { metric: 'pendingTimesheets', title: 'Planillas pendientes', value: metrics.pendingTimesheets, description: 'Planillas del mes sin procesar.', href: `/planillas?month=${monthValue}&status=PENDING` },
+      { metric: 'incompleteRecords', title: 'Registros incompletos', value: metrics.incompleteRecords, description: 'Registros del mes con información faltante.', href: `/registros?month=${monthValue}&status=INCOMPLETE` },
+      { metric: 'pendingReviewRecords', title: 'Pendientes de validación', value: metrics.pendingReviewRecords, description: 'Registros del mes que esperan revisión.', href: `/registros?month=${monthValue}&reviewStatus=PENDING` },
+      { metric: 'recordsWithAbsence', title: 'Registros con ausencia', value: metrics.recordsWithAbsence, description: 'Registros del mes con al menos una ausencia.', href: `/registros?month=${monthValue}&hasAbsence=true` },
     ]
     : []
 
@@ -103,19 +103,7 @@ export function DashboardPage() {
           {metrics ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {cards.map((card) => (
-                <Link key={card.title} to={card.href} className="group flex min-h-40 flex-col justify-between gap-6 rounded-md border border-foreground/15 bg-background p-5 transition-colors duration-150 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-                  <div>
-                    <h3 className="font-sans text-base font-semibold text-foreground group-hover:text-primary">{card.title}</h3>
-                    <p className="mt-1 text-pretty font-sans text-sm leading-relaxed text-foreground/65">{card.description}</p>
-                  </div>
-                  <p className="flex items-baseline justify-between gap-3">
-                    <span className="flex flex-col gap-1">
-                      <span className="font-sans text-4xl font-bold tabular-nums tracking-tight text-foreground">{numberFormatter.format(card.value)}</span>
-                      <span className="font-sans text-sm font-normal text-foreground/65">Total de todas las provincias</span>
-                    </span>
-                    <span className="font-sans text-sm font-semibold text-primary">Abrir vista</span>
-                  </p>
-                </Link>
+                <DashboardMetricCard key={card.metric} {...card} provinces={metrics.byProvince} />
               ))}
             </div>
           ) : null}

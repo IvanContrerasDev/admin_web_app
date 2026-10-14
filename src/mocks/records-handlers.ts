@@ -496,15 +496,32 @@ export function computeMonthlyRecordMetrics(year: number, month: number) {
   let incompleteRecords = 0
   let pendingReviewRecords = 0
   let recordsWithAbsence = 0
+  const provinces = new Map(ORGANIZATION_SITES.map((site) => [site.id, {
+    ...site, incompleteRecords: 0, pendingReviewRecords: 0, recordsWithAbsence: 0,
+  }]))
 
   for (const row of rows) {
+    let province = provinces.get(row.site.id)
+    if (!province) {
+      province = { ...row.site, incompleteRecords: 0, pendingReviewRecords: 0, recordsWithAbsence: 0 }
+      provinces.set(row.site.id, province)
+    }
     for (const day of row.days) {
       if (day.state !== 'PRESENT') continue
-      if (day.record.recordStatus === 'INCOMPLETE') incompleteRecords += 1
-      if (day.record.reviewStatus === 'PENDING') pendingReviewRecords += 1
-      if (day.record.hasAbsence) recordsWithAbsence += 1
+      if (day.record.recordStatus === 'INCOMPLETE') {
+        incompleteRecords += 1
+        province.incompleteRecords += 1
+      }
+      if (day.record.reviewStatus === 'PENDING') {
+        pendingReviewRecords += 1
+        province.pendingReviewRecords += 1
+      }
+      if (day.record.hasAbsence) {
+        recordsWithAbsence += 1
+        province.recordsWithAbsence += 1
+      }
     }
   }
 
-  return { incompleteRecords, pendingReviewRecords, recordsWithAbsence }
+  return { incompleteRecords, pendingReviewRecords, recordsWithAbsence, byProvince: [...provinces.values()] }
 }
