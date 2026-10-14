@@ -109,7 +109,10 @@ export function DashboardPage() {
                     <p className="mt-1 text-pretty font-sans text-sm leading-relaxed text-foreground/65">{card.description}</p>
                   </div>
                   <p className="flex items-baseline justify-between gap-3">
-                    <span className="font-sans text-4xl font-bold tabular-nums tracking-tight text-foreground">{numberFormatter.format(card.value)}</span>
+                    <span className="flex flex-col gap-1">
+                      <span className="font-sans text-4xl font-bold tabular-nums tracking-tight text-foreground">{numberFormatter.format(card.value)}</span>
+                      <span className="font-sans text-sm font-normal text-foreground/65">Total de todas las provincias</span>
+                    </span>
                     <span className="font-sans text-sm font-semibold text-primary">Abrir vista</span>
                   </p>
                 </Link>
