@@ -68,9 +68,6 @@ export function DashboardPage() {
         <h1 className="text-balance font-sans text-3xl font-bold tracking-tight sm:text-4xl">
           ¡Hola, {session?.user.firstName}!
         </h1>
-        <p className="max-w-lg text-pretty font-sans text-base leading-relaxed text-foreground/65">
-          Estado general de la operación y accesos a las tareas pendientes.
-        </p>
       </section>
 
       <div className="flex flex-col gap-7 px-5 py-6 sm:px-8">
