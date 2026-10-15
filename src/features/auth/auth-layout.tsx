@@ -8,17 +8,15 @@ interface AuthLayoutProps {
 export function AuthLayout({ children, registration = false }: AuthLayoutProps) {
   if (!registration) {
     return (
-      <main id="main-content" className="flex min-h-dvh flex-col bg-background text-foreground md:flex-row">
-        <section aria-label="GdeS Grupo de Servicios — Administración" className="flex h-[50dvh] shrink-0 overflow-hidden md:h-dvh md:w-1/2">
-          <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/imagen_oficial-GcqRWPfK9G5lKvq8IVXbAbcBuIo2NL.jpeg"
-            alt="GdeS Administración. Técnico realizando mantenimiento de un radiador. Servicios Estratégicos de Limpieza y Mantenimiento."
-            width={903}
-            height={1600}
-            className="h-full w-full object-cover object-center"
-          />
+      <main id="main-content" className="flex min-h-dvh flex-col bg-background text-foreground lg:flex-row">
+        <section aria-label="GdeS Grupo de Servicios — Administración" className="auth-welcome-panel min-h-80 shrink-0 lg:min-h-dvh lg:w-[38%]">
+          <div className="sr-only">
+            <p>GdeS Grupo de Servicios — Administración</p>
+            <p>Servicios Estratégicos de Limpieza y Mantenimiento.</p>
+            <p>Entorno de desarrollo con servicios mock</p>
+          </div>
         </section>
-        <section aria-label="Ingreso a Administración" className="flex min-w-0 flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
+        <section aria-label="Ingreso a Administración" className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
           <div className="w-full max-w-md">{children}</div>
         </section>
       </main>
