@@ -24,11 +24,13 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
           <div aria-hidden="true" className="auth-hero-overlay absolute inset-0 -z-10" />
 
           <div className="flex items-center gap-4 sm:gap-5">
-            <div className="flex flex-col leading-none" aria-hidden="true">
-              <span className="flex items-end font-sans text-3xl font-semibold tracking-tight sm:text-4xl">
-                GdeS
-              </span>
-            </div>
+            <img
+              src="/images/gdes-logo.png"
+              alt="GdeS Grupo de Servicios"
+              width={1093}
+              height={993}
+              className="h-12 w-auto opacity-90 sm:h-14"
+            />
             <div className="h-12 w-px bg-surface/40 sm:h-14" aria-hidden="true" />
             <p className="flex flex-col font-sans text-sm leading-snug">
               <span className="font-semibold">GdeS Grupo de Servicios</span>
