@@ -76,6 +76,7 @@ a {
 }
 
 .auth-hero-overlay {
+  opacity: 0.55;
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--color-foreground) 45%, transparent) 0%, transparent 28%),
     linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 88%, transparent) 0%, color-mix(in srgb, var(--color-primary) 55%, transparent) 55%, color-mix(in srgb, var(--color-primary) 20%, transparent) 100%),
