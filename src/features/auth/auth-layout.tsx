@@ -27,10 +27,7 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
             <div className="flex flex-col leading-none" aria-hidden="true">
               <span className="flex items-end font-sans text-3xl font-semibold tracking-tight sm:text-4xl">
                 GdeS
-                <span className="auth-logo-leaf mb-1.5 ml-0.5 size-3.5 bg-accent sm:size-4" />
               </span>
-              <span className="mt-1 font-sans text-xs font-medium sm:text-sm">Grupo de</span>
-              <span className="font-sans text-sm font-semibold tracking-wide text-[color-mix(in_srgb,var(--color-secondary)_35%,var(--color-surface))] sm:text-base">SERVICIOS</span>
             </div>
             <div className="h-12 w-px bg-surface/40 sm:h-14" aria-hidden="true" />
             <p className="flex flex-col font-sans text-sm leading-snug">
@@ -43,7 +40,6 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
             <p className="max-w-md text-balance font-sans text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:mb-auto lg:max-w-lg lg:text-4xl xl:text-5xl">
               Servicios Estratégicos de Limpieza y Mantenimiento.
             </p>
-            <p className="font-sans text-xs font-medium text-surface/80 sm:text-sm lg:mt-24">Entorno de desarrollo con servicios mock</p>
           </div>
         </section>
         <section aria-label="Ingreso a Administración" className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 sm:py-14 lg:h-full lg:w-1/2 lg:overflow-y-auto lg:px-16 lg:py-12">
