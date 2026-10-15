@@ -84,7 +84,7 @@ export function RecordsMatrix({ rows, dates, totalItems, hasNextPage, isFetching
                 <span className="block tabular-nums">{dayNumber(date)}</span>
               </th>
             ))}
-            <th className="sticky right-0 top-0 z-30 h-11 w-20 min-w-20 border-b border-l border-foreground/20 bg-foreground px-2 text-right font-semibold text-background" scope="col">Total</th>
+            <th className="sticky right-0 top-0 z-30 h-11 w-20 min-w-20 border-b border-l border-foreground/20 bg-foreground px-2 text-center font-semibold text-background" scope="col">Total</th>
           </tr>
         </thead>
         <tbody>
