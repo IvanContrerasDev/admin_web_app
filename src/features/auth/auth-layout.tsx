@@ -29,7 +29,7 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
               alt="GdeS Grupo de Servicios"
               width={1049}
               height={979}
-              className="h-12 w-auto opacity-75 sm:h-14"
+              className="h-12 w-auto opacity-100 sm:h-14"
             />
             <div className="h-12 w-px bg-surface/40 sm:h-14" aria-hidden="true" />
             <p className="flex flex-col font-sans text-sm leading-snug">
