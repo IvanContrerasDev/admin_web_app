@@ -25,11 +25,11 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
 
           <div className="flex items-center gap-4 sm:gap-5">
             <img
-              src="/images/gdes-logo.png"
+              src="/images/gdes-logo-marca-agua.png"
               alt="GdeS Grupo de Servicios"
-              width={1093}
-              height={993}
-              className="h-12 w-auto opacity-90 sm:h-14"
+              width={1049}
+              height={979}
+              className="h-12 w-auto opacity-75 sm:h-14"
             />
             <div className="h-12 w-px bg-surface/40 sm:h-14" aria-hidden="true" />
             <p className="flex flex-col font-sans text-sm leading-snug">
