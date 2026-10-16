@@ -1,65 +1,16 @@
-# F-012 — Propuestas de contrato pendientes pre-integración (planillas, documentos, métricas)
+# F-012 — Cierre documental pre-integración
 
-**Estado:** pending_review (entrega documental; ratificación humana pendiente)
-**App(s):** admin
-**Creada:** 2026-09-22
+**Estado de entrega:** pending_review; `feature_list.json` aún figura pending y requiere procesamiento del leader.
 
-## Contexto
+## Alcance y criterios
 
-Las revisiones independientes de F-007, F-008 y F-009 (2026-09-22) detectaron que los task specs referencian `docs/changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md`, **archivo que no existe**. Según AGENTS.md, agregar/modificar contratos TS exige consulta obligatoria al humano vía propuesta. F-010 exige "contratos ratificados y propagados", así que estas propuestas deben existir y elevarse antes.
+- [x] DTOs candidatos de planillas/documentos/métricas elevados: expiresAt en ambas descargas, estado/metadata al reemplazar, tipos/fechas/uploadedBy, multipart/nullable/desempates y coherencia provincial.
+- [x] Evidencia mock diferenciada de contrato ratificado y backend disponible.
+- [x] Entrega elevada al leader/humano; [inbox activo](../../progress/leader/inbox/20261013-f012-ratificacion-planillas-documentos-metricas.md).
+- [ ] Reviewer independiente y procesamiento de estado por leader. No confundir cierre documental con ratificación contractual.
 
-## Alcance
+## Fuentes y evidencia actual
 
-**Incluye:**
-- Crear la propuesta en `docs/changes_proposals/` con los DTOs candidatos usados por el frontend mock-first:
-  - Planillas (`src/types/timesheets.ts`): DTO de planilla, orden año/mes/secuencia, endpoints `GET/POST /timesheets`, `PATCH /timesheets/{id}/status`, `PUT /timesheets/{id}/file`, `GET /timesheets/{id}/download`; decisión "el reemplazo conserva el estado" (mencionada en `docs/tasks/007-planillas.md:28,49` sin artefacto).
-  - Documentos/legajos (`src/types/documents.ts`): DTO de documento, 9 tipos, endpoints, descarga firmada 15 min. Incorporar `expiresAt` en la respuesta de descarga (el schema `documentDownloadSchema` lo exige y P-04.E solo propone `{ downloadUrl }`).
-  - Métricas de inicio (`src/services/dashboard-service.ts`): DTO de `GET /dashboard/metrics` (4 contadores, semántica de decisión 11.F) y la duda de coherencia contador global vs. matriz filtrada por provincia (mencionada en `docs/tasks/009-inicio-operativo.md:23,43`).
-- Corregir las referencias rotas en `docs/tasks/007-planillas.md`, `docs/tasks/008-legajos-digitales.md` y `docs/tasks/009-inicio-operativo.md` para que apunten al archivo real creado.
-- Elevar la propuesta al humano para ratificación (queda en `progress/leader/inbox/` o como ítem explícito al humano).
+[Propuesta pendiente](../changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md) conserva diferencias sin ratificar. [Contrato común](../arquitectura/contratos-api.md) centraliza acuerdos y candidatos cross-app; [integración](../integracion.md) contiene diferencias reales y pendientes. Código contrastable en `src/types/{timesheets,documents,dashboard}.ts`, servicios y mocks homónimos. Documentos filtran por fecha civil Argentina; descargas exigen expiresAt. El código actual exige byProvince; la propuesta pendiente lo registra sin ratificación automática.
 
-**NO incluye:**
-- Modificar `docs/arquitectura/contratos-api.md` (SYNCED; la propagación la hace el orchestrator de GdesProject tras ratificación humana).
-- Cambios de código frontend.
-
-## Referencias (fuente de verdad)
-
-- Docs: `docs/spec_definition.md` (Parte 8); `docs/arquitectura/contratos-api.md` (decisión 11, P-04.E); propuestas existentes `docs/changes_proposals/20260917-p04-dtos-y-reglas.md`, `20260919-f006-aprobacion-y-eliminacion-intervalos.md`.
-- Código: `src/types/timesheets.ts`, `src/types/documents.ts`, `src/services/dashboard-service.ts`, `src/mocks/timesheets-handlers.ts`, `src/mocks/documents-handlers.ts`, `src/mocks/dashboard-handlers.ts`.
-
-## Criterios de aceptación
-
-- [x] Existe la propuesta con los DTOs candidatos de planillas, documentos (incl. `expiresAt`) y métricas, siguiendo el formato de las propuestas existentes.
-- [x] Las 3 referencias rotas en task specs apuntan al archivo creado.
-- [x] La propuesta queda elevada al humano (registro en `progress/`).
-- [x] Ningún contrato de la Parte 8 ni archivo SYNCED fue modificado.
-
-## Notas de implementación
-
-Tarea documental; la ratificación es humana. La feature puede cerrarse con la propuesta elevada aunque la ratificación llegue después (registrarlo en notes).
-
-## Registro de implementación
-
-- Entrega documental realizada el 2026-10-13: [propuesta F-007–F-009](../changes_proposals/20260919-f007-f009-planillas-legajos-metricas.md). Se conserva el nombre histórico referenciado, pero la fecha efectiva y la ratificación pendiente quedan explícitas.
-- DTOs candidatos contrastados con los tipos, servicios y mocks actuales de planillas/documentos/métricas. Incluye todas las rutas, envelopes, 9 tipos documentales, orden, filtros, límites de archivos, metadata vs multipart y errores candidatos.
-- Se propone `expiresAt` obligatorio en ambas descargas; conservar estado al reemplazar se identifica como decisión no ratificada. La duda de `siteId` ofrece opciones y recomendación sin alterar el contrato vigente.
-- Las referencias de tasks 007/008/009 se convirtieron en enlaces relativos al archivo real y sus secciones correspondientes.
-- Propuesta elevada al humano a través de [inbox del leader](../../progress/leader/inbox/20261013-f012-ratificacion-planillas-documentos-metricas.md), con decisiones solicitadas y gate de F-010. Crear la propuesta no implica ratificación ni disponibilidad de API real.
-- El backlog `feature_list.json` se mantiene intacto: el inbox solicita al leader, su owner, actualizar el estado tras procesar la entrega.
-- Validación documental: enlaces relativos/anchors de los 6 documentos editados o creados, presencia de DTOs/rutas y decisiones, `git diff --check` y alcance sin cambios a frontend/TypeScript/Parte 8/SYNCED. Sin cambios de ejecución: no corresponde repetir tests/build ni smoke UI.
-
-## Autorrevisión e iteración — 2026-10-14
-
-Contrastada la propuesta con `src/types/timesheets.ts`, `src/types/documents.ts`, servicios/mocks y decisiones 8, 11 y 14 del contrato sincronizado. DTOs, 9 tipos, rutas, envelopes y `expiresAt` están descritos como candidatos, diferenciados de lo ya ratificado. La política de reemplazo y la coherencia provincial se elevan explícitamente, sin tomar decisiones en código.
-
-Hallazgo corregido:
-- La sección C todavía afirmaba que el mock filtraba fechas por recorte UTC. F-013 ya usa `getArgentinaCivilDate(document.createdAt)`; se actualizó esa evidencia manteniendo el filtro GMT-3 como candidato pendiente de ratificación/backend. No se alteran DTOs ni decisiones propuestas.
-
-Evidencia:
-- Validación de los 6 documentos de la entrega: 11 enlaces relativos/anchors válidos, incluidas las referencias de F-007/F-008/F-009 y el inbox del leader.
-- La elevación al humano sigue disponible en `progress/leader/inbox/20261013-f012-ratificacion-planillas-documentos-metricas.md`. F-012 puede cerrarse documentalmente cuando el leader/reviewer procesen la entrega; eso no equivale a ratificar contratos.
-- Sin cambios a frontend atribuibles a F-012, Parte 8, contratos TypeScript o archivos SYNCED; solo se actualizan la evidencia de la propuesta y este registro. El backlog se conserva: el leader sigue siendo su owner.
-
-## Review
-
-Autorrevisión documental completada con corrección. Pendiente del reviewer independiente del harness. Ratificación humana, propagación por orchestrator y materialización backend siguen pendientes; F-010 no queda desbloqueada.
+F-012 no implementa producto. La propuesta temporal se retira solo tras consolidación y sync verificado por orchestrator. No se muta backlog ni se aprueban candidatos por esta limpieza. F-010 requiere además materialización backend y cierre de sus otras dependencias.

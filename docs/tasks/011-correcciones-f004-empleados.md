@@ -6,7 +6,7 @@
 
 ## Contexto
 
-La revisión independiente de F-004 (2026-09-22) arrojó veredicto **cambios requeridos** con 2 hallazgos bloqueantes (deep links rotos y columnas faltantes en la tabla) y varios menores. Ambos bloqueantes fueron confirmados sobre el árbol actual (HEAD `4d20511`). Debe resolverse antes de F-010.
+La revisión independiente de F-004 (2026-09-22) arrojó veredicto **cambios requeridos** con 2 hallazgos bloqueantes (deep links rotos y columnas faltantes en la tabla) y varios menores. Los bloqueantes motivaron esta tarea; la implementación actual ya tiene las correcciones descritas abajo. Debe resolverse antes de F-010.
 
 ## Alcance
 
@@ -22,12 +22,12 @@ La revisión independiente de F-004 (2026-09-22) arrojó veredicto **cambios req
 - Inputs de edición: hacerlos controlados o remontar el form al cambiar de usuario (`user-form-page.tsx`, navegación directa `/usuarios/A/editar` → `/usuarios/B/editar`).
 
 **NO incluye:**
-- Cambios de contrato P-06 (los DTOs ya tienen DNI y teléfono).
+- Cambios de contrato contrato Empleados (los DTOs ya tienen DNI y teléfono).
 - Nuevas funcionalidades de empleados.
 
 ## Referencias (fuente de verdad)
 
-- Docs: `docs/spec_definition.md` §11.2, §51, §53, §72, §90; `docs/tasks/004-gestion-empleados.md`; `docs/changes_proposals/20260917-p06-contrato-empleados.md`.
+- Docs: `docs/spec_definition.md` §11.2, §51, §53, §72, §90; `docs/diseno-frontend.md`; `docs/arquitectura/contratos-api.md` y `docs/integracion.md`.
 - Código: `src/features/users/`, `src/services/user-service.ts`, `src/mocks/user-handlers.ts`, `src/types/users.ts`.
 
 ## Criterios de aceptación
@@ -41,37 +41,16 @@ La revisión independiente de F-004 (2026-09-22) arrojó veredicto **cambios req
 
 ## Notas de implementación
 
-Veredicto completo de la revisión en `progress/reviewer/history.md` (entrada 2026-09-22 F-004).
+Veredicto completo de la revisión en `docs/diseno-frontend.md` y criterios activos de esta tarea.
 
-## Registro de implementación
+## Implementación y evidencia actual para revisión
 
-- Implementada el 2026-10-13 sin cambios de contratos P-06 ni archivos sincronizados.
-- El árbol actual ya enlazaba planillas con `employeeId` y legajo con `/usuarios/:userId/legajo`; se conservaron las rutas activas y se agregaron tests de regresión.
-- DNI y teléfono visibles en tabla desktop y tarjetas mobile, conservando los demás datos mínimos.
-- Página separada del formulario RHF + Zod; validación de todos los campos, errores inline accesibles y foco en el primer error. El formulario se remonta por UUID al navegar entre empleados.
-- Conflictos de unicidad, provincia y contraseña asociados al campo correspondiente. `INVALID_USER_DATA` revalida el esquema o identifica CUIL/fecha de ingreso/puesto cuando el mensaje permite hacerlo; el resto mantiene un error general, sin inventar campos del envelope.
-- Fechas no futuras según calendario Argentina: límites UI dinámicos y mock usando `now` inyectado por request. Los timestamps históricos del seed siguen siendo fixtures, no la fecha actual.
-- Conservados toasts existentes de alta/edición y agregado éxito de activación/desactivación.
-- Estado vacío con "Limpiar filtros", búsqueda remontada al cambiar `search` en la URL, mock clampeado a última página válida y normalización de URL sin agregar historial extra.
-- Tests nuevos: validaciones Zod, flujos UI, links, navegación entre empleados, errores por campo, toasts, historial de búsqueda y paginación. Servicio prueba también fechas con reloj inyectado y borde UTC/Argentina.
-- Validación: `npm run typecheck`, `npm run lint`, `npx vitest run` (100 pruebas) y `npm run build` exitosos. Se actualizó el test de autenticación existente para confirmar el cierre de sesión, como exige el shell actual.
-- Build conserva la advertencia preexistente del chunk principal mayor a 500 kB; fuera del alcance de F-011.
-- Verificación en navegador intentada, pero bloqueada por `404 SANDBOX_NOT_FOUND` del enrutamiento del preview, incluso tras comprobar el puerto activo. No se afirma smoke visual/real exitoso.
+Implementada con mocks, sin cambios contractuales. DNI/teléfono visibles desktop/mobile; formulario RHF/Zod por UUID, campos/errores/foco accesibles, fechas Argentina dinámicas con reloj mock inyectado; toasts; búsqueda/historial URL, limpiar filtros y paginación clampeada. Links actuales: planillas `employeeId` UUID y legajo `/usuarios/:userId/legajo`; cubiertos por regresión.
 
-## Autorrevisión e iteración — 2026-10-14
+El fallo del catálogo de provincias ya muestra error y Reintentar específico, sin skeleton perpetuo, resultados antiguos ni falso vacío. Tests cubren recuperación y conflictos DNI/legajo/provincia con foco.
 
-Contrastados los criterios con la spec §11.2, los DTOs P-06 y la implementación activa, incluidos RHF/Zod, fechas Argentina, enlaces por UUID, feedback, búsqueda/historial, paginación y remount por empleado. No se modifican contratos ni archivos sincronizados.
-
-Hallazgo corregido:
-- `src/features/users/users-page.tsx`: si fallaba el catálogo de provincias, la consulta de empleados permanecía deshabilitada y `isPending` mostraba un skeleton indefinidamente, sin error ni recuperación. Ahora el estado deriva de ambas consultas, informa qué recurso falló y Reintentar reconsulta solo ese recurso; errores no muestran resultados/paginación antiguos ni un falso vacío.
-- Regresión reproduce el fallo antes del fix y verifica error → reintento → listado. Añadida cobertura del foco/errores accesibles para conflictos de DNI, legajo y provincia.
-
-Evidencia actual:
-- 47 pruebas focalizadas F-011 correctas; `npm run typecheck` y `npm run lint` correctos.
-- Suite completa: 15 archivos, 157 tests correctos (+4); `npm run build` y `git diff --check` correctos. Permanece la advertencia conocida del chunk principal >500 kB, fuera de este alcance.
-- Smoke en navegador real Vite completado: login/2FA, empleados en 384×588 y 1280×800 con esquema dark solicitado (tema claro de MVP conservado), DNI/teléfono visibles y sin overflow horizontal de página desktop; búsqueda sin resultados y Limpiar filtros; detalle → planillas con `employeeId` UUID y selector aplicado; detalle → legajo de Lucía con sus documentos; alta vacía muestra 10 errores y foco en Nombre, límite de nacimiento `2026-10-14`. Sin errores de página.
-- La inyección puntual del fallo de catálogo en navegador no expuso el error esperado durante el intento; su recuperación se acredita por el test de UI, no por ese smoke. Alta/edición/cambio de estado con toasts, historial y navegación entre empleados se acreditan por pruebas automatizadas, no por nuevas mutaciones en navegador.
+Evidencia de la entrega previa (no reejecutada por limpieza documental): 47 pruebas focalizadas, suite completa 157 tests/15 archivos, typecheck/lint/build y diff correctos. Warning de chunk >500 kB reservado a F-010. Smoke Vite real a 384×588/1280×800: login/2FA, DNI/teléfono, búsqueda/vacío/limpiar, detalle a planillas y legajo, alta vacía diez errores/foco Nombre; sin errores de página ni overflow horizontal desktop. Fallo inducido de catálogo no se observó en navegador; su recuperación está acreditada por test UI. Toasts/historial/navegación entre empleados también por tests, no por nuevas mutaciones de navegador.
 
 ## Review
 
-Autorrevisión completada con corrección y smoke disponible. Sigue pendiente la revisión independiente del reviewer del harness; no se declara aprobación ni se cambia el backlog, cuyo owner es el leader.
+Pendiente de reviewer independiente; autorrevisión no equivale a aprobación. El leader conserva ownership de feature_list.json.

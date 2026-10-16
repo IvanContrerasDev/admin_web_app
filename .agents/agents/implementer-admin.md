@@ -26,7 +26,7 @@ Implementás UNA feature por sesión en este repo (web administrativa para RRHH/
 
 1. Leé el task spec completo (`docs/tasks/NNN-slug.md`) y TODAS las referencias que liste.
 2. Leé `AGENTS.md` y las skills de `.agents/skills/` (empezá por cada `SKILL.md`). Seguilas.
-3. Leé `docs/spec_definition.md` — es la VERDAD ABSOLUTA del proyecto: no omitas reglas de negocio; usá los contratos TypeScript de su Parte 8; si necesitás modificarlos/agregarlos/mejorarlos, eso es `blocked` + pregunta al humano (obligatorio según la spec). Si se te pide construir componentes aislados, primero la capa de servicios con mocks.
+3. Leé `docs/spec_definition.md` — define los requisitos locales; para integración manda `docs/arquitectura/contratos-api.md`. Contrastá el comportamiento implementado con código y distinguí brechas de cambios nuevos que requieran aprobación. Si se te pide construir componentes aislados, primero la capa de servicios con mocks.
 
 ## Skills
 
@@ -35,7 +35,7 @@ Seguí `docs/convenciones/superpowers.md`: usás `test-driven-development` (cuan
 ## Mientras trabajás
 
 - Documentá en `progress/implementer/current.md` MIENTRAS trabajás: qué hiciste, qué estás haciendo, blockers.
-- Si el spec es ambiguo o contradice la spec_definition: NO inventés. Registrá la pregunta y terminá con status `blocked`.
+- Si la ambigüedad persiste tras contrastar código y decisiones vigentes, registrá la pregunta y terminá con status `blocked`; no inventés requisitos.
 
 ## Al terminar
 
@@ -49,3 +49,7 @@ Seguí `docs/convenciones/superpowers.md`: usás `test-driven-development` (cuan
 - No despachás subagentes. No te autoaprobás (te revisa `reviewer`).
 - No tocás otros repos del sistema. No hacés mutaciones git.
 - **No editás archivos marcados `SYNCED-FROM-TEMPLATE`** — si un archivo común está mal, dejás la propuesta en `docs/changes_proposals/`.
+
+## Documentación vigente
+
+Seguí `docs/convenciones/convenciones-globales.md`: una decisión actual por tema con motivo breve, código como evidencia del estado real, sin historial. Actualizá `current.md` en lugar de appendear. El leader consolida y elimina artefactos resueltos; las propuestas comunes son temporales y se retiran tras incorporación y sync verificado.

@@ -13,20 +13,20 @@ La revisión independiente del 2026-09-22 aprobó F-003, F-005, F-006, F-007, F-
 **Incluye:**
 
 De F-003 (auth/navegación):
-- `src/app/app-shell.tsx:79`: manejar el rechazo de la promesa de logout (`.catch()` o estado de error de la mutación); P-02 §Restauración-5 pide advertir cuando no se confirma la revocación remota.
+- `src/app/app-shell.tsx:79`: manejar el rechazo de la promesa de logout (`.catch()` o estado de error de la mutación); el contrato común de sesión web pide advertir cuando no se confirma la revocación remota.
 - `src/features/auth/login-page.tsx:29`: `safeReturnTo` debe rechazar también barras invertidas (allowlist de forma, p. ej. `/^\/(?!\/|\\)/`).
 - Tests: rol `SUPER_ADMIN` con acceso idéntico a ADMIN y rechazo por schema zod de rol no administrativo (`src/services/auth-service.ts:13`).
 - `src/features/auth/login-page.tsx:174`: derivar el texto de expiración del código 2FA de `challenge.expiresAt` en vez de hardcodear "10 minutos".
 
 De F-005 (clientes/lugares):
-- `src/features/organization/client-form-page.tsx:21`: al crear/editar cliente, invalidar también `['workplaces']` (los listados de lugares embeben `client.name`; P-07 lo exige).
+- `src/features/organization/client-form-page.tsx:21`: al crear/editar cliente, invalidar también `['workplaces']` (los listados de lugares embeben `client.name`; el contrato común de clientes/lugares lo exige).
 - `src/mocks/organization-handlers.ts:45-47`: parametrizar el código de error de `requireBody` por recurso (`INVALID_CLIENT_DATA` vs `INVALID_WORKPLACE_DATA`).
 - `.env.example`: documentar `VITE_GOOGLE_MAPS_API_KEY` (comentada).
 
 De F-006 (registros):
 - `src/features/records/records-page.tsx:40-42`: total global del encabezado en formato `h:mm`, sin redondeo a horas enteras.
-- `src/mocks/records-handlers.ts:299-331,368`: ejercitar la caducidad del snapshot (`410 MONTHLY_SNAPSHOT_EXPIRED`, decisión 8) para cubrir el flujo de reinicio desde página 1.
-- `src/mocks/records-handlers.ts:437`: el PATCH no debe rechazar DELETE/ADD por un WORK OPEN histórico no tocado (decisión 11: los históricos proyectados no se tocan).
+- `src/mocks/records-handlers.ts:299-331,368`: ejercitar la caducidad del snapshot (`410 MONTHLY_SNAPSHOT_EXPIRED`, tema Matriz mensual) para cubrir el flujo de reinicio desde página 1.
+- `src/mocks/records-handlers.ts:437`: el PATCH no debe rechazar DELETE/ADD por un WORK OPEN histórico no tocado (tema Registros: los históricos proyectados no se tocan).
 - `src/mocks/records-handlers.ts:291,334-349`: injertar los registros creados en runtime antes de filtrar filas por filtros de día.
 
 De F-007 (planillas):
@@ -43,16 +43,16 @@ De F-009 (inicio operativo):
 - `src/features/dashboard/dashboard-page.tsx:28-29`: reflejar el mes inicial en la URL (paridad con `records-page.tsx:59-65`).
 
 **NO incluye:**
-- Skeletons de carga (spec §50/§67): desviación transversal a toda la app; requiere decisión global del humano, no va en esta feature.
+- La integración real permanece fuera de alcance; skeletons sí están incluidos por ampliación humana aprobada.
 - Chunk principal >500 kB (code-splitting de vendors): decisión de performance para F-010.
 - Flakiness de timing en `src/app/app.test.tsx` (2 tests de login): vigilar; si reaparece, feature dedicada.
-- Naming de módulos "Clientes"/"Documentos" vs spec §45 y áreas de clic `min-h-9` vs §55: decisiones del humano.
+- No reabrir naming/densidad: Clientes/Documentos y mínimo desktop 36 px están aprobados; conservar controles existentes de 44 px.
 - Limitación documentada del mock de métricas (ignora registros manuales en runtime): aceptada para mock-first.
 
 ## Referencias (fuente de verdad)
 
-- Veredictos completos en `progress/reviewer/history.md` (entradas 2026-09-22).
-- Docs: `docs/spec_definition.md` §50, §62; `docs/arquitectura/contratos-api.md` decisiones 8 y 11, P-02, P-07.
+- Estado y racional vigente en `docs/diseno-frontend.md`; alcance y evidencia de esta revisión en este task spec.
+- Docs: `docs/spec_definition.md` §50, §62; `docs/arquitectura/contratos-api.md` temas Matriz mensual, Registros, Sesión web admin y Clientes/lugares.
 
 ## Criterios de aceptación
 
@@ -60,58 +60,14 @@ De F-009 (inicio operativo):
 - [x] Tests nuevos/actualizados donde aplique (snapshot expirado, invalidaciones, safeReturnTo).
 - [x] `npm run typecheck`, `npm run lint`, `npx vitest run` y `npm run build` en verde.
 
-## Notas de implementación
+## Implementación y evidencia actual para revisión
 
-Son 17 ítems independientes y pequeños; conviene resolverlos en una sola pasada con commits separados por feature de origen.
+Todos los ítems de corrección están implementados con mocks; detalles de comportamiento actual en [diseño](../diseno-frontend.md). Recuperación de catálogos fallidos reconsulta solo recursos fallidos, sin reiniciar consultas mensuales sanas; un error de snapshot suspende paginación hasta reinicio. Validación compartida conserva históricos intactos y rechaza solapamientos que involucren intervalos nuevos/modificados, incluidos anidados.
 
-## Registro de implementación
+Ampliación humana aprobada: skeletons transversales por estructura y reduced-motion; conservar Clientes/Documentos; mínimo desktop 36 px sin reducir controles de 44 px. Decisiones/racional consolidados en diseño/spec; forman parte de esta revisión.
 
-2026-10-13 — Implementación entregada, sin cambios en contratos TypeScript/API ratificados y manteniendo el modo mock-first.
-
-- F-003: logout captura el rechazo, limpia sesión/datos locales incluso ante fallo remoto, evita restauración automática y muestra advertencia persistente con reintento en login; retorno interno rechaza barras invertidas y caracteres de control; ADMIN/SUPER_ADMIN tienen cobertura equivalente y roles no administrativos se rechazan por Zod; vencimiento 2FA mostrado a partir de `expiresAt` en hora Argentina.
-- F-005: crear/editar cliente invalida clientes y lugares; cambio de estado ya lo hacía y se conserva; cuerpos inválidos devuelven código específico de cliente/lugar (incluidos PUT y PATCH de estado); clave pública Maps comentada en `.env.example`, con restricciones de referrer/API.
-- F-006: total global conserva minutos (`h:mm`); snapshots opacos congelan filas/totales con TTL fijo de 15 minutos, validan filtros/tamaño de página y devuelven 410 no reintentable al caducar; botón Reintentar restablece desde página 1 sin token anterior; registros creados/modificados se injertan antes de filtrar filas y recalculan `matchesFilters`; ADD/DELETE/observaciones conservan WORK OPEN histórico no tocado, tanto en mock como en validación del editor; las escrituras nuevas/modificadas siguen exigiendo extremos y validación de superposición.
-- F-007: búsqueda preserva provincia/cliente/lugar/empleado mediante campos ocultos; detalle por ID se obtiene del servicio independientemente de la página visible, con carga/error/reintento/cierre; URLs blob se revocan al terminar sus 15 minutos de vigencia, no antes para no romper el contrato ni la apertura/descarga.
-- F-008: listado global y legajo consultan detalle por ID, sin desmontarlo cuando una edición lo excluye de filtros; el legajo verifica pertenencia al empleado; rango inclusivo de fechas comparado por fecha civil Argentina, probado a ambos lados de medianoche UTC/GMT-3.
-- F-009: editar/crear/aprobar registros invalida también dashboard; mes inicial/ inválido del dashboard se normaliza en URL con replace preservando otros parámetros.
-
-### Evidencia
-
-- `npm run typecheck`: correcto.
-- `npm run lint`: correcto, cero warnings.
-- `npx vitest run`: 14 archivos, 132 tests correctos (32 adicionales respecto de los 100 previos).
-- `npm run build`: correcto; permanece el warning conocido de chunk principal >500 kB, excluido expresamente de esta feature y reservado a F-010.
-- `git diff --check`: correcto.
-- Navegador real, preview Vite, 1048×800, esquema dark del usuario: login y vencimiento 2FA, dashboard con mes inicial en URL, búsqueda de planillas preservando los cuatro filtros organizacionales, documento por deep link con listado vacío, edición de tipo sin desmontar diálogo y logout confirmado hacia login. Sin errores de página.
-- Regresiones de UI/servicio adicionales: fallo remoto de logout y reintento, SUPER_ADMIN, retorno seguro/válido, invalidación de lugares/métricas, totales con minutos, planillas/documentos fuera de página y detalle inexistente, snapshot fijo/expirado/con filtros distintos/reinicio, runtime y WORK OPEN histórico.
-
-Se mantienen fuera de alcance todas las exclusiones originales, incluida la limitación aceptada del mock de métricas sobre cambios de registros runtime.
-
-## Autorrevisión e iteración — 2026-10-14
-
-Revisión solicitada por el humano sobre la implementación entregada. Sin modificaciones a contratos, dependencias ni archivos sincronizados.
-
-Hallazgos corregidos:
-- `src/features/records/records-page.tsx`: Reintentar solo reiniciaba registros, incluso cuando fallaba un catálogo. Ahora reconsulta los catálogos fallidos y reinicia el snapshot únicamente si la consulta mensual falló.
-- `src/features/records/records-page.tsx`: la matriz conservaba la carga automática de páginas tras un error, pudiendo volver a enviar el snapshot vencido. Se suspende hasta el reinicio explícito.
-- `src/features/records/record-editor-form.tsx` y `src/mocks/records-handlers.ts`: la validación global de solapamientos rechazaba pares históricos no tocados. Validación compartida en `src/lib/record-interval-validation.ts`: conserva pares históricos intactos, pero rechaza cualquier solapamiento que involucre un intervalo agregado/actualizado, incluidos intervalos anidados. Mantiene validaciones de extremos y al menos un intervalo.
-
-Evidencia nueva:
-- Typecheck y lint correctos; suite completa de 14 archivos y 140 tests correcta (+8 regresiones).
-- Build y `git diff --check` correctos. Permanece el warning conocido de chunk >500 kB reservado a F-010.
-- Navegador real Vite, 384×588, esquema dark solicitado (la app conserva su tema claro de MVP): login/2FA, matriz y total con minutos, apertura por teclado y guardado de observaciones sin alterar un WORK OPEN histórico; sin errores de página. Reintento de los cuatro catálogos y suspensión/reinicio de paginación caducada comprobados mediante tests de UI. El fallo de catálogo inducido en navegador se recuperó automáticamente antes de poder comprobar allí el botón; no se declara validación de ese botón en navegador.
-
-Decisiones humanas recibidas el 2026-10-14: implementar ahora los skeletons transversales como ampliación aprobada fuera del alcance original de F-013; conservar Clientes y Documentos en la navegación; aceptar 36 px como mínimo desktop para controles compactos (sin reducir controles existentes de 44 px).
-
-Implementación adicional: skeletons reutilizables por estructura (métricas, tablas, matriz, formularios, detalles, mapas lazy, sesión y metadata/paginación); mensajes de carga solo para lectores de pantalla; placeholders no interactivos y animación respetando reduced-motion. Los botones de mutación mantienen su feedback Guardando/Cargando, no se reemplazan por skeletons. QueryState evita mostrar tablas incompletas durante la carga inicial y conserva errores/reintentos y estados vacíos. No se modifican contratos ni integraciones. El estilo compartido garantiza al menos 36 px para botones y enlaces de acción inline-flex en el breakpoint desktop (1024 px), sin reducir los controles que ya miden 44 px.
-
-### Evidencia de la ampliación aprobada
-
-- Typecheck y lint correctos; suite completa: 15 archivos y 153 tests (+13 de skeletons, estados carga/error/vacío y transición del formulario con catálogo demorado).
-- Build y `git diff --check` correctos; permanece el warning conocido de chunk principal >500 kB reservado a F-010.
-- Navegador real Vite: métricas en 384×588 y tabla de empleados en 1280×800, esquema dark del usuario y tema claro MVP. Consultas mock pausadas solo en la sesión de prueba para observar placeholders y restauradas para comprobar el reemplazo por datos; sin errores de página ni overflow horizontal desktop.
-- Medición desktop: mínimo compartido 36 px; Cerrar sesión, Buscar, Anterior y Siguiente conservan 44 px. La regla vive en `@layer base` para no sobrescribir utilidades de tamaño mayor.
+Evidencia de entrega previa (no reejecutada por limpieza documental): typecheck/lint/build/diff correctos y 153 tests/15 archivos al completar skeletons. F-011 agregó después cuatro tests (157 totales reportados). Smoke Vite real: métricas 384×588, tabla 1280×800, placeholders con mock pausado y transición a datos; tema claro incluso con esquema dark del navegador, sin errores de página/overflow desktop. Medición de controles confirma mínimo 36 y existentes de 44. Matriz móvil con minutos, apertura por teclado y corrección de observaciones preservando WORK OPEN histórico comprobadas en navegador. Reintentos de catálogos/caducidad se acreditan por tests UI: la falla inducida en navegador se recuperó antes de observar el botón.
 
 ## Review
 
-Autorrevisión completada con correcciones. Sigue pendiente la revisión independiente del reviewer del harness; no se declara su aprobación.
+Pendiente de reviewer independiente. Limitación aceptada del mock: métricas de registros ignoran cambios runtime. Warning de chunk >500 kB e integración real pertenecen a F-010. No se declara aprobación propia.

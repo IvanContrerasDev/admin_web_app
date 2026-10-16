@@ -1,15 +1,7 @@
-# Cola actual — reviewer admin_web_app
+# Cola actual — reviewer admin
 
-Fecha: 2026-09-22
+Pendientes independientes: F-011 (empleados), F-013 (correcciones y ampliación UX aprobada), F-012 (entrega documental; backlog aún pending). Criterios y evidencia actual están en sus task specs. La autorrevisión no equivale a aprobación independiente.
 
-## Revisiones pendientes
+F-003/F-005/F-006/F-007/F-008/F-009 figuran aprobadas en backlog; F-004 inicial changes_required se corrige en F-011. No reabrir las tareas cerradas retiradas: requisitos y decisiones vigentes en docs/spec_definition.md, diseno-frontend.md y cobertura-requisitos.md.
 
-Ninguna. La ronda independiente del 2026-09-22 cerró F-003, F-005, F-006, F-007, F-008 y F-009 como aprobadas y F-004 como cambios requeridos (fixes en F-011).
-
-## Próximas revisiones (cuando el implementer las entregue)
-
-- F-011 — correcciones de F-004 (bloqueantes + menores).
-- F-012 — propuestas de contrato pre-integración (documental).
-- F-013 — correcciones menores consolidadas.
-
-No aprobar por ausencia de reviewer ni sustituir independencia con auto-revisión del implementador.
+Verificar requisitos pendientes contra docs/integracion.md y contrato común; backend de negocio aún no existe en código. No declarar F-010 validada por tests de mocks ni ratificar un DTO candidato como parte de review documental.

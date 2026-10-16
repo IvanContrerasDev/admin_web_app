@@ -1,17 +1,9 @@
 # GdeS Admin Web App — contexto para agentes
 
-Aplicación web administrativa (RRHH/gerencia) del ecosistema GdeS: gestión y revisión de registros horarios, empleados, clientes/sites/lugares de trabajo, planillas y legajos. **Sin código aún.**
+SPA administrativa React + Vite + TypeScript, implementada con servicios mock-first. La integración real sigue pendiente; ver [integración](docs/integracion.md).
 
-## Fuente de verdad
+La [especificación funcional](docs/spec_definition.md) conserva los requisitos; [diseño frontend](docs/diseno-frontend.md) explica las decisiones locales actuales y su racional. Los acuerdos cross-app viven en [contratos comunes](docs/arquitectura/contratos-api.md). Código y tests son evidencia del comportamiento implementado; no equivalen a aprobación de un contrato nuevo. Cambiar DTOs requiere consulta humana específica.
 
-`docs/spec_definition.md` es la VERDAD ABSOLUTA (8 partes: dominio, auth/usuarios, registros, geolocalización, planillas, UX, performance, contratos API). Reglas de la propia spec:
-- No omitir ninguna regla de negocio.
-- Usar los contratos TypeScript de la Parte 8; modificarlos/agregarlos/mejorarlos exige consultar al humano, obligatoriamente.
-- Para componentes aislados: primero capa de servicios con mocks, antes de APIs reales.
+Aplicar la política documental común de [flujo de trabajo](docs/convenciones/flujo-de-trabajo.md): documentación por tema, decisión vigente con racional breve, evidencia del código ante ambigüedad y requisitos pendientes explícitos. Sin historiales/changelog; consolidar antes de retirar tareas/inbox resueltos y eliminar propuestas tras incorporación y sync verificado.
 
-## Reglas
-
-- Parte del sistema GdeS; contratos entre apps en `docs/arquitectura/contratos-api.md` (SYNCED, manda sobre supuestos locales).
-- Skills del stack en `.agents/skills/` — leerlas antes de implementar. Las skills del plugin superpowers se rigen por `docs/convenciones/superpowers.md` (las apagadas tienen stub en `.agents/skills/`).
-- Este repo es autocontenido: tiene su propio `leader` (`kimi --agent leader`), `reviewer` e `implementer-admin` en `.agents/agents/`, su backlog en `feature_list.json` y su estado en `progress/`.
-- Los archivos marcados `SYNCED-FROM-TEMPLATE` son de solo lectura: los cambios se proponen en `docs/changes_proposals/` y los propaga el orchestrator de GdesProject.
+Este repo tiene leader, reviewer e implementer-admin propios en `.agents/agents/`; backlog en `feature_list.json` y estado vivo en `progress/<rol>/current.md`. El leader es owner del backlog, el implementer no se autoaprueba. Leer skills del stack y [reglas de superpowers](docs/convenciones/superpowers.md) antes de implementar. Los archivos `SYNCED-FROM-TEMPLATE` son de solo lectura; cambios por propuesta al orchestrator. No mutar Git ni instalar skills sin confirmación humana.

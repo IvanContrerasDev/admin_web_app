@@ -1,10 +1,8 @@
+# Especificación funcional — alcance y precedencia
 
-# INSTRUCCIÓN PARA AGENT
-Este documento contiene la especificación funcional y técnica completa para la GdeS Admin Web App (MVP). 
-Debes tomar este documento como la VERDAD ABSOLUTA del proyecto. 
-- No omitas ninguna regla de negocio, por más redundante que parezca.
-- Utiliza los contratos de TypeScript provistos en la Parte 8 para las interfaces de tu código, o en caso de modificarlos/agregar/mejorarlos debes consultarlo conmigo específicamente y de manera obligatoria.
-- Implementa primero la capa de servicios con los Mocks recomendados antes de conectar APIs reales si se te solicita construir componentes aislados.
+Este documento conserva los requisitos completos del MVP, incluidos los todavía no implementados. Estado real y decisiones locales vigentes con racional en [diseño frontend](diseno-frontend.md); disponibilidad y brechas en [integración](integracion.md); cobertura en [matriz](cobertura-requisitos.md).
+
+Los [contratos comunes](arquitectura/contratos-api.md) rigen acuerdos cross-app sobre modelos sugeridos de la Parte 8. Código/tests describen el comportamiento implementado, sin convertir diferencias en nuevas decisiones aprobadas. Todo cambio contractual requiere consulta humana específica. Desarrollar servicios mock-first antes de conectar APIs reales.
 
 ---
 
@@ -219,7 +217,7 @@ Estado temporal de un empleado que solicitó permisos administrativos.
 
 Comportamiento:
 
-* En la aplicación móvil se comporta exactamente igual que un empleado.  
+* El rol contractual `TO_BE_ADMIN` no tiene acceso a mobile; en web recibe solicitud pendiente.
 * No puede ingresar a la Admin Web App.  
 * Al intentar iniciar sesión recibe un mensaje indicando que su cuenta se encuentra pendiente de aprobación administrativa.
 
@@ -451,27 +449,9 @@ El formulario de registro administrativo solicita:
 
 ## 10.2 Flujo de aprobación administrativa
 
-El proceso es el siguiente:
+El flujo y DTOs viven en [contrato común — solicitud administrativa](arquitectura/contratos-api.md#solicitud-administrativa). La UI preserva los diez campos y presenta verificación de email antes de crear cuenta o cambiar rol. Para existentes se exige contraseña actual y se conserva perfil/password; solo después de verificar se tramita la solicitud y notifican recepción/decisión. Confirmar aprobación/rechazo por POST, nunca por GET del correo. Aprobación habilita Admin; rechazo mantiene Employee; desactivación pendiente cancela solicitud.
 
-1. El usuario completa el formulario de registro.  
-2. La Admin Web App envía la solicitud al backend.  
-3. El backend:  
-* Busca un usuario existente con la información proporcionada.  
-* Si existe, actualiza su rol a `toBeAdmin`.  
-* Si no existe, crea el usuario con rol `toBeAdmin`.  
-* Envía un correo de confirmación al usuario cuando corresponda.  
-* Envía una solicitud de aprobación al SuperAdmin.  
-4. El SuperAdmin recibe el correo y aprueba o rechaza la solicitud.
-
-Si la solicitud es aprobada:
-
-* El rol del usuario cambia a `Admin`.  
-* El usuario recibe un correo indicando que ya puede utilizar la Admin Web App.
-
-Si la solicitud es rechazada:
-
-* El usuario vuelve a tener rol `Employee`.  
-* Se envía una notificación por email indicando el rechazo.
+Motivo: impedir cambios de rol a partir de un email no verificado y preservar identidad. La UI actual de registro solo valida localmente; implementación restante en [integración](integracion.md).
 
 ---
 
@@ -479,8 +459,7 @@ Si la solicitud es rechazada:
 
 Mientras el usuario se encuentre en estado `toBeAdmin`:
 
-* Continúa utilizando la aplicación móvil normalmente.  
-* Mantiene todos los permisos de empleado.  
+* No puede acceder a mobile mientras tenga el rol `TO_BE_ADMIN`, conforme al contrato común.
 * No puede acceder a la Admin Web App.
 
 Si intenta iniciar sesión en la Admin Web App visualizará un mensaje:
@@ -1040,7 +1019,7 @@ Resultado:
 
 **Nuevo evento de salida**
 
-El sistema busca el último intervalo abierto.
+El sistema busca el último intervalo abierto del mismo registro y fecha civil GMT-3; no empareja eventos entre días.
 
 Si existe, completa su salida.
 
@@ -1072,9 +1051,8 @@ Salida 18:00
 
 Resultado:
 
-09:00 \-  
-11:00 \- 12:00  
-\- 18:00
+09:00 \- 18:00
+11:00 \- 12:00
 
 Estos escenarios representan errores de uso o fallos operativos y posteriormente podrán ser corregidos por administración.
 
@@ -1695,7 +1673,7 @@ Formatos aceptados:
 
 Tamaño máximo por archivo:
 
-20 MB
+Límite de archivos del [contrato común](arquitectura/contratos-api.md#archivos-y-métricas).
 
 ---
 
@@ -1841,7 +1819,7 @@ Los mismos formatos que las planillas:
 
 Máximo:
 
-20 MB por archivo
+Límite de archivos del [contrato común](arquitectura/contratos-api.md#archivos-y-métricas).
 
 ---
 
@@ -2013,9 +1991,12 @@ Los módulos principales del sistema son:
 1. Inicio.  
 2. Registros.  
 3. Usuarios.  
-4. Lugares de trabajo.  
-5. Planillas.  
-6. Legajos.
+4. Clientes.
+5. Lugares de trabajo.
+6. Planillas.
+7. Documentos.
+
+Naming aprobado por el humano para conservar la navegación implementada; el legajo individual sigue accesible desde empleado.
 
 El sidebar debe permitir acceder rápidamente a cualquier módulo desde cualquier pantalla.
 
@@ -2260,7 +2241,7 @@ Aunque no es un objetivo principal del MVP cumplir estándares avanzados de acce
 
 * Contraste adecuado entre colores.  
 * Tamaños de texto legibles.  
-* Áreas de clic suficientemente grandes.  
+* Áreas de clic: mínimo 36 px para controles compactos desktop desde 1024 px, sin reducir controles existentes de 44 px; decisión humana para densidad operativa.
 * Navegación consistente.  
 * Estados visuales claros para acciones disponibles, deshabilitadas o con errores.
 
@@ -2713,29 +2694,13 @@ El backend siempre debe validar:
 
 # **74\. Manejo de autenticación en el frontend**
 
-El frontend trabajará con:
-
-* Access Token (duración aproximada: 30 minutos).  
-* Refresh Token (duración aproximada: 7 días con rotación).
-
-Responsabilidades del frontend:
-
-* Adjuntar el access token en las solicitudes autenticadas.  
-* Detectar expiración de sesión.  
-* Intentar renovar el access token mediante el refresh token.  
-* Redirigir al login cuando la sesión ya no pueda renovarse.
+La sesión sigue el [contrato común — sesión web admin](arquitectura/contratos-api.md#sesión-web-admin): access en memoria, refresh en cookie HttpOnly emitida por backend, bootstrap/rotación/logout y reautenticación ante refresh ambiguo. El frontend adjunta access, detecta expiración y limpia estado al perder sesión. La implementación real y sus pruebas siguen pendientes en [integración](integracion.md).
 
 ---
 
 # **75\. Manejo de sesión persistente**
 
-La opción “Recordar sesión” permite mantener la sesión activa hasta el límite definido por el sistema.
-
-Duración máxima:
-
-7 días
-
-Al finalizar ese período, el usuario deberá autenticarse nuevamente.
+“Recordar sesión” respeta el límite absoluto y transporte del [contrato común](arquitectura/contratos-api.md#sesión-web-admin); no reinicia vencimiento al rotar. Atributos finales de cookie/orígenes y pruebas de navegador permanecen abiertos allí, sin duplicar candidatos como decisiones locales.
 
 ---
 
@@ -2803,275 +2768,45 @@ El objetivo es que la lógica de negocio del frontend no dependa directamente de
 
 ---
 
-# **80\. Arquitectura recomendada de acceso a datos**
+# **80\. Arquitectura de acceso a datos**
 
-Se recomienda separar claramente las responsabilidades.
-
-Ejemplo de estructura:
-
-src/  
-│  
-├── api/  
-│   ├── client.ts           \# Configuración de HTTP client (axios/fetch)  
-│   ├── endpoints.ts        \# Definición centralizada de rutas  
-│   ├── errors.ts           \# Clasificación de errores  
-│  
-├── services/  
-│   ├── users.service.ts  
-│   ├── records.service.ts  
-│   ├── workplaces.service.ts  
-│   ├── clients.service.ts  
-│   ├── documents.service.ts  
-│   └── timesheets.service.ts  
-│  
-├── hooks/  
-│   ├── queries/  
-│   ├── mutations/  
-│  
-├── types/  
-│   ├── api.types.ts  
-│   ├── domain.types.ts  
-│  
-└── mocks/  
-    └── fake-data.ts
-
----
-
-## 80.1 Responsabilidad de cada capa
-
-**API Client**
-
-Responsable de:
-
-* Configurar la comunicación HTTP.  
-* Incluir tokens de autenticación.  
-* Manejar renovación de sesión.  
-* Interceptar respuestas de error.  
-* Aplicar configuraciones globales.
-
----
-
-**Services**
-
-Cada servicio representa un dominio del sistema.
-
-Ejemplos:
-
-* Usuarios.  
-* Registros.  
-* Clientes.  
-* Lugares de trabajo.  
-* Planillas.  
-* Documentos.
-
-Sus responsabilidades:
-
-* Llamar endpoints.  
-* Transformar DTOs si fuera necesario.  
-* Exponer funciones claras al resto de la aplicación.
-
-Ejemplo:
-
-usersService.getUsers(filters)
-
-recordsService.updateRecord(recordId, data)
-
----
-
-**React Query Hooks**
-
-Los componentes de la UI nunca deberían consumir directamente los servicios.
-
-Se recomienda encapsularlos mediante hooks:
-
-Ejemplo:
-
-const {  
-  data,  
-  isLoading,  
-  error  
-} \= useUsersQuery(filters);
-
-Beneficios:
-
-* Manejo automático de cache.  
-* Loading y errores estandarizados.  
-* Invalidaciones centralizadas.  
-* Reutilización de lógica.
+La estructura vigente está en [diseño frontend](diseno-frontend.md#arquitectura-y-racional): UI → Query/hooks → servicios → adaptador mock/HTTP. Servicios concentran transporte y validan DTOs; componentes no construyen URLs ni interpretan envelopes. Hooks gestionan cache, carga, errores e invalidaciones. Los mocks se sustituyen por HTTP manteniendo esos límites. Estado real del adaptador y seguridad pendiente en [integración](integracion.md).
 
 ---
 
 # **81\. Convenciones generales de la API REST**
 
-Aunque el backend todavía no está implementado, se recomienda seguir principios REST.
-
-Ejemplos:
-
-**Recursos**  
-/users  
-/records  
-/clients  
-/sites  
-/workplaces  
-/timesheets  
-/documents  
-/auth
-
----
-
-**Acciones comunes**
-
-**Obtener listado**  
-GET /users
-
----
-
-**Obtener detalle**  
-GET /users/{id}
-
----
-
-**Crear**  
-POST /users
-
----
-
-**Actualizar**  
-PUT /users/{id}
-
-o:
-
-PATCH /users/{id}
-
-La decisión final dependerá del backend.
-
----
-
-**Desactivar**
-
-Ejemplo:
-
-PATCH /users/{id}/status
+Métodos y rutas de empleados, clientes, lugares, registros y auth están definidos en [contrato común](arquitectura/contratos-api.md); detalle exclusivamente backend en `backend_api_gdes/docs/03-contratos-api.md`. No elegir PUT/PATCH o ruta de estado por preferencia local: respetar el método de cada recurso. Archivos/métricas conservan puntos abiertos explícitos hasta ratificación.
 
 ---
 
 # **82\. Convención de paginación**
 
-Todos los listados grandes utilizarán paginación server-side.
-
-La API debería recibir parámetros similares:
-
-GET /users?page=1\&pageSize=25
-
-Respuesta sugerida:
-
-{  
-  "items": \[\],  
-  "pagination": {  
-    "page": 1,  
-    "pageSize": 25,  
-    "totalItems": 250,  
-    "totalPages": 10  
-  }  
-}
+Los listados grandes se paginan server-side con query, envelope y límites del [contrato común](arquitectura/contratos-api.md#convenciones). La matriz pagina filas completas según [consulta mensual](arquitectura/contratos-api.md#consulta-mensual), nunca días parciales ni datos filtrados solo en la página local.
 
 ---
 
 # **83\. Convención de filtros y ordenamiento**
 
-Los filtros deben ser explícitos en la URL.
-
-Ejemplo:
-
-GET /records?  
-month=5&  
-year=2026&  
-siteId=123&  
-employeeId=456&  
-status=INCOMPLETE
-
-Ordenamiento:
-
-GET /users?sortBy=lastName\&order=asc
+Filtros visibles en URL, combinables según contrato de cada recurso y ejecutados server-side. Los órdenes de empleados/clientes/lugares/matriz son fijos en el [contrato común](arquitectura/contratos-api.md); no exponer sortBy libre ni inferir que siteId es provincia personal del empleado. Mantener los filtros al navegar y al volver.
 
 ---
 
 # **84\. Infinite scroll para registros**
 
-El módulo de registros tiene un comportamiento diferente al resto del sistema.
-
-No utilizará paginación visual.
-
-El frontend realizará consultas paginadas internamente:
-
-Ejemplo:
-
-GET /records?page=1\&pageSize=50
-
-Al llegar al final de la tabla:
-
-* Se solicita la página siguiente.  
-* Los nuevos resultados se agregan al listado actual.  
-* La experiencia debe sentirse como una tabla continua.
-
-Se recomienda utilizar:
-
-useInfiniteQuery()
-
-de React Query.
+La matriz usa `useInfiniteQuery()` sobre [consulta mensual](arquitectura/contratos-api.md#consulta-mensual), sin paginación visual. Al llegar al final se agregan filas completas de la siguiente página del mismo snapshot; carga/error no equivalen a celda vacía. Snapshot vencido o cambio de datos/filtros reinicia desde primera página según el contrato.
 
 ---
 
 # **85\. Formato general de respuestas exitosas**
 
-No es obligatorio, pero se recomienda una estructura consistente.
-
-Ejemplo:
-
-{  
-  "data": {  
-    "id": "123",  
-    "name": "Juan Perez"  
-  }  
-}
-
-Para listados:
-
-{  
-  "data": \[\],  
-  "pagination": {}  
-}
-
-El formato final dependerá del backend.
+Envelopes obligatorios en [convenciones del contrato](arquitectura/contratos-api.md#convenciones); el cliente valida la forma completa antes de exponer datos a UI. Excepciones sin cuerpo se documentan por operación; no mantener un envelope alternativo items ni devolver un modelo de persistencia directo.
 
 ---
 
 # **86\. Formato general de errores**
 
-Debe existir un contrato uniforme de errores.
-
-Ejemplo:
-
-{  
-  "error": {  
-    "code": "USER\_ALREADY\_EXISTS",  
-    "message": "El usuario ya existe",  
-    "retryable": false  
-  }  
-}
-
----
-
-**Consideraciones importantes**
-
-El frontend no debe depender únicamente del campo `retryable`.
-
-Debe mantener su propia configuración de errores reintentables basada en:
-
-* Status HTTP.  
-* Reglas internas configurables.
-
-Esto permite desacoplar la aplicación de cambios en el backend.
+Envelope y códigos vigentes en [contrato común](arquitectura/contratos-api.md#convenciones) y catálogo backend 07. Mensajes en español. El frontend evalúa HTTP status, code y retryable; evita reintentar escrituras o refresh ambiguos sin garantía contractual. Políticas de cliente vigentes y brechas en [diseño](diseno-frontend.md) e [integración](integracion.md).
 
 ---
 
@@ -3113,76 +2848,13 @@ Aunque el frontend valide que un DNI no exista, el backend debe verificarlo nuev
 
 # **88\. Modelos TypeScript**
 
-Se recomienda separar:
-
-**DTOs de API**
-
-Representan exactamente lo que viaja por la red.
-
-Ejemplo:
-
-interface UserResponseDto {  
-  id: string;  
-  firstName: string;  
-  lastName: string;  
-  email: string;  
-}
-
----
-
-**Modelos de dominio**
-
-Representan los conceptos utilizados dentro del frontend.
-
-Ejemplo:
-
-interface User {  
-  id: string;  
-  fullName: string;  
-  email: string;  
-}
-
-Esto permite que cambios en la API afecten la menor cantidad posible de código.
+Separar DTO público de modelo de presentación cuando aporte claridad. El servicio valida/transfiere contratos; UI puede derivar fullName sin cambiar firstName/lastName de red. Definiciones públicas en [contrato común](arquitectura/contratos-api.md) y esquemas actuales en `src/types/`; no copiar interfaces de ejemplo como una segunda spec.
 
 ---
 
 # **89\. Enums centralizados**
 
-Todos los estados del sistema deben definirse en un único lugar.
-
-Ejemplo:
-
-src/constants/enums.ts
-
-Ejemplos:
-
-enum UserRole {  
-  EMPLOYEE,  
-  ADMIN,  
-  SUPER\_ADMIN  
-}
-
-enum RecordStatus {  
-  COMPLETE,  
-  INCOMPLETE  
-}
-
-enum ReviewStatus {  
-  NONE,  
-  PENDING,  
-  APPROVED,  
-  MANUAL\_LOADED  
-}
-
-También deben existir:
-
-* IntervalStatus.  
-* IntervalType.  
-* AccountStatus.  
-* TimesheetStatus.  
-* DocumentType.  
-* RecordOrigin.  
-* Site.
+Enums de red definidos una sola vez por tema en [contrato común](arquitectura/contratos-api.md), tipados/validados localmente en `src/types/`. Incluyen roles, estados de cuentas/entidades, registros/intervalos, revisión, origen y catálogos. No duplicar listas de valores aquí: previene divergencias como omitir TO_BE_ADMIN o confundir revisión de registro con la de intervalo.
 
 ---
 
