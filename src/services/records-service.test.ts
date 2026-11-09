@@ -260,3 +260,55 @@ describe('RecordsService', () => {
     await expect(service.update(detail.id, { expectedVersion: removed.version, intervalChanges: [{ operation: 'UPDATE', id: open.id, interval: { type: 'WORK', startTime: open.startTime, endTime: null, absenceReason: null, observations: null } }] })).rejects.toMatchObject({ code: 'WORK_INTERVAL_REQUIRES_BOUNDS' })
   })
 })
+
+describe('monthly boundaries and immutable event evidence', () => {
+  it.each([[2024, 2, 29], [2026, 2, 28], [2026, 4, 30], [2026, 1, 31]])('returns all days in %i/%i', async (year, month, days) => {
+    const monthly = await setup().listMonthly({ year, month })
+    expect(monthly.data.length).toBeGreaterThan(0)
+    expect(monthly.data.every((row) => row.days.length === days)).toBe(true)
+  })
+
+  it('returns an empty snapshot for filters without activity', async () => {
+    const monthly = await setup().listMonthly({ year: 2026, month: 9, employeeId: '00000000-0000-4000-8000-000000000000' })
+    expect(monthly.data).toEqual([])
+    expect(monthly.pagination).toMatchObject({ totalItems: 0, totalPages: 0 })
+    expect(monthly.meta.totals).toEqual({ monthWorkMinutes: 0, matchingWorkMinutes: 0 })
+  })
+
+  it('preserves event payloads when correcting and detaches them when deleting their interval', async () => {
+    const service = setup()
+    const monthly = await service.listMonthly({ year: 2026, month: 9 })
+    const day = monthly.data.flatMap((row) => row.days).find((day) => day.state === 'PRESENT' && day.record.origin === 'AUTOMATIC' && day.record.intervalCount > 1)
+    expect(day?.state).toBe('PRESENT')
+    if (!day || day.state !== 'PRESENT') throw new Error('Expected fixture')
+    const detail = await service.getDetail(day.record.id)
+    const interval = detail.intervals[0]!
+    const event = await service.getAttendanceEventDetail(interval.attendanceEvents[0]!.id)
+    const updated = await service.update(detail.id, { expectedVersion: detail.version, observations: 'Correction' })
+    expect(updated.intervals).toEqual(detail.intervals)
+    expect(await service.getAttendanceEventDetail(event.id)).toEqual(event)
+    const without = await service.update(detail.id, { expectedVersion: updated.version, intervalChanges: [{ operation: 'DELETE', id: interval.id }] })
+    expect(without.intervals.some((item) => item.id === interval.id)).toBe(false)
+    expect(await service.getAttendanceEventDetail(event.id)).toEqual({ ...event, intervalId: null })
+  })
+
+  it('keeps old pages immutable across writes and expires them at the absolute deadline', async () => {
+    let time = new Date('2026-09-18T12:00:00.000Z')
+    const adapter = new MockServiceAdapter()
+    registerRecordsMockRoutes(adapter, () => time)
+    const service = new RecordsService(adapter)
+    const first = await service.listMonthly({ year: 2026, month: 9, pageSize: 5 })
+    const secondQuery = { year: 2026, month: 9, pageSize: 5, page: 2, snapshotToken: first.meta.snapshotToken }
+    const second = await service.listMonthly(secondQuery)
+    const day = second.data.flatMap((row) => row.days).find((day) => day.state === 'PRESENT')
+    if (!day || day.state !== 'PRESENT') throw new Error('Expected fixture')
+    const detail = await service.getDetail(day.record.id)
+    await service.update(detail.id, { expectedVersion: detail.version, observations: 'Concurrent update' })
+    expect(await service.listMonthly(secondQuery)).toEqual(second)
+    time = new Date(time.getTime() + 15 * 60 * 1000)
+    await expect(service.listMonthly(secondQuery)).rejects.toMatchObject({ code: 'MONTHLY_SNAPSHOT_EXPIRED', status: 410 })
+    const fresh = await service.listMonthly({ year: 2026, month: 9, pageSize: 5 })
+    expect(fresh.meta.snapshotToken).not.toBe(first.meta.snapshotToken)
+    expect(fresh.pagination.page).toBe(1)
+  })
+})

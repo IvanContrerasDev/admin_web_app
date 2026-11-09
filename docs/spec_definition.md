@@ -416,9 +416,7 @@ El flujo general será:
 
 ---
 
-Los empleados no recuperan sus contraseñas desde la Admin Web App.
-
-La recuperación de contraseña del empleado se realiza exclusivamente desde la aplicación móvil mediante email.
+El empleado inicia la recuperación desde la aplicación móvil mediante email. El enlace de restablecimiento de ambas apps abre la pantalla compartida `/password-reset?token=...` de Admin conforme al [contrato común](arquitectura/contratos-api.md#autenticación-mobile); esta pantalla permite definir la contraseña nueva sin conceder acceso administrativo.
 
 ---
 

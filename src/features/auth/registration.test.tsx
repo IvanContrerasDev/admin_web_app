@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { authService, userService } from '../../services/services'
+import { accessService, authService, userService } from '../../services/services'
 import { AuthProvider } from './auth-provider'
 import { LoginPage } from './login-page'
 import { RegistrationPage } from './registration-page'
@@ -25,7 +25,8 @@ function renderAccess(path = '/registro') {
 
 beforeEach(() => {
   vi.spyOn(authService, 'bootstrap').mockRejectedValue(new Error('Sin sesión'))
-  vi.spyOn(userService, 'listSites').mockResolvedValue([{ id: siteId, name: 'San Juan' }])
+  vi.spyOn(userService, 'listRegistrationSites').mockResolvedValue([{ id: siteId, name: 'San Juan' }])
+  vi.spyOn(userService, 'listSites').mockRejectedValue(new Error('Ruta protegida'))
 })
 
 describe('Administrative registration screen', () => {
@@ -45,14 +46,18 @@ describe('Administrative registration screen', () => {
     const user = userEvent.setup()
     renderAccess()
     await screen.findByRole('option', { name: 'San Juan' })
-    await user.click(screen.getByRole('button', { name: 'Validar datos de registro' }))
+    await user.click(screen.getByRole('button', { name: 'Solicitar acceso administrativo' }))
     expect(await screen.findByText('Ingresá el nombre.')).toHaveAttribute('role', 'alert')
     expect(screen.getByLabelText('Nombre')).toHaveFocus()
     expect(screen.getByLabelText('Nombre')).toHaveAttribute('aria-invalid', 'true')
     expect(screen.getByLabelText('Nombre')).toHaveAttribute('aria-describedby', 'registration-firstName-error')
   })
 
-  it('validates without persisting, sending a request or granting access', async () => {
+  it('sends a legacy password, replaces the challenge on resend and submits PENDING without granting access', async () => {
+    const initial = { challengeId: 'one', expiresAt: new Date(Date.now()+600000).toISOString(), resendAvailableAt: new Date(0).toISOString(), message: 'Ingresá el código' }
+    const request = vi.spyOn(accessService, 'requestAccess').mockResolvedValue(initial)
+    vi.spyOn(accessService, 'resend').mockResolvedValue({ ...initial, challengeId: 'two' })
+    const submit = vi.spyOn(accessService, 'verify').mockResolvedValue({ status: 'PENDING', message: 'Solicitud pendiente' })
     const create = vi.spyOn(userService, 'create')
     const login = vi.spyOn(authService, 'login')
     const verify = vi.spyOn(authService, 'verifyLogin')
@@ -63,28 +68,39 @@ describe('Administrative registration screen', () => {
       await user.type(screen.getByLabelText(label!), value!)
     }
     await user.selectOptions(screen.getByLabelText('Provincia'), siteId)
-    await user.click(screen.getByRole('button', { name: 'Validar datos de registro' }))
-    const notice = await screen.findByRole('status')
-    expect(notice).toHaveTextContent('Datos validados. Solicitud no enviada.')
-    await waitFor(() => expect(notice).toHaveFocus())
+    await user.click(screen.getByRole('button', { name: 'Solicitar acceso administrativo' }))
+    await screen.findByLabelText('Código de verificación')
+    expect(request.mock.calls[0]![0]).toEqual({ firstName: 'Ana', lastName: 'Pérez', email: 'ana@example.test', phone: '2645550199', dni: '41234567', employeeId: 'EMP-051', address: 'Mitre 150', birthDate: '2000-05-20', siteId, password: 'frase segura 2026' })
+    await user.click(screen.getByRole('button', { name: 'Reenviar código' }))
+    await user.type(screen.getByLabelText('Código de verificación'), '123456')
+    await user.click(screen.getByRole('button', { name: 'Verificar email' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Solicitud pendiente')
+    expect(submit.mock.calls[0]!.slice(0,2)).toEqual(['two', '123456'])
     expect(create).not.toHaveBeenCalled()
     expect(login).not.toHaveBeenCalled()
     expect(verify).not.toHaveBeenCalled()
     expect(router.state.location.pathname).toBe('/registro')
-    await user.type(screen.getByLabelText('Nombre'), ' María')
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('recovers a failed province catalogue and never submits while unavailable', async () => {
-    vi.mocked(userService.listSites).mockRejectedValueOnce(new Error('Sin catálogo'))
+    vi.mocked(userService.listRegistrationSites).mockRejectedValueOnce(new Error('Sin catálogo'))
     const user = userEvent.setup()
     renderAccess()
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar las provincias.')
     expect(screen.getByLabelText('Provincia')).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Validar datos de registro' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Solicitar acceso administrativo' })).toBeDisabled()
     await user.click(screen.getByRole('button', { name: 'Reintentar' }))
     await screen.findByRole('option', { name: 'San Juan' })
     expect(screen.getByLabelText('Provincia')).toBeEnabled()
+  })
+
+  it('keeps registration unavailable when the public catalogue is empty', async () => {
+    vi.mocked(userService.listRegistrationSites).mockResolvedValue([])
+    renderAccess()
+    expect(await screen.findByText('No hay provincias disponibles para el registro.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Provincia')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Solicitar acceso administrativo' })).toBeDisabled()
+    expect(userService.listSites).not.toHaveBeenCalled()
   })
 
   it('toggles both password fields without changing their values', async () => {
@@ -106,6 +122,25 @@ describe('Administrative registration screen', () => {
     expect(schema.safeParse({ ...validFields, confirmPassword: 'otra contraseña' }).success).toBe(false)
     expect(schema.safeParse({ ...validFields, birthDate: '2026-10-14' }).success).toBe(false)
     expect(schema.safeParse({ ...validFields, birthDate: '2026-02-30' }).success).toBe(false)
-    expect(schema.safeParse({ ...validFields, initialPassword: 'corta', confirmPassword: 'corta' }).success).toBe(false)
+    expect(schema.safeParse({ ...validFields, initialPassword: ' x ', confirmPassword: ' x ' }).success).toBe(true)
+    expect(schema.parse({ ...validFields, initialPassword: '😀'.repeat(128), confirmPassword: '😀'.repeat(128) }).initialPassword).toBe('😀'.repeat(128))
   })
+})
+
+it('accepts 128 non-BMP password characters through the input without trimming secrets', async () => {
+  const challenge = { challengeId: 'unicode', expiresAt: new Date(Date.now()+600000).toISOString(), resendAvailableAt: new Date(Date.now()+60000).toISOString(), message: 'Código enviado' }
+  const request = vi.spyOn(accessService, 'requestAccess').mockResolvedValue(challenge)
+  renderAccess()
+  await screen.findByRole('option', { name: 'San Juan' })
+  const user = userEvent.setup()
+  const secret = '😀'.repeat(128)
+  for (const [label, value] of [['Nombre', 'Ana'], ['Apellido', 'Pérez'], ['Email', 'ana@example.test'], ['Teléfono', '2645550199'], ['DNI', '41234567'], ['Número de legajo', 'EMP-051'], ['Domicilio', 'Mitre 150'], ['Fecha de nacimiento', '2000-05-20'], ['Contraseña', secret], ['Confirmar contraseña', secret]]) {
+    await user.type(screen.getByLabelText(label!), value!)
+  }
+  expect(screen.getByLabelText('Contraseña')).toHaveValue(secret)
+  await user.selectOptions(screen.getByLabelText('Provincia'), siteId)
+  await user.click(screen.getByRole('button', { name: 'Solicitar acceso administrativo' }))
+  await screen.findByLabelText('Código de verificación')
+  expect(request.mock.calls[0]![0].password).toBe(secret)
+  expect(screen.getByRole('button', { name: /Reenviar código en/ })).toBeDisabled()
 })

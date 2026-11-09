@@ -12,7 +12,7 @@ export function ClientDetailPage() {
   const queryClient = useQueryClient()
   const [confirming, setConfirming] = useState(false)
   const query = useQuery({ queryKey: ['client', clientId], queryFn: ({ signal }) => organizationService.getClient(clientId, signal), enabled: Boolean(clientId) })
-  const mutation = useMutation({ mutationFn: () => organizationService.setClientStatus(clientId, query.data?.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'), onSuccess: async (client) => { queryClient.setQueryData(['client', clientId], client); await Promise.all([queryClient.invalidateQueries({ queryKey: ['clients'] }), queryClient.invalidateQueries({ queryKey: ['workplaces'] })]); setConfirming(false) } })
+  const mutation = useMutation({ mutationFn: () => organizationService.setClientStatus(clientId, query.data?.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'), onSuccess: async (client) => { queryClient.setQueryData(['client', clientId], client); await Promise.all([queryClient.invalidateQueries({ queryKey: ['clients'] }), queryClient.invalidateQueries({ queryKey: ['workplaces'] }), queryClient.invalidateQueries({ queryKey: ['workplace'] })]); setConfirming(false) } })
   if (query.isPending) return <LoadingSkeleton label="Cargando cliente…" variant="detail" />
   if (query.isError || !query.data) return <section role="alert"><h1 className="text-2xl font-bold">No pudimos abrir este cliente</h1><Link className="mt-4 inline-flex text-primary hover:underline" to="/clientes">Volver a clientes</Link></section>
   const client = query.data

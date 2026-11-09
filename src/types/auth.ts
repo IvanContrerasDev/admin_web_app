@@ -18,8 +18,9 @@ export interface LoginInput {
 
 export interface LoginChallenge {
   challengeId: string
-  expiresAt: string
-  message: string
+  twoFactorRequired?: true
+  expiresAt?: string
+  message?: string
 }
 
 export interface VerifyLoginInput {

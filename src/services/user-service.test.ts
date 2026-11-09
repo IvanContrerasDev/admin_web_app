@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { registerUserMockRoutes } from '../mocks/user-handlers'
 import { MockServiceAdapter } from './mock-service-adapter'
 import { UserService } from './user-service'
+import { HttpServiceAdapter } from './http-service-adapter'
 
 function setup(now = () => new Date('2026-09-17T15:00:00.000Z')) {
   const adapter = new MockServiceAdapter()
@@ -75,5 +76,56 @@ describe('UserService', () => {
     const service = setup()
     await expect(service.create({ ...newUser, birthDate: '2026-02-31' })).rejects.toMatchObject({ code: 'INVALID_USER_DATA' })
     await expect(service.create({ ...newUser, initialPassword: 'corta' })).rejects.toMatchObject({ code: 'WEAK_PASSWORD' })
+  })
+})
+
+
+describe('Public registration catalogue over HTTP', () => {
+  it('uses public value/label provinces without requesting protected sites', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ data: { sites: [{ value: newUser.siteId, label: 'San Juan' }], documentTypes: [] } }))
+    const service = new UserService(new HttpServiceAdapter('https://api.example.test/api/v1', fetcher))
+    await expect(service.listRegistrationSites()).resolves.toEqual([{ id: newUser.siteId, name: 'San Juan' }])
+    expect(String(fetcher.mock.calls[0]![0])).toBe('https://api.example.test/api/v1/catalogs')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('accepts empty public provinces but rejects malformed UUIDs and protected DTOs', async () => {
+    const fetcher = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(Response.json({ data: { sites: [] } }))
+      .mockResolvedValueOnce(Response.json({ data: { sites: [{ value: 'EMP-051', label: 'San Juan' }] } }))
+      .mockResolvedValueOnce(Response.json({ data: { sites: [{ id: newUser.siteId, name: 'San Juan' }] } }))
+    const service = new UserService(new HttpServiceAdapter('https://api.example.test/api/v1', fetcher))
+    await expect(service.listRegistrationSites()).resolves.toEqual([])
+    await expect(service.listRegistrationSites()).rejects.toMatchObject({ code: 'INVALID_API_RESPONSE' })
+    await expect(service.listRegistrationSites()).rejects.toMatchObject({ code: 'INVALID_API_RESPONSE' })
+  })
+})
+
+describe('employee HTTP contract', () => {
+  it('preserves the server UUID, nulls and omitted PATCH fields without mock fallback', async () => {
+    const detail = { id: 'a304e546-2257-4e2a-bc59-42d22e16e7c8', firstName: 'Ana', lastName: 'Pérez', employeeId: 'EMP-051', dni: '41234567', email: 'ana@example.test', phone: '2645550199', site: { id: newUser.siteId, name: 'San Juan' }, accountStatus: 'INACTIVE', address: 'Mitre 150', birthDate: '2000-05-20', cuil: null, hireDate: null, position: null, createdAt: '2026-11-04T12:00:00.000Z', updatedAt: '2026-11-04T12:00:00.000Z' }
+    const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => Response.json({ data: detail }))
+    const service = new UserService(new HttpServiceAdapter('https://api.example.test/api/v1', fetcher))
+    const created = await service.create(newUser)
+    expect(created.id).toBe(detail.id)
+    await expect(service.get(created.id)).resolves.toEqual(detail)
+    await service.update(created.id, { cuil: null, position: 'Encargada' })
+    await service.setAccountStatus(created.id, 'INACTIVE')
+    expect(fetcher.mock.calls.map(([url, init]) => [new URL(String(url)).pathname, init?.method, init?.body ? JSON.parse(String(init.body)) : undefined])).toEqual([
+      ['/api/v1/users', 'POST', newUser],
+      [`/api/v1/users/${detail.id}`, 'GET', undefined],
+      [`/api/v1/users/${detail.id}`, 'PATCH', { cuil: null, position: 'Encargada' }],
+      [`/api/v1/users/${detail.id}/account-status`, 'PATCH', { accountStatus: 'INACTIVE' }],
+    ])
+    fetcher.mockResolvedValueOnce(Response.json({ error: { code: 'USER_EMAIL_ALREADY_EXISTS', message: 'El email ya existe.', retryable: false } }, { status: 409 }))
+    await expect(service.create(newUser)).rejects.toMatchObject({ code: 'USER_EMAIL_ALREADY_EXISTS', status: 409 })
+  })
+
+  it('sends only supported list filters and preserves inactive employees', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ data: [], pagination: { page: 2, pageSize: 25, totalItems: 30, totalPages: 2 } }))
+    const service = new UserService(new HttpServiceAdapter('https://api.example.test/api/v1', fetcher))
+    await service.list({ search: 'Pérez', accountStatus: 'INACTIVE', page: 2 })
+    const url = new URL(String(fetcher.mock.calls[0]![0]))
+    expect(Object.fromEntries(url.searchParams)).toEqual({ search: 'Pérez', accountStatus: 'INACTIVE', page: '2', pageSize: '25' })
   })
 })

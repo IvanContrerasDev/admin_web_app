@@ -163,10 +163,17 @@ describe('F-013 interface regressions', () => {
     ] as const
     for (const { title, metric } of cards) {
       const heading = await screen.findByRole('heading', { name: title })
-      const card = heading.closest('a')!
+      const card = heading.closest('article')!
       expect(within(card).getByText('Total de todas las provincias')).toBeVisible()
       expect(within(card).getByText('Desglose por provincia')).toBeVisible()
       expect(card).toHaveTextContent(formatter.format(metrics[metric]))
+      const links = within(card).getAllByRole('link')
+      expect(links).toHaveLength(metrics.byProvince.length + 1)
+      const destination = links[0]!.getAttribute('href')
+      expect(destination).toContain('month=2026-09')
+      expect(destination).not.toContain('siteId')
+      for (const link of links) expect(link).toHaveAttribute('href', destination)
+      expect(card.querySelector('a a')).toBeNull()
       const breakdown = within(card).getByLabelText(`${title} por provincia`)
       expect(breakdown).toBeVisible()
       for (const province of metrics.byProvince) {

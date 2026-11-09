@@ -1,6 +1,7 @@
 import type { Pagination } from '../types/api'
 import {
   siteReferenceSchema,
+  publicSitesCatalogSchema,
   userDetailSchema,
   userListItemSchema,
   type AccountStatus,
@@ -28,7 +29,6 @@ export class UserService {
         query: {
           search: query.search,
           accountStatus: query.accountStatus,
-          siteId: query.siteId,
           page: query.page ?? 1,
           pageSize: query.pageSize ?? 25,
         },
@@ -55,6 +55,11 @@ export class UserService {
       { method: 'PATCH', path: `/users/${id}/account-status`, body: { accountStatus } },
       userDetailSchema,
     )
+  }
+
+  async listRegistrationSites(signal?: AbortSignal): Promise<SiteReference[]> {
+    const catalog = await this.client.request({ path: '/catalogs', signal }, publicSitesCatalogSchema)
+    return catalog.sites.map(({ value, label }) => ({ id: value, name: label }))
   }
 
   listSites(signal?: AbortSignal): Promise<SiteReference[]> {

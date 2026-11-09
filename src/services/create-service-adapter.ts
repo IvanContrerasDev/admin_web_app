@@ -1,3 +1,4 @@
+import { registerAccessMockRoutes } from '../mocks/access-handlers'
 import { registerAuthMockRoutes } from '../mocks/auth-handlers'
 import { registerDashboardMockRoutes } from '../mocks/dashboard-handlers'
 import { registerDocumentsMockRoutes } from '../mocks/documents-handlers'
@@ -22,6 +23,7 @@ export function createServiceAdapter(environment: ServiceEnvironment): ServiceAd
     const adapter = new MockServiceAdapter()
     const timesheetsStore = createTimesheetsStore()
     registerAuthMockRoutes(adapter)
+    registerAccessMockRoutes(adapter)
     registerUserMockRoutes(adapter)
     registerOrganizationMockRoutes(adapter)
     registerRecordsMockRoutes(adapter)

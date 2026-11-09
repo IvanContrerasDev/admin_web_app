@@ -6,6 +6,9 @@ export type RecordStatus = z.infer<typeof recordStatusSchema>
 export const reviewStatusSchema = z.enum(['NONE', 'PENDING', 'APPROVED', 'MANUAL_LOADED'])
 export type ReviewStatus = z.infer<typeof reviewStatusSchema>
 
+export const intervalReviewStatusSchema = z.enum(['NONE', 'PENDING', 'APPROVED'])
+export type IntervalReviewStatus = z.infer<typeof intervalReviewStatusSchema>
+
 export const recordOriginSchema = z.enum(['AUTOMATIC', 'MANUAL'])
 export type RecordOrigin = z.infer<typeof recordOriginSchema>
 
@@ -95,7 +98,7 @@ export const recordIntervalSchema = z.object({
   absenceReason: absenceReasonSchema.nullable(),
   observations: z.string().nullable(),
   origin: recordOriginSchema,
-  reviewStatus: reviewStatusSchema,
+  reviewStatus: intervalReviewStatusSchema,
   attendanceEvents: z.array(attendanceEventReferenceSchema),
 })
 export type RecordInterval = z.infer<typeof recordIntervalSchema>
@@ -130,7 +133,7 @@ const metadataValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null
 export const attendanceEventDetailSchema = z.object({
   id: z.string().uuid(),
   recordId: z.string().uuid(),
-  intervalId: z.string().uuid(),
+  intervalId: z.string().uuid().nullable(),
   type: attendanceEventTypeSchema,
   occurredAt: z.string().datetime(),
   receivedAt: z.string().datetime(),

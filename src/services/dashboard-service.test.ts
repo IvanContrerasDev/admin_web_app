@@ -93,6 +93,23 @@ describe('DashboardService', () => {
     }
   })
 
+  it('reflects record corrections and approvals in the same period counters', async () => {
+    const { dashboard, records } = setup()
+    const before = await dashboard.getMetrics({ month: 9, year: 2026 })
+    const matrix = await records.listMonthly({ month: 9, year: 2026, reviewStatus: 'PENDING' })
+    const day = matrix.data.flatMap((row) => row.days).find((day) => day.state === 'PRESENT' && day.matchesFilters)
+    if (!day || day.state !== 'PRESENT') throw new Error('Expected pending fixture')
+    const detail = await records.getDetail(day.record.id)
+    const approved = await records.approve(detail.id, { expectedVersion: detail.version, reviewStatus: 'APPROVED' })
+    const after = await dashboard.getMetrics({ month: 9, year: 2026 })
+    expect(after.pendingReviewRecords).toBe(before.pendingReviewRecords - 1)
+    expect(after.byProvince.find((province) => province.id === detail.site.id)?.pendingReviewRecords).toBe(before.byProvince.find((province) => province.id === detail.site.id)!.pendingReviewRecords - 1)
+    expect(after.incompleteRecords).toBe(before.incompleteRecords)
+    const corrected = await records.update(approved.id, { expectedVersion: approved.version, observations: 'Corregido' })
+    expect(corrected.reviewStatus).toBe('MANUAL_LOADED')
+    expect((await dashboard.getMetrics({ month: 9, year: 2026 })).pendingReviewRecords).toBe(after.pendingReviewRecords)
+  })
+
   it('rejects an invalid month', async () => {
     const { dashboard } = setup()
     await expect(dashboard.getMetrics({ month: 13, year: 2026 })).rejects.toMatchObject({ code: 'INVALID_MONTH', status: 400 })

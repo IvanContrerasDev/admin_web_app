@@ -41,6 +41,8 @@ export class HttpServiceAdapter implements ServiceAdapter {
   constructor(baseUrl: string, private readonly fetcher: typeof fetch = fetch) {
     try {
       this.baseUrl = new URL(baseUrl)
+      if (!['http:', 'https:'].includes(this.baseUrl.protocol) || this.baseUrl.username || this.baseUrl.password || this.baseUrl.search || this.baseUrl.hash) throw new Error('Invalid API base')
+      this.baseUrl.pathname = `${this.baseUrl.pathname.replace(/\/$/, '')}/`
     } catch (cause) {
       throw new ServiceError({
         code: 'INVALID_API_BASE_URL',
@@ -52,8 +54,14 @@ export class HttpServiceAdapter implements ServiceAdapter {
     }
   }
 
+  get coordinationKey() { return this.baseUrl.href }
+
   async request(request: ServiceRequest) {
-    const url = new URL(request.path, this.baseUrl)
+    const relativePath = request.path.slice(1)
+    const url = new URL(relativePath, this.baseUrl)
+    if (request.path.startsWith('//') || request.path.includes('\\') || url.origin !== this.baseUrl.origin || !url.pathname.startsWith(this.baseUrl.pathname)) {
+      throw new ServiceError({ code: 'INVALID_API_PATH', message: 'La ruta de la API no es válida.', retryable: false, kind: 'configuration' })
+    }
     appendQuery(url, request.query)
 
     let response: Response
@@ -61,6 +69,7 @@ export class HttpServiceAdapter implements ServiceAdapter {
       response = await this.fetcher(url, {
         method: request.method ?? 'GET',
         credentials: 'include',
+        cache: request.path.startsWith('/auth/') ? 'no-store' : undefined,
         headers: request.body === undefined
           ? request.headers
           : { 'Content-Type': 'application/json', ...request.headers },

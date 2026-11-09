@@ -22,7 +22,7 @@ export function registerDashboardMockRoutes(
     const month = parseInteger(request.query?.month, 0)
     if (year < 2000 || month < 1 || month > 12) throw apiError('INVALID_MONTH', 'Seleccioná un mes válido.', 400)
 
-    const recordMetrics = computeMonthlyRecordMetrics(year, month)
+    const recordMetrics = computeMonthlyRecordMetrics(year, month, adapter)
     const provinces = new Map(recordMetrics.byProvince.map((province) => [province.id, {
       ...province, pendingTimesheets: 0,
     }]))

@@ -1,0 +1,11 @@
+# Despacho implementer-admin — F-016
+
+Repo exclusivo `/home/ivcontreras/GdesProject/admin_web_app`; rol .agents/agents/implementer-admin.md. UNA feature docs/tasks/016-acceso-recuperacion-http.md y plan. Leer AGENTS, skills/convenciones locales, docs referenciadas antes de código. Ejecución A-03 reanudada por humano2026-11-05, no pedir aprobación general. No Git/SYNCED/otros repos/instalar skills ni subagentes.
+
+Implementar envío/OTP/reenvío/PENDING administrativo y recovery/reset/confirmación, usando transporte/catálogos entregados F-014/F-015. Ownership: nuevos servicios/tipos de acceso, src/services/services.ts si wiring necesario, src/features/auth/registration-*, nuevas pantallas públicas auth y tests, enlace recovery en login-page.tsx, src/app/router.tsx y mocks/tests propios. AuthService/provider sólo cambios mínimos necesarios para invalidar sesión luego de reset confirmado si contrato exige y para que requests públicos de recovery/reset/confirmación conserven señal propia sin cancelarse por bootstrap anónimo, sin rediseñar coordinación/CSRF ni inventar campo de sesión. Registrar ampliación antes de tocarlo si aparece duda. No records/dashboard/users/organization/archivos.
+
+Estado exclusivo progress/implementer-016/current.md mientras trabaja; completar Registro spec. Aplicar TDD y verificación, recibir review con rigor. DTOs/rutas son los publicados por contrato/proveedor; backend sólo lectura. Spec local9.3 ya aclara empleado inicia desde mobile y enlace compartido /password-reset en Admin; no concede rol Admin a empleado. GET /admin-access/confirm no muta, POST explícito; password1–128 inicial para cuenta existente antes OTP, política nueva sólo backend tras OTP. No reenvío2FA login Admin inventado.
+
+Ejecutar focalizados maxWorkers2; full suite/build sólo cuando reviewer/otro implementer no use slot. Leer progress/leader/dependencias-integracion.md: sin API/correo/fixture operativo, no fabricar credenciales ni afirmar correo local/DB por mocks. Avanzar todo lo acordado independiente; bloquear solamente criterios integrales o decisiones realmente abiertas con archivo/campo exacto.
+
+Al terminar devolver SOLO task_spec, progress_file, status(done|blocked). Comunicación sustantiva siempre por archivos.

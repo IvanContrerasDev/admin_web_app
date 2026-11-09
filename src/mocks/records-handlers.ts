@@ -133,7 +133,7 @@ function createRecordDetail(context: RecordContext, eventDetails: Map<string, At
       absenceReason: isAbsence && Number(summary.id.slice(-2)) % 2 === 0 ? 'ILLNESS' as const : null,
       observations: isAbsence ? 'Ausencia registrada por el empleado.' : null,
       origin: summary.origin,
-      reviewStatus: summary.reviewStatus,
+      reviewStatus: summary.reviewStatus === 'MANUAL_LOADED' ? 'NONE' as const : summary.reviewStatus,
       attendanceEvents,
     }
   })
@@ -189,7 +189,7 @@ function toManualInterval(id: string, input: RecordIntervalInput, previous?: Rec
     ...input,
     status: intervalStatus(input),
     origin: 'MANUAL',
-    reviewStatus: 'MANUAL_LOADED',
+    reviewStatus: 'NONE',
     attendanceEvents: previous?.attendanceEvents ?? [],
   }
 }
@@ -302,10 +302,13 @@ function snapshotFor(query: MonthlyQuery) {
   return ['mock', query.year, query.month, query.pageSize ?? 50, query.siteId ?? 'all', query.employeeId ?? 'all', query.workplaceId ?? 'all', query.clientId ?? 'all', query.status ?? 'all', query.reviewStatus ?? 'all', query.origin ?? 'all', query.hasAbsence ? 'absence' : 'all'].join(':')
 }
 
+const recordsByAdapter = new WeakMap<MockServiceAdapter, Map<string, RecordDetail>>()
+
 export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () => Date = () => new Date()) {
   const recordContexts = new Map<string, RecordContext>()
   const eventDetails = new Map<string, AttendanceEventDetail>()
   const storedRecords = new Map<string, RecordDetail>()
+  recordsByAdapter.set(adapter, storedRecords)
   const snapshots = new Map<string, { signature: string; expiresAt: number; rows: MonthlyRow[] }>()
   let manualRecordSequence = 1
   let manualIntervalSequence = 1
@@ -447,6 +450,14 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
       version: current.version + 1,
       updatedAt: now().toISOString(),
     })
+    const retainedIds = new Set(nextIntervals.map((interval) => interval.id))
+    for (const interval of current.intervals) {
+      if (retainedIds.has(interval.id)) continue
+      for (const event of interval.attendanceEvents) {
+        const detail = eventDetails.get(event.id)
+        if (detail) eventDetails.set(event.id, { ...detail, intervalId: null })
+      }
+    }
     storedRecords.set(recordIdentifier, next)
     return { data: next }
   })
@@ -489,10 +500,10 @@ export function registerRecordsMockRoutes(adapter: MockServiceAdapter, now: () =
   })
 }
 
-// Métricas del mes sobre la generación determinista: los registros manuales
-// creados en runtime no se reflejan (limitación del mock, sin efecto en backend real).
-export function computeMonthlyRecordMetrics(year: number, month: number) {
-  const rows = createRows(year, month, { year, month })
+// El mismo estado por adaptador alimenta matriz y métricas sin compartir datos entre sesiones de test.
+export function computeMonthlyRecordMetrics(year: number, month: number, adapter?: MockServiceAdapter) {
+  const stored = adapter ? recordsByAdapter.get(adapter) : undefined
+  const rows = createRows(year, month, { year, month }, stored ? [...stored.values()] : [])
   let incompleteRecords = 0
   let pendingReviewRecords = 0
   let recordsWithAbsence = 0

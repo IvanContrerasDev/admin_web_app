@@ -1,11 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 import { getArgentinaCivilDate } from '../../lib/dates'
-import { userService } from '../../services/services'
+import { accessService, userService } from '../../services/services'
 import { createRegistrationSchema, type RegistrationFields } from './registration-schema'
+
+import type { AdminAccessChallenge } from '../../types/access'
+import { RegistrationChallenge } from './registration-challenge'
+import { useAccessOperation } from './access-ui'
 
 const inputClass = 'min-h-11 w-full rounded-md border border-foreground/25 bg-background px-3 py-2 font-sans text-base text-foreground shadow-sm transition-colors hover:border-foreground/50 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 const fields = [
@@ -22,43 +26,42 @@ const fields = [
 ] as const
 
 export function RegistrationForm() {
-  const noticeRef = useRef<HTMLDivElement>(null)
-  const [validated, setValidated] = useState(false)
+  const [challenge, setChallenge] = useState<AdminAccessChallenge | null>(null)
+  const { busy, error, run } = useAccessOperation()
   const [passwordVisible, setPasswordVisible] = useState(false)
   const sitesQuery = useQuery({
     queryKey: ['registration', 'sites'],
-    queryFn: ({ signal }) => userService.listSites(signal),
+    queryFn: ({ signal }) => userService.listRegistrationSites(signal),
     retry: false,
   })
-  const { register, handleSubmit, setError, formState: { errors } } = useForm<RegistrationFields>({
+  const { register, handleSubmit, setError, reset, formState: { errors } } = useForm<RegistrationFields>({
     resolver: zodResolver(createRegistrationSchema()),
     defaultValues: { firstName: '', lastName: '', dni: '', employeeId: '', email: '', phone: '', address: '', birthDate: '', siteId: '', initialPassword: '', confirmPassword: '' },
   })
-
-  useEffect(() => {
-    if (validated) noticeRef.current?.focus()
-  }, [validated])
 
   const validateForm = handleSubmit((values) => {
     if (!sitesQuery.data?.some((site) => site.id === values.siteId)) {
       setError('siteId', { message: 'Seleccioná una provincia disponible en el catálogo.' }, { shouldFocus: true })
       return
     }
-    setValidated(true)
+    return run(async (signal) => {
+      const { initialPassword, ...profile } = values
+      const { confirmPassword, ...request } = profile
+      void confirmPassword
+      const next = await accessService.requestAccess({ ...request, password: initialPassword }, signal)
+      if (!signal.aborted) { reset(); setChallenge(next) }
+    })
   })
 
+  if (challenge) return <RegistrationChallenge initial={challenge} />
+
   return (
-    <form className="flex flex-col gap-6" onSubmit={validateForm} onChange={() => setValidated(false)} noValidate>
+    <form className="flex flex-col gap-6" onSubmit={validateForm} noValidate>
       <header className="flex flex-col gap-2">
         <p className="text-sm font-semibold text-primary">Registro administrativo</p>
         <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground">Crear cuenta</h1>
         <p className="text-pretty text-base leading-relaxed text-foreground/70">Completá tus datos para solicitar acceso a Administración. Todos los campos son obligatorios.</p>
       </header>
-
-      <aside className="rounded-md border border-primary/25 bg-primary/5 p-4 text-sm leading-relaxed text-foreground" aria-label="Disponibilidad del registro">
-        <p className="font-semibold">Pantalla de registro en preparación</p>
-        <p>Podés validar los datos del formulario. El envío al backend todavía no está habilitado: no se crean cuentas, no se guardan datos ni se envían correos.</p>
-      </aside>
 
       <fieldset className="flex min-w-0 flex-col gap-4">
         <legend className="mb-4 text-base font-semibold text-foreground">Tus datos</legend>
@@ -77,10 +80,11 @@ export function RegistrationForm() {
           })}
           <div className="flex min-w-0 flex-col gap-2 sm:col-span-2">
             <label htmlFor="registration-siteId" className="text-sm font-semibold text-foreground">Provincia</label>
-            <select id="registration-siteId" className={inputClass} disabled={sitesQuery.isPending || sitesQuery.isError} aria-required="true" aria-invalid={Boolean(errors.siteId)} aria-describedby={errors.siteId ? 'registration-siteId-error' : undefined} {...register('siteId')}>
+            <select id="registration-siteId" className={inputClass} disabled={busy || sitesQuery.isPending || sitesQuery.isError || sitesQuery.data?.length === 0} aria-required="true" aria-invalid={Boolean(errors.siteId)} aria-describedby={errors.siteId ? 'registration-siteId-error' : undefined} {...register('siteId')}>
               <option value="">{sitesQuery.isPending ? 'Cargando provincias…' : 'Seleccioná tu provincia'}</option>
               {sitesQuery.data?.map((site) => <option key={site.id} value={site.id}>{site.name}</option>)}
             </select>
+            {sitesQuery.isSuccess && sitesQuery.data.length === 0 ? <p role="alert" className="text-sm text-accent">No hay provincias disponibles para el registro.</p> : null}
             {sitesQuery.isError ? <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-accent"><p>No pudimos cargar las provincias.</p><button type="button" onClick={() => void sitesQuery.refetch()} className="min-h-11 rounded-md border border-accent px-3 font-semibold hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">Reintentar</button></div> : null}
             {errors.siteId ? <p id="registration-siteId-error" role="alert" className="text-sm font-medium text-accent">{errors.siteId.message}</p> : null}
           </div>
@@ -89,14 +93,14 @@ export function RegistrationForm() {
 
       <fieldset className="flex min-w-0 flex-col gap-4 border-t border-foreground/15 pt-5">
         <legend className="text-base font-semibold text-foreground">Seguridad de tu cuenta</legend>
-        <p id="registration-password-help" className="text-sm leading-relaxed text-foreground/65">Usá entre 12 y 128 caracteres. Podés utilizar una frase fácil de recordar.</p>
+        <p id="registration-password-help" className="text-sm leading-relaxed text-foreground/65">Si ya tenés cuenta, ingresá tu contraseña actual. Para una cuenta nueva, usá una frase de al menos 12 caracteres; se validará después de verificar tu email.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {fields.slice(8).map((field) => {
             const error = errors[field.name]
             return (
               <div key={field.name} className="flex min-w-0 flex-col gap-2">
                 <label htmlFor={`registration-${field.name}`} className="text-sm font-semibold text-foreground">{field.label}</label>
-                <input id={`registration-${field.name}`} type={passwordVisible ? 'text' : 'password'} autoComplete="new-password" maxLength={128} className={inputClass} aria-required="true" aria-invalid={Boolean(error)} aria-describedby={`registration-password-help${error ? ` registration-${field.name}-error` : ''}`} {...register(field.name)} />
+                <input id={`registration-${field.name}`} type={passwordVisible ? 'text' : 'password'} autoComplete="new-password" className={inputClass} aria-required="true" aria-invalid={Boolean(error)} aria-describedby={`registration-password-help${error ? ` registration-${field.name}-error` : ''}`} {...register(field.name)} />
                 {error ? <p id={`registration-${field.name}-error`} role="alert" className="text-sm font-medium text-accent">{error.message}</p> : null}
               </div>
             )
@@ -105,8 +109,8 @@ export function RegistrationForm() {
         <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-foreground"><input type="checkbox" className="size-5 accent-primary" checked={passwordVisible} onChange={(event) => setPasswordVisible(event.target.checked)} />Mostrar contraseñas</label>
       </fieldset>
 
-      {validated ? <div ref={noticeRef} role="status" tabIndex={-1} className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-foreground focus-visible:outline-2 focus-visible:outline-primary"><p className="font-semibold">Datos validados. Solicitud no enviada.</p><p>Para completar el registro falta habilitar el envío al backend. No se creó una cuenta ni se solicitó aprobación al SuperAdmin.</p></div> : null}
-      <button type="submit" disabled={sitesQuery.isPending || sitesQuery.isError} className="min-h-11 rounded-md bg-primary px-4 py-3 text-base font-semibold text-background transition-colors hover:bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60">Validar datos de registro</button>
+      {error ? <p role="alert">{error}</p> : null}
+      <button type="submit" disabled={busy || sitesQuery.isPending || sitesQuery.isError || sitesQuery.data?.length === 0} className="min-h-11 rounded-md bg-primary px-4 py-3 text-base font-semibold text-background transition-colors hover:bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60">{busy ? 'Enviando solicitud…' : 'Solicitar acceso administrativo'}</button>
       <p className="text-center text-sm leading-relaxed text-foreground/70">¿Ya tenés acceso? <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Iniciar sesión</Link></p>
     </form>
   )

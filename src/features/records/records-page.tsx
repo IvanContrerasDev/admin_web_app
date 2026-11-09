@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { useSearchParams } from 'react-router-dom'
 import type { RecordOrigin, RecordStatus, ReviewStatus } from '../../types/records'
@@ -47,8 +46,7 @@ export function RecordsPage() {
   const options = useRecordsFilterOptions()
   const monthValue = validMonthValue(searchParams.get('month'))
   const [year, month] = monthValue.split('-').map(Number) as [number, number]
-  const defaultSiteId = options.sites.data?.find((site) => site.name === 'San Juan')?.id ?? ''
-  const siteId = searchParams.get('siteId') ?? defaultSiteId
+  const siteId = searchParams.get('siteId') ?? ''
   const clientId = searchParams.get('clientId') ?? ''
   const workplaceId = searchParams.get('workplaceId') ?? ''
   const employeeId = searchParams.get('employeeId') ?? ''
@@ -56,14 +54,6 @@ export function RecordsPage() {
   const reviewStatus = validReviewStatus(searchParams.get('reviewStatus'))
   const origin = validOrigin(searchParams.get('origin'))
   const hasAbsence = searchParams.get('hasAbsence') === 'true'
-
-  useEffect(() => {
-    if (!defaultSiteId || searchParams.has('siteId')) return
-    const next = new URLSearchParams(searchParams)
-    next.set('siteId', defaultSiteId)
-    if (!next.has('month')) next.set('month', monthValue)
-    setSearchParams(next, { replace: true })
-  }, [defaultSiteId, monthValue, searchParams, setSearchParams])
 
   const recordsQuery = useMonthlyRecords({
     month,
@@ -76,7 +66,7 @@ export function RecordsPage() {
     reviewStatus,
     origin,
     hasAbsence: hasAbsence ? true : undefined,
-  }, Boolean(siteId))
+  }, true)
 
   const pages = recordsQuery.data?.pages ?? []
   const rows = pages.flatMap((page) => page.data)

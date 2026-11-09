@@ -40,6 +40,7 @@ export function RecordsFilters({ values, sites, clients, workplaces, employees, 
         <label className="flex min-w-0 flex-col gap-1 text-sm font-semibold" htmlFor="records-site">
           Provincia
           <select className={controlClass} id="records-site" name="siteId" value={values.siteId} onChange={(event) => onChange('siteId', event.target.value)}>
+            <option value="">Todas</option>
             {sites.map((site) => <option key={site.id} value={site.id}>{site.name}</option>)}
           </select>
         </label>

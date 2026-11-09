@@ -1,0 +1,14 @@
+# Plan F-016 — A-03 acceso y recuperación
+
+Implementer-admin. Ejecución autorizada; una feature, sin commits/worktrees. Tras F-014/F-015, consumir transporte/catálogo existentes sin alterar protocolo de sesión.
+
+1. Crear servicio de solicitud administrativa separado de AuthService si evita mezclar lifecycle: POST /auth/admin-access-request recibe los diez campos del contrato; /verify {challengeId,code}; /resend {challengeId}; ambos challenges completos, verify PENDING. Schemas de respuestas reales sin inferir campos. Pruebas de DTO/métodos, código error y errores neutralizados antes de OTP.
+2. En src/features/auth/registration-schema.ts/registration-form.tsx eliminar modo sólo validación: enviar password desde initialPassword, sin confirmPassword en DTO. Admitir 1–128 Unicode inicial para cuenta existente sin imponer 12 antes de OTP; backend aplica política nueva sólo al crear luego de OTP. Formulario conserva diez campos, contraseña no se persiste en URL/storage/logs. OTP seis dígitos y resendAvailableAt de respuesta; reemplazar challenge al reenviar, mostrar PENDING real sin asumir sesión.
+3. Servicio/rutas públicas para POST /auth/password-recovery {email} → {sent:true}, y /password-reset {token,newPassword} → {updated:true}. Pantalla /password-reset?token=... válida para ambos clientes; password/confirm y errores INVALID_TOKEN/TOKEN_EXPIRED/VALIDATION_ERROR. No filtrar existencia de cuenta. Cubrir links/GET no mutante y envío explícito.
+4. Ruta pública exacta /admin-access/confirm?token=...&decision=APPROVE|REJECT. Guardar token sólo memoria y limpiar URL evitando reenvío/referer; GET muestra confirmación accesible sin request mutante. POST /auth/admin-access/confirm responde APPROVED|REJECTED; soportar 401/409/410. No exigir sesión JWT adicional al portador.
+5. Tests servicio y UI de challenge/reenvío/PENDING, cuenta existente/password legado (1–128 puntos de código Unicode, sin trim del secreto, incluyendo128 caracteres fuera de BMP), recovery neutral, reset inválido/vencido/éxito, GET decision sin efecto y POST explícito/replay. Cubrir bootstrap401 anónimo concurrente con requests públicos de reset/confirmación para que su vigencia no dependa del controlador de sesión; conservar cancelación propia de pantalla. Mocks sólo para UI, no prueban preservación DB.
+6. Ejecutar typecheck/lint, suites focalizadas, vitest run y build. Registrar evidencia fresca. Con bandeja/fixture local backend B-02/B-03, probar correos y flujo nuevo/existente/aprobado/rechazado/vencido/replay preservando cuenta. Si faltan, documentar bloqueo por archivo; no enviar correo real ni mutar backend.
+
+## Foco de revisión
+
+Password legado antes de OTP; reenvío sustituye challenge; GET no decide; URL/token no filtra; respuesta neutral. No reutilizar reenvío OTP mobile para 2FA login Admin que sigue abierto.

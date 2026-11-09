@@ -126,7 +126,7 @@ export function RecordDetailDialog({ recordId, onClose }: RecordDetailDialogProp
       setApprovalError('')
       queryClient.setQueryData(['records', 'detail', saved.id], saved)
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['records', 'monthly'] }),
+        queryClient.resetQueries({ queryKey: ['records', 'monthly'] }),
         queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
       ])
     },

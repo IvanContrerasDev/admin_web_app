@@ -122,6 +122,7 @@ function LoginForm() {
       <p className="text-center text-sm text-foreground/65">
         La recuperación de contraseña se habilitará cuando el backend publique el contrato administrativo definitivo.
       </p>
+      <Link to="/password-recovery" className="self-center min-h-11 text-sm text-primary underline hover:text-foreground focus-visible:outline-2">Olvidé mi contraseña</Link>
       <Link to="/registro" className="self-center rounded-sm font-sans text-sm font-medium text-primary underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Crear cuenta o registrarse</Link>
     </form>
   )
@@ -159,7 +160,7 @@ function ChallengeForm() {
       <div>
         <p className="mb-3 font-sans text-sm font-semibold text-primary">Segundo paso de seguridad</p>
         <h1 className="text-balance font-sans text-3xl font-semibold tracking-tight text-foreground">Revisá tu email</h1>
-        <p className="mt-2 text-pretty font-sans text-base leading-relaxed text-foreground/70">{challenge.message}</p>
+        <p className="mt-2 text-pretty font-sans text-base leading-relaxed text-foreground/70">{challenge.message ?? 'Ingresá el código de 6 dígitos que enviamos a tu email.'}</p>
       </div>
 
       {errors.root ? (
@@ -182,7 +183,7 @@ function ChallengeForm() {
           aria-describedby={errors.code ? 'code-error' : 'code-help'}
           {...register('code')}
         />
-        <p id="code-help" className="text-sm text-foreground/65">El código vence el {formatArgentinaDateTime(challenge.expiresAt)} (hora Argentina).</p>
+        <p id="code-help" className="text-sm text-foreground/65">{challenge.expiresAt ? `El código vence el ${formatArgentinaDateTime(challenge.expiresAt)} (hora Argentina).` : 'Ingresá el código recibido por email.'}</p>
         {errors.code ? <p id="code-error" className="text-sm font-medium text-accent">{errors.code.message}</p> : null}
       </div>
 

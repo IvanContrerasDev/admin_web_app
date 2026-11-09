@@ -9,6 +9,10 @@ export const siteReferenceSchema = z.object({
 })
 export type SiteReference = z.infer<typeof siteReferenceSchema>
 
+export const publicSitesCatalogSchema = z.object({
+  sites: z.array(z.object({ value: z.string().uuid(), label: z.string().min(1) })),
+})
+
 export const userListItemSchema = z.object({
   id: z.string().uuid(),
   firstName: z.string(),
@@ -64,7 +68,6 @@ export interface UpdateUserInput {
 export interface UserListQuery {
   search?: string
   accountStatus?: AccountStatus
-  siteId?: string
   page?: number
   pageSize?: number
 }

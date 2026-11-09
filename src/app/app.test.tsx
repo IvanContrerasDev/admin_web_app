@@ -24,7 +24,7 @@ describe('administrative authentication and navigation', () => {
     const user = userEvent.setup()
     renderApplication('/registros')
 
-    expect(await screen.findByRole('heading', { name: /ingresá a administración/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^Ingresar$/i })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Registros mensuales' })).not.toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Email'), 'admin@example.test')
@@ -43,14 +43,14 @@ describe('administrative authentication and navigation', () => {
     await user.click(screen.getByRole('button', { name: /cerrar sesión/i }))
     expect(screen.getByRole('group', { name: 'Confirmar cierre de sesión' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Confirmar' }))
-    expect(await screen.findByRole('heading', { name: /ingresá a administración/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^Ingresar$/i })).toBeInTheDocument()
   })
 
   it('shows the contractual pending-approval message', async () => {
     const user = userEvent.setup()
     renderApplication('/login')
 
-    await screen.findByRole('heading', { name: /ingresá a administración/i })
+    await screen.findByRole('heading', { name: /^Ingresar$/i })
     await user.type(screen.getByLabelText('Email'), 'pendiente@example.test')
     await user.type(screen.getByLabelText('Contraseña'), 'contraseña temporal')
     await user.click(screen.getByRole('button', { name: /continuar con código/i }))

@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { organizationService, recordsService, userService } from '../../services/services'
+import { ServiceError } from '../../services/service-error'
 import type { MonthlyQuery } from '../../types/records'
 
 interface PageParameter {
@@ -27,6 +28,7 @@ export function useMonthlyRecords(filters: Omit<MonthlyQuery, 'page' | 'pageSize
       }
     },
     enabled,
+    retry: (failureCount, error) => (!(error instanceof ServiceError) || error.retryable) && failureCount < 2,
   })
   return { ...query, restart: () => queryClient.resetQueries({ queryKey, exact: true }) }
 }

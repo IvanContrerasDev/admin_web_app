@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "descripcion": "Backlog de features de admin_web_app. El leader local es el único que modifica estados. Estados: pending | in_progress | pending_review | done. Una sola feature puede estar in_progress a la vez.",
+  "descripcion": "Backlog de features de admin_web_app. Leader es dueño de estados. Estados pending | in_progress | pending_review | done. Paralelismo coordinado sólo en tareas independientes con archivos/estado disjuntos.",
   "features": [
     {
       "id": "F-001",
@@ -43,7 +43,7 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Login/challenge y bootstrap mock implementados; registro solo valida localmente. Flujos reales y seguridad pendientes en docs/integracion.md; correcciones F-013 requieren revisión.",
+      "notes": "Login/challenge y bootstrap mock implementados; registro solo valida localmente. Flujos reales y seguridad pendientes en docs/integracion.md; correcciones F-013 aprobadas independientemente.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -59,8 +59,8 @@
       ],
       "task_spec": null,
       "plan": null,
-      "review_status": "changes_required",
-      "notes": "Gestión mock implementada; correcciones de empleados entregadas en F-011, con revisión independiente pendiente.",
+      "review_status": "approved",
+      "notes": "Gestión mock y correcciones F-011 aprobadas independientemente. Integración real en F-015; brecha filtro provincial frente a contrato HTTP registrada por leader.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -78,7 +78,7 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Organización y mapa Google Maps implementados según contrato común; correcciones F-013 requieren revisión independiente.",
+      "notes": "Organización y mapa Google Maps implementados según contrato común; correcciones F-013 aprobadas independientemente.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -95,7 +95,7 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Matriz, detalle/eventos, corrección por versión, aprobación pura y DELETE de intervalos implementados en mocks; correcciones F-013 requieren revisión. Brechas de intervalos y metadata en docs/integracion.md.",
+      "notes": "Matriz, detalle/eventos, corrección por versión, aprobación pura y DELETE de intervalos implementados en mocks; correcciones F-013 aprobadas independientemente. Brechas de intervalos y metadata en docs/integracion.md.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -113,7 +113,7 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Planillas mock implementadas; contrato completo/descarga/reemplazo/transporte pendientes de ratificación F-012 e integración F-010.",
+      "notes": "Planillas mock implementadas. Transporte binario, reemplazo PENDING/versionado y contingencia pendientes de A-05; lecturas/filtros precisos aún abiertos según contrato/propuesta parcial.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -130,7 +130,7 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Legajos mock implementados; contrato completo y expiresAt pendientes F-012; correcciones F-013 requieren revisión.",
+      "notes": "Legajos mock implementados; expiresAt ya acordado. Binarios/INTERNAL_RULES pendientes A-05; validaciones documentales precisas aún abiertas. Correcciones F-013 aprobada independientemente.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -148,28 +148,29 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Inicio mock con cuatro contadores y desglose byProvince; coherencia provincial y contrato pendientes F-012. Correcciones F-013 requieren revisión.",
+      "notes": "Inicio mock con cuatro contadores y byProvince acordado. Navegación global con mes/año pendiente A-04; atribución de contingencia aún abierta. F-013 aprobada independientemente.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
       "id": "F-011",
       "title": "Correcciones de revisión: gestión de empleados (F-004)",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": [
         "F-004"
       ],
       "contract_dependencies": [
         "docs/arquitectura/contratos-api.md#empleados"
       ],
-      "task_spec": "docs/tasks/011-correcciones-f004-empleados.md",
+      "task_spec": null,
       "plan": null,
-      "review_status": "pending_independent_review",
-      "notes": "Correcciones de empleados implementadas; revisión independiente pendiente. Evidencia de entrega y criterios vigentes en task_spec; cierre requerido antes de F-010."
+      "review_status": "approved",
+      "notes": "Correcciones mock aprobadas por reviewer independiente; criterios/evidencia consolidados en docs/diseno-frontend.md. No equivale a integración real.",
+      "documentation": "docs/diseno-frontend.md"
     },
     {
       "id": "F-012",
       "title": "Propuestas de contrato pendientes pre-integración (planillas, documentos, métricas)",
-      "status": "pending",
+      "status": "done",
       "dependencies": [
         "F-007",
         "F-008",
@@ -178,15 +179,16 @@
       "contract_dependencies": [
         "docs/arquitectura/contratos-api.md#asistencia"
       ],
-      "task_spec": "docs/tasks/012-propuestas-contrato-pre-f010.md",
+      "task_spec": null,
       "plan": null,
-      "review_status": "pending_independent_review",
-      "notes": "Propuesta documental entregada para revisión; estado pending del backlog requiere reconciliación por leader. Ratificación humana pendiente de DTOs, expiresAt, reemplazo, transporte, byProvince y coherencia provincial; ver docs/integracion.md."
+      "review_status": "approved",
+      "notes": "Entrega documental aprobada por reviewer independiente. No ratifica candidatos ni cierra integración. Acuerdos vigentes en contrato común; puntos abiertos en propuesta parcial y docs/integracion.md.",
+      "documentation": "docs/integracion.md"
     },
     {
       "id": "F-013",
       "title": "Correcciones menores de la revisión independiente (F-003, F-005, F-006, F-007, F-008, F-009)",
-      "status": "pending_review",
+      "status": "done",
       "dependencies": [
         "F-003",
         "F-005",
@@ -199,10 +201,11 @@
         "docs/arquitectura/contratos-api.md#sesión-web-admin",
         "docs/arquitectura/contratos-api.md#clientes-y-lugares"
       ],
-      "task_spec": "docs/tasks/013-correcciones-menores-revision.md",
+      "task_spec": null,
       "plan": null,
-      "review_status": "pending_independent_review",
-      "notes": "Correcciones mock implementadas; revisión independiente pendiente. Evidencia de entrega en task_spec; chunk principal >500 kB pendiente de F-010."
+      "review_status": "approved",
+      "notes": "Correcciones mock aprobadas por reviewer independiente; criterios/evidencia consolidados en docs/diseno-frontend.md. No equivale a integración real.",
+      "documentation": "docs/diseno-frontend.md"
     },
     {
       "id": "F-010",
@@ -229,7 +232,81 @@
       ],
       "task_spec": null,
       "plan": null,
-      "notes": "Requiere ratificación/materialización contractual, revisión de F-011/F-012/F-013 y backend de prueba disponible. Condiciones vigentes en docs/integracion.md."
+      "notes": "Cierre integral conserva dependencias heredadas. F-012 documental done no ratifica candidatos. A-01–A-05 gestionadas en F-014–F-018; exige contratos pendientes, backend/correo/fixtures y navegador/Android reales según docs/integracion.md."
+    },
+    {
+      "id": "F-014",
+      "title": "A-01 Transporte y sesión HTTP reales",
+      "status": "pending",
+      "dependencies": [
+        "F-002",
+        "F-003"
+      ],
+      "contract_dependencies": [
+        "docs/arquitectura/contratos-api.md#sesión-web-admin"
+      ],
+      "task_spec": "docs/tasks/014-transporte-sesion-http.md",
+      "plan": "docs/tasks/014-transporte-sesion-http-plan.md",
+      "review_status": "approved_local_integral_blocked",
+      "notes": "Implementación local aprobada por reviewer independiente; suite global222/222/typecheck/lint/build exit0. Pendiente certificación API/navegador/Android según spec y dependencias-integracion.md; no done integral."
+    },
+    {
+      "id": "F-015",
+      "title": "A-02 Organización y empleados reales",
+      "status": "pending",
+      "dependencies": [],
+      "contract_dependencies": [
+        "docs/arquitectura/contratos-api.md"
+      ],
+      "task_spec": "docs/tasks/015-organizacion-empleados-http.md",
+      "plan": "docs/tasks/015-organizacion-empleados-http-plan.md",
+      "review_status": "approved_local_integral_blocked",
+      "notes": "Entrega local y corrección carrera catálogo/bootstrap aprobadas por reviewer independiente;241/241 tests ytypecheck/lint/build exit0. Pendiente API/UUID persistido/navegador/Android. Gates locales para F-016/F-018 cumplidos sin cerrar certificación integral."
+    },
+    {
+      "id": "F-016",
+      "title": "A-03 Solicitud administrativa y recuperación",
+      "status": "pending_review",
+      "dependencies": [
+        "F-014",
+        "F-015"
+      ],
+      "contract_dependencies": [
+        "docs/arquitectura/contratos-api.md"
+      ],
+      "task_spec": "docs/tasks/016-acceso-recuperacion-http.md",
+      "plan": "docs/tasks/016-acceso-recuperacion-http-plan.md",
+      "review_status": "pending_independent_review",
+      "notes": "A-03 entrega local implementada, pendiente reviewer independiente. Certificación correo/DB/API real bloqueada por proveedor según progress/implementer-016/current.md."
+    },
+    {
+      "id": "F-017",
+      "title": "A-04 Matriz asistencia métricas reales",
+      "status": "pending",
+      "dependencies": [],
+      "contract_dependencies": [
+        "docs/arquitectura/contratos-api.md"
+      ],
+      "task_spec": "docs/tasks/017-matriz-metricas-http.md",
+      "plan": "docs/tasks/017-matriz-metricas-http-plan.md",
+      "review_status": "approved_local_integral_blocked",
+      "notes": "Implementación local aprobada por reviewer independiente; suite global222/222/typecheck/lint/build exit0. Pendiente certificación API/navegador/Android según spec y dependencias-integracion.md; no done integral."
+    },
+    {
+      "id": "F-018",
+      "title": "A-05 Binarios y legajos reales",
+      "status": "pending",
+      "dependencies": [
+        "F-014",
+        "F-015"
+      ],
+      "contract_dependencies": [
+        "docs/arquitectura/contratos-api.md"
+      ],
+      "task_spec": "docs/tasks/018-binarios-legajos-http.md",
+      "plan": "docs/tasks/018-binarios-legajos-http-plan.md",
+      "review_status": "pending",
+      "notes": "Ejecución autorizada. Validación integral depende stack/fixture y navegador; no ratificar abiertos. Alcance y bloqueos en task_spec."
     }
   ]
 }

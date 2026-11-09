@@ -20,6 +20,18 @@ export function createAppRouter() {
       },
       errorElement: <RouteErrorPage />,
     },
+    ...([
+      ['/password-recovery', 'PasswordRecoveryPage'],
+      ['/password-reset', 'PasswordResetPage'],
+      ['/admin-access/confirm', 'AdminAccessConfirmPage'],
+    ] as const).map(([path, component]) => ({
+      path,
+      lazy: async () => {
+        const pages = await import('../features/auth/public-access-pages')
+        return { Component: pages[component] }
+      },
+      errorElement: <RouteErrorPage />,
+    })),
     {
       element: <ProtectedRoute />,
       errorElement: <RouteErrorPage />,

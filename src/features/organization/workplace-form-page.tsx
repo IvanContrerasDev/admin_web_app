@@ -20,6 +20,7 @@ function WorkplaceFormContent({ current, clients, sites }: FormContentProps) {
   const queryClient = useQueryClient()
   const [dirty, setDirty] = useState(false)
   const [error, setError] = useState('')
+  const [errorField, setErrorField] = useState('')
   const [latitude, setLatitude] = useState(current ? String(current.latitude) : '')
   const [longitude, setLongitude] = useState(current ? String(current.longitude) : '')
   const [radius, setRadius] = useState(current ? String(current.radiusMeters) : '100')
@@ -44,6 +45,7 @@ function WorkplaceFormContent({ current, clients, sites }: FormContentProps) {
     },
     onError: (caught) => {
       const code = caught instanceof ServiceError ? caught.code : ''
+      setErrorField(code === 'WORKPLACE_NAME_ALREADY_EXISTS' ? 'name' : code === 'CLIENT_INACTIVE' ? 'clientId' : code === 'INVALID_SITE' ? 'siteId' : '')
       if (code === 'WORKPLACE_NAME_ALREADY_EXISTS') setError('Ya existe un lugar con ese nombre para el cliente y la provincia.')
       else if (code === 'CLIENT_INACTIVE') setError('El cliente está inactivo y no admite nuevas asignaciones.')
       else setError(caught instanceof Error ? caught.message : 'No pudimos guardar el lugar.')
@@ -74,6 +76,7 @@ function WorkplaceFormContent({ current, clients, sites }: FormContentProps) {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
+    setErrorField('')
     const data = new FormData(event.currentTarget)
     const accuracyValue = String(data.get('gpsAccuracyThreshold') ?? '').trim()
     const gpsAccuracyThreshold = accuracyValue ? Number(accuracyValue) : null
@@ -109,18 +112,18 @@ function WorkplaceFormContent({ current, clients, sites }: FormContentProps) {
         <div className="grid gap-5 sm:grid-cols-2">
           <label className={`${labelClass} sm:col-span-2`}>
             Nombre
-            <input className={fieldClass} defaultValue={current?.name} maxLength={120} name="name" required autoComplete="organization" />
+            <input className={fieldClass} defaultValue={current?.name} maxLength={120} name="name" aria-invalid={errorField === 'name'} aria-describedby={errorField === 'name' ? 'workplace-error' : undefined} required autoComplete="organization" />
           </label>
           <label className={labelClass}>
             Cliente
-            <select className={fieldClass} defaultValue={current?.client.id ?? ''} name="clientId" required>
+            <select className={fieldClass} defaultValue={current?.client.id ?? ''} name="clientId" aria-invalid={errorField === 'clientId'} aria-describedby={errorField === 'clientId' ? 'workplace-error' : undefined} required>
               <option disabled value="">Seleccioná un cliente</option>
               {availableClients.map((client) => <option key={client.id} value={client.id}>{client.name}{client.status === 'INACTIVE' ? ' (inactivo)' : ''}</option>)}
             </select>
           </label>
           <label className={labelClass}>
             Provincia
-            <select className={fieldClass} defaultValue={current?.site.id ?? ''} name="siteId" required>
+            <select className={fieldClass} defaultValue={current?.site.id ?? ''} name="siteId" aria-invalid={errorField === 'siteId'} aria-describedby={errorField === 'siteId' ? 'workplace-error' : undefined} required>
               <option disabled value="">Seleccioná una provincia</option>
               {sites.map((site) => <option key={site.id} value={site.id}>{site.name}</option>)}
             </select>
@@ -156,13 +159,13 @@ function WorkplaceFormContent({ current, clients, sites }: FormContentProps) {
 
           <label className="flex flex-col gap-2 font-semibold" htmlFor="radius-slider">
             Ajustar radio: <span className="tabular-nums text-primary">{Number.isFinite(radiusMeters) ? radiusMeters.toLocaleString('es-AR') : '—'} m</span>
-            <input className="h-11 w-full accent-primary" id="radius-slider" max={10_000} min={10} step={10} type="range" value={Number.isFinite(radiusMeters) ? radiusMeters : 100} onChange={(event) => setRadius(event.target.value)} />
+            <input className="h-11 w-full accent-primary" id="radius-slider" max={10_000} min={10} step={1} type="range" value={Number.isFinite(radiusMeters) ? radiusMeters : 100} onChange={(event) => setRadius(event.target.value)} />
           </label>
           <p className="text-sm leading-relaxed text-foreground/60">El radio define el círculo permitido. La precisión GPS es un umbral adicional opcional que valida el backend.</p>
         </div>
       </fieldset>
 
-      {error ? <p className="rounded-md border border-destructive/35 bg-background p-4 font-semibold text-destructive" role="alert">{error}</p> : null}
+      {error ? <p className="rounded-md border border-destructive/35 bg-background p-4 font-semibold text-destructive" id="workplace-error" role="alert">{error}</p> : null}
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <Link className="inline-flex min-h-11 items-center justify-center rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary" to={current ? `/lugares/${current.id}` : '/lugares'}>Cancelar</Link>
         <button className="min-h-11 rounded-md bg-primary px-5 font-semibold text-background hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50" disabled={mutation.isPending} type="submit">

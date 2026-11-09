@@ -39,6 +39,8 @@ export function registerAuthMockRoutes(adapter: MockServiceAdapter, now: () => D
   let activeChallenge: { id: string; rememberSession: boolean } | null = null
   let activeSession: WebSession | null = null
 
+  adapter.register('GET', '/auth/web/csrf', () => ({ data: { csrfToken: activeSession ? 'mock-session-csrf' : 'mock-preauth-csrf' } }))
+
   adapter.register('POST', '/auth/login', (request) => {
     const input = requireBody<LoginInput>(request)
 

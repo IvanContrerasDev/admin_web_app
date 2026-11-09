@@ -59,24 +59,27 @@ describe('F-011 employee regressions', () => {
     expect(within(table).getByRole('columnheader', { name: 'DNI' })).toBeInTheDocument()
     expect(within(table).getByRole('columnheader', { name: 'Teléfono' })).toBeInTheDocument()
     for (const container of [table, screen.getByRole('list', { name: 'Empleados encontrados' })]) {
-      for (const text of ['EMP-018', '32145876', 'lucia.alvarez@example.test', '2645550148', 'San Juan', 'Activo']) expect(within(container).getByText(text)).toBeInTheDocument()
+      for (const text of ['EMP-018', '32145876', 'lucia.alvarez@example.test', '2645550148', 'San Juan', 'Activo']) expect(within(container).getAllByText(text)[0]).toBeInTheDocument()
       expect(container).toHaveTextContent('Lucía')
       expect(container).toHaveTextContent('Álvarez')
     }
   })
 
-  it('shows a recoverable error instead of loading forever when provinces fail', async () => {
+  it('loads employees globally using only contractual filters and no catalogue request', async () => {
+    renderUsers('/usuarios?siteId=11000000-0000-4000-8000-000000000005')
+    const table = await screen.findByRole('table')
+    expect(table).toHaveTextContent('Tomás')
+    expect(table).toHaveTextContent('Lucía')
+    expect(screen.queryByRole('combobox', { name: 'Provincia' })).not.toBeInTheDocument()
+    expect(userService.listSites).not.toHaveBeenCalled()
+    expect(userService.list).toHaveBeenCalledWith({ search: undefined, accountStatus: 'ACTIVE', page: 1, pageSize: 25 }, expect.any(AbortSignal))
+  })
+
+  it('recovers a failed province catalogue in the employee form', async () => {
     vi.mocked(userService.listSites).mockRejectedValueOnce(new Error('Catálogo no disponible'))
-    const user = userEvent.setup()
-    renderUsers()
-    expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar las provincias.')
-    expect(screen.queryByLabelText('Cargando empleados…')).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'No hay resultados' })).not.toBeInTheDocument()
-    expect(userService.list).not.toHaveBeenCalled()
-    await user.click(screen.getByRole('button', { name: 'Reintentar' }))
-    expect(await screen.findByRole('table')).toHaveTextContent('Lucía')
-    expect(userService.listSites).toHaveBeenCalledTimes(2)
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    renderUsers('/usuarios/nuevo')
+    expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos preparar el formulario')
+    expect(screen.queryByLabelText('Cargando formulario…')).not.toBeInTheDocument()
   })
 
   it.each([

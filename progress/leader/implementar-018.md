@@ -1,0 +1,9 @@
+# Despacho implementer-admin — F-018
+
+Repo exclusivo `/home/ivcontreras/GdesProject/admin_web_app`; rol .agents/agents/implementer-admin.md. UNA feature docs/tasks/018-binarios-legajos-http.md y plan. Leer AGENTS/skills/convenciones/docs antes de código. A-05 reanudada por humano2026-11-05; ejecución autorizada sin ratificar abiertos. No Git/SYNCED/otros repos/instalar skills/subagentes.
+
+Ownership: src/features/{timesheets,documents}, tipos/servicios/mocks/tests propios, src/lib/attachments.ts si necesario, adaptador HTTP sólo soporte FormData sin Content-Type manual y sus tests; no cambiar auth/CSRF/coordinación. F-014 ya entregada; nunca escribir transporte simultáneo con su owner. Evitar src/services/services.ts salvo coordinación explícita por wiring si otro implementer auth activo. Registro spec y estado exclusivo progress/implementer-018/current.md.
+
+Aplicar bytes reales desde File/Blob hasta FormData, /file en descargas, expiresAt/reconsulta, INTERNAL_RULES, expectedVersion/PENDING y auditoría acordada. Mantener contingencia lugar null sin objeto ficticio/provincia inferida. No ratificar DTOs de lectura/filtros/validaciones documentales aún abiertos ni semántica de reintento multipart ambiguo. Registrar campo/operación bloqueado, avanzar resto acordado. Código proveedor sólo evidencia, no aprobación de un candidato. No repetir upload incierto automáticamente.
+
+Verificar focalizados maxWorkers2, typecheck/lint y full/build serializados con otro implementer/reviewer. Leer progress/leader/dependencias-integracion.md reverificado2026-11-05: no API/storage/fixture Android disponible; no certificar atomicidad/storage/Android por mocks ni tocar backend. Documentar evidencia y bloqueos precisos, completar Registro y devolver SOLO task_spec, progress_file, status(done|blocked). Toda comunicación sustantiva por archivos.

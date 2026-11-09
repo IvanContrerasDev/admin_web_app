@@ -100,18 +100,17 @@ function validateCommon(input: CreateUserInput | UpdateUserInput, users: UserDet
 export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => Date = () => new Date()) {
   const users = seedUsers.map((user) => ({ ...user }))
 
+  adapter.register('GET', '/catalogs', () => ({ data: { sites: SITES.map(({ id, name }) => ({ value: id, label: name })) } }))
   adapter.register('GET', '/sites', () => ({ data: SITES }))
   adapter.register('GET', '/users', (request) => {
     const search = String(request.query?.search ?? '').trim().toLocaleLowerCase('es-AR')
     const status = request.query?.accountStatus as AccountStatus | undefined
-    const siteId = typeof request.query?.siteId === 'string' ? request.query.siteId : ''
     const pageParam = Number(request.query?.page ?? 1)
     const requestedPage = Number.isFinite(pageParam) ? Math.max(1, Math.floor(pageParam)) : 1
     const sizeParam = Number(request.query?.pageSize ?? 25)
     const pageSize = Number.isFinite(sizeParam) ? Math.min(100, Math.max(1, Math.floor(sizeParam))) : 25
     const filtered = users
       .filter((user) => !status || user.accountStatus === status)
-      .filter((user) => !siteId || user.site.id === siteId)
       .filter((user) => !search || [user.firstName, user.lastName, user.email, user.employeeId, user.dni].some((value) => value.toLocaleLowerCase('es-AR').includes(search)))
       .sort((a, b) => a.lastName.localeCompare(b.lastName, 'es-AR') || a.firstName.localeCompare(b.firstName, 'es-AR') || a.id.localeCompare(b.id))
     const totalItems = filtered.length
