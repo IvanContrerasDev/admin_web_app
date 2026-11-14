@@ -66,10 +66,9 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
             {registration ? 'Tu próximo paso en la gestión del equipo.' : 'El trabajo diario, ordenado para decidir mejor.'}
           </p>
           <p className="mt-4 max-w-lg text-pretty font-sans text-base leading-relaxed text-background/85">
-            {registration ? 'El acceso administrativo requiere la aprobación del SuperAdmin. Registrarte no habilita el ingreso inmediato.' : 'Acceso exclusivo para responsables de administración y gerencia.'}
+            {registration ? 'El acceso administrativo requiere la aprobación de un administrador. Registrarte no habilita el ingreso inmediato.' : 'Acceso exclusivo para responsables de administración y gerencia.'}
           </p>
         </div>
-        <p className="font-sans text-sm text-background/75">Entorno de desarrollo con servicios mock</p>
       </section>
       <section className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16">
         <div className={`w-full ${registration ? 'max-w-xl' : 'max-w-md'}`}>{children}</div>

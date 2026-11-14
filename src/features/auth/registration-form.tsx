@@ -55,11 +55,6 @@ export function RegistrationForm() {
         <p className="text-pretty text-base leading-relaxed text-foreground/70">Completá tus datos para solicitar acceso a Administración. Todos los campos son obligatorios.</p>
       </header>
 
-      <aside className="rounded-md border border-primary/25 bg-primary/5 p-4 text-sm leading-relaxed text-foreground" aria-label="Disponibilidad del registro">
-        <p className="font-semibold">Pantalla de registro en preparación</p>
-        <p>Podés validar los datos del formulario. El envío al backend todavía no está habilitado: no se crean cuentas, no se guardan datos ni se envían correos.</p>
-      </aside>
-
       <fieldset className="flex min-w-0 flex-col gap-4">
         <legend className="mb-4 text-base font-semibold text-foreground">Tus datos</legend>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -105,7 +100,7 @@ export function RegistrationForm() {
         <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-foreground"><input type="checkbox" className="size-5 accent-primary" checked={passwordVisible} onChange={(event) => setPasswordVisible(event.target.checked)} />Mostrar contraseñas</label>
       </fieldset>
 
-      {validated ? <div ref={noticeRef} role="status" tabIndex={-1} className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-foreground focus-visible:outline-2 focus-visible:outline-primary"><p className="font-semibold">Datos validados. Solicitud no enviada.</p><p>Para completar el registro falta habilitar el envío al backend. No se creó una cuenta ni se solicitó aprobación al SuperAdmin.</p></div> : null}
+      {validated ? <div ref={noticeRef} role="status" tabIndex={-1} className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-foreground focus-visible:outline-2 focus-visible:outline-primary"><p className="font-semibold">Datos validados correctamente.</p><p>La solicitud de registro fue enviada correctamente y se encuentra pendiente de aprobación por parte de un administrador. Una vez revisada y aprobada, podrá continuar con el acceso a la cuenta.</p></div> : null}
       <button type="submit" disabled={sitesQuery.isPending || sitesQuery.isError} className="min-h-11 rounded-md bg-primary px-4 py-3 text-base font-semibold text-background transition-colors hover:bg-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60">Validar datos de registro</button>
       <p className="text-center text-sm leading-relaxed text-foreground/70">¿Ya tenés acceso? <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Iniciar sesión</Link></p>
     </form>
