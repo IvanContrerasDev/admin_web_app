@@ -1,9 +1,10 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { Form, Link, useSearchParams } from 'react-router-dom'
 import { userService } from '../../services/services'
 import { LoadingSkeleton } from '../../app/loading-skeleton'
 import type { AccountStatus } from '../../types/users'
+import { useProvinceSelection } from '../sites/use-province-selection'
 import { UsersTable } from './users-table'
 
 const pageSize = 25
@@ -16,13 +17,17 @@ export function UsersPage() {
   const pageParam = Number(searchParams.get('page') ?? 1)
   const page = Number.isFinite(pageParam) ? Math.max(1, Math.floor(pageParam)) : 1
 
+  const sitesQuery = useQuery({ queryKey: ['sites'], queryFn: ({ signal }) => userService.listSites(signal), staleTime: 15 * 60 * 1000 })
+  const province = useProvinceSelection(sitesQuery)
+  const siteId = province.siteId
+
   const usersQuery = useQuery({
-    queryKey: ['users', { search, accountStatus, page, pageSize }],
-    queryFn: ({ signal }) => userService.list({ search: search || undefined, accountStatus: accountStatus === 'ALL' ? undefined : accountStatus, page, pageSize }, signal),
-    placeholderData: keepPreviousData,
+    queryKey: ['users', { siteId, search, accountStatus, page, pageSize }],
+    queryFn: ({ signal }) => userService.list({ siteId, search: search || undefined, accountStatus: accountStatus === 'ALL' ? undefined : accountStatus, page, pageSize }, signal),
+    enabled: province.ready,
   })
 
-  const updateFilter = (name: 'status', value: string) => {
+  const updateFilter = (name: 'status' | 'siteId', value: string) => {
     const next = new URLSearchParams(searchParams)
     if (value) next.set(name, value)
     else next.delete(name)
@@ -36,14 +41,15 @@ export function UsersPage() {
     setSearchParams(next)
   }
 
-  const response = usersQuery.data
+  const response = province.ready ? usersQuery.data : undefined
   const users = response?.data ?? []
   const pagination = response?.pagination
-  const hasError = usersQuery.isError
+  const hasError = Boolean(province.error) || usersQuery.isError
   const isLoading = !hasError && usersQuery.isPending
 
   const retryFailedQuery = () => {
-    void usersQuery.refetch()
+    if (province.ready) void usersQuery.refetch()
+    else void sitesQuery.refetch()
   }
 
   useEffect(() => {
@@ -69,20 +75,27 @@ export function UsersPage() {
             Buscar empleado
             <input className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 font-normal text-foreground placeholder:text-foreground/45 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" key={search} defaultValue={search} id="employee-search" name="search" placeholder="Nombre, email, legajo o DNI…" type="search" autoComplete="off" />
           </label>
+          <label className="flex flex-col gap-2 font-semibold" htmlFor="employee-site">
+            Provincia
+            <select className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" id="employee-site" name="siteId" value={province.value} disabled={sitesQuery.isPending} onChange={(event) => updateFilter('siteId', event.target.value)}>
+              {!province.value ? <option value="" disabled>Seleccioná provincia</option> : null}
+              {(sitesQuery.data ?? []).map((site) => <option key={site.id} value={site.id}>{site.name}</option>)}
+            </select>
+          </label>
           <label className="flex flex-col gap-2 font-semibold" htmlFor="employee-status">
             Estado
             <select className="min-h-11 rounded-md border border-foreground/25 bg-background px-3 font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" id="employee-status" name="status" value={accountStatus} onChange={(event) => updateFilter('status', event.target.value)}>
               <option value="ACTIVE">Activos</option><option value="INACTIVE">Inactivos</option><option value="ALL">Todos</option>
             </select>
           </label>
-          <button className="min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="submit">Buscar</button>
+          <button className="min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" disabled={!province.ready} type="submit">Buscar</button>
         </Form>
       </div>
 
       <div aria-live="polite">
         {isLoading ? <LoadingSkeleton label="Cargando empleados…" variant="table" /> : null}
-        {hasError ? <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert"><p className="font-semibold">No pudimos cargar los empleados.</p><button className="mt-3 min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive" type="button" onClick={retryFailedQuery}>Reintentar</button></div> : null}
-        {!isLoading && !hasError && users.length === 0 ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otro término o restablecé los filtros predeterminados.</p><button className="mt-4 min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setSearchParams({})}>Limpiar filtros</button></div> : null}
+        {hasError ? <div className="rounded-lg border border-destructive/35 bg-background p-5" role="alert"><p className="font-semibold">{province.error ?? 'No pudimos cargar los empleados.'}</p><button className="mt-3 min-h-11 rounded-md border border-destructive px-4 font-semibold text-destructive hover:bg-destructive/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive" type="button" onClick={retryFailedQuery}>Reintentar</button></div> : null}
+        {!isLoading && !hasError && users.length === 0 ? <div className="rounded-lg border border-foreground/15 bg-background p-8 text-center"><h2 className="text-xl font-bold">No hay resultados</h2><p className="mt-2 text-foreground/65">Probá con otro término o restablecé los filtros predeterminados.</p><button className="mt-4 min-h-11 rounded-md border border-foreground/25 px-5 font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={() => setSearchParams({ siteId: siteId! })}>Limpiar filtros</button></div> : null}
         {!isLoading && !hasError && users.length > 0 ? <UsersTable users={users} /> : null}
       </div>
 

@@ -25,8 +25,9 @@ export function registerAccessMockRoutes(adapter: MockServiceAdapter) {
   })
   adapter.register('POST', '/auth/password-recovery', () => ({ data: { sent: true } }))
   adapter.register('POST', '/auth/password-reset', (request) => {
-    const body = request.body as { token?: string }
+    const body = request.body as { token?: string; newPassword?: string }
     if (!body?.token) fail('INVALID_TOKEN', 'El enlace no es válido.', 401)
+    if (typeof body.newPassword !== 'string' || [...body.newPassword].length < 8 || [...body.newPassword].length > 30) fail('WEAK_PASSWORD', 'La contraseña debe tener entre 8 y 30 caracteres.', 400)
     return { data: { updated: true } }
   })
   adapter.register('POST', '/auth/admin-access/confirm', (request) => {

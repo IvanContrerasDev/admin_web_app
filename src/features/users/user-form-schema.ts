@@ -15,7 +15,7 @@ export function createUserFormSchema(editing: boolean, now: () => Date = () => n
     address: requiredText('el domicilio', 200),
     siteId: z.string().uuid('Seleccioná una provincia habilitada.'),
     birthDate: civilDate,
-    initialPassword: editing ? z.string() : z.string().min(12, 'La contraseña debe tener entre 12 y 128 caracteres.').max(128, 'La contraseña debe tener entre 12 y 128 caracteres.'),
+    initialPassword: editing ? z.string() : z.string().refine((value) => [...value].length >= 8 && [...value].length <= 30, 'La contraseña debe tener entre 8 y 30 caracteres.'),
     cuil: z.string().trim().refine((value) => !editing || value === '' || /^\d{11}$/.test(value), 'El CUIL debe contener 11 dígitos.'),
     hireDate: z.string().refine((value) => !editing || value === '' || isValidCivilDate(value, getArgentinaCivilDate(now())), 'Ingresá una fecha de ingreso válida que no sea futura.'),
     position: z.string().trim().max(100, 'Usá como máximo 100 caracteres.'),

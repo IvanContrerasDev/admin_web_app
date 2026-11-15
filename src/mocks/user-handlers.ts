@@ -104,12 +104,15 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
   adapter.register('GET', '/sites', () => ({ data: SITES }))
   adapter.register('GET', '/users', (request) => {
     const search = String(request.query?.search ?? '').trim().toLocaleLowerCase('es-AR')
+    const siteId = request.query?.siteId
+    if (siteId !== undefined && !SITES.some((site) => site.id === siteId)) throw apiError('INVALID_SITE', 'Seleccioná una provincia habilitada.')
     const status = request.query?.accountStatus as AccountStatus | undefined
     const pageParam = Number(request.query?.page ?? 1)
     const requestedPage = Number.isFinite(pageParam) ? Math.max(1, Math.floor(pageParam)) : 1
     const sizeParam = Number(request.query?.pageSize ?? 25)
     const pageSize = Number.isFinite(sizeParam) ? Math.min(100, Math.max(1, Math.floor(sizeParam))) : 25
     const filtered = users
+      .filter((user) => !siteId || user.site.id === siteId)
       .filter((user) => !status || user.accountStatus === status)
       .filter((user) => !search || [user.firstName, user.lastName, user.email, user.employeeId, user.dni].some((value) => value.toLocaleLowerCase('es-AR').includes(search)))
       .sort((a, b) => a.lastName.localeCompare(b.lastName, 'es-AR') || a.firstName.localeCompare(b.firstName, 'es-AR') || a.id.localeCompare(b.id))
@@ -129,7 +132,7 @@ export function registerUserMockRoutes(adapter: MockServiceAdapter, now: () => D
   adapter.register('POST', '/users', (request) => {
     const input = requireBody<CreateUserInput>(request)
     const valid = validateCommon(input, users, getArgentinaCivilDate(now()))
-    if (typeof input.initialPassword !== 'string' || input.initialPassword.length < 12 || input.initialPassword.length > 128) throw apiError('WEAK_PASSWORD', 'La contraseña inicial debe tener entre 12 y 128 caracteres.')
+    if (typeof input.initialPassword !== 'string' || [...input.initialPassword].length < 8 || [...input.initialPassword].length > 30) throw apiError('WEAK_PASSWORD', 'La contraseña inicial debe tener entre 8 y 30 caracteres.')
     const timestamp = now().toISOString()
     const user: UserDetail = {
       id: crypto.randomUUID(), firstName: valid.firstName!, lastName: valid.lastName!, employeeId: valid.employeeId!, dni: valid.dni!, email: valid.email!, phone: valid.phone!, site: valid.site!, accountStatus: 'ACTIVE', address: valid.address!, birthDate: valid.birthDate!, cuil: null, hireDate: null, position: null, createdAt: timestamp, updatedAt: timestamp,

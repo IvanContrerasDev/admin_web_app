@@ -1,12 +1,11 @@
 # Estado actual — leader Admin
 
 ## Entrega vigente
-F-020 done local; reviewer independiente aprobado, 0 ítems. npm run dev fuerza HTTP localhost5173; npm run demo fuerza mocks actuales localhost5174; strictPort y precedencia explícita sobre .env/shell heredados. API DEV default http://localhost:3000/api/v1 personalizable mediante VITE_API_BASE_URL. Definición vigente y comandos en docs/integracion.md, resumen en docs/diseno-frontend.md; examples actualizados. Spec/plan/inbox resueltos retirados.
+F-021 y F-022 done, aprobadas por reviewer independiente con 0 ítems. Siete puntos Admin implementados y alineación de contraseña nueva 8–30 Unicode. Evidencia, decisiones actuales y límites en docs/diseno-frontend.md; requisitos en docs/spec_definition.md y UX común. Specs/plans/inbox resueltos retirados tras consolidación. Sin Git, otros repos ni archivos SYNCED modificados por este ciclo.
 
-Implementer y reviewer comprobaron 41/41 focalizadas config/fábrica/transporte/auth/sesión, build/tsc y lint exit0. Dos bundles en memoria ejecutan import.meta.env entero con env opuestos; reviewer comprobó precedencia de vite:import-analysis en serve. Mock mutations sin fetch y reinicio de fixtures probados. No nuevos datos, contratos, dependencias ni cambios a fábrica/mocks.
+## Verificación
+F-021: 70/70 focales y suite completa290/290 con typecheck/lint/build/diff0; QA Chromium DEMO cinco tamaños 1440×900,1280×480,1024×320,390×640,390×320 acredita paneles estables sin scroll vertical propio y accesos/formulario/submit alcanzables.
+F-022: suite305/305 (35 archivos, maxWorkers=1), re-review63/63 y typecheck/lint/build/diff0. QA Chromium preview estable: Mes completo en anchos325–1607CSS sin overflow, tarjeta única clic/desglose/Enter global con período/métrica, Usuarios San Juan/cambio Mendoza sin Todas y Registros Todas persistente tras mes/back/reload+relogin mock. Timeouts bajo concurrencia no reprodujeron al limitar worker. Warning chunk>500kB conserva pendiente F-010.
 
-## Pendiente runtime a cargo del orchestrator
-Root levanta ambos comandos y prueba navegadores/puerto ocupado. No se inició Vite desde esta tarea ni se afirma aceptación física DEMO/DEV. DEMO usa marina.quiroga@example.test / contraseña no vacía /123456; estado solo memoria de pestaña, recarga reinicia. DEV requiere credenciales/OTP reales, errores API no caen a mock.
-
-## Límites vigentes
-No Git ni backend/mobile/SYNCED. Usuario comunicó «Ya hice las pruebas en local, funcionó» según inbox root: evidencia humana del recorrido anterior, sin certificar OAuth/uploads/otros abiertos. Pendientes integrales previos conservados sin cambiar estados ni aprobaciones ajenos a F-020. Inbox LAN y decisiones abiertas permanecen.
+## Límites y pendientes vigentes
+No se certifica recorrido browserDEV autenticado por falta de credenciales/OTP reales; backend+servicio cliente tienen pruebas automatizadas independientes. No Android/otros motores ni creación tras OTP real. F-010/F-014–018 conservan estados, dependencias y pendientes anteriores. Contratos concurrentes mensajes auth/conflictos/todos los roles quedan fuera de este alcance; trabajo ajeno preservado. Inbox LAN/aceptación/runtime previo no resuelto por estas mejoras se mantiene. No hay ciclo implementer/reviewer activo.

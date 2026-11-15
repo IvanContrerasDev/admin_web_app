@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import type { RecordOrigin, RecordStatus, ReviewStatus } from '../../types/records'
 import { RecordCreateDialog } from './record-create-dialog'
 import { RecordDetailDialog } from './record-detail-dialog'
+import { useProvinceSelection } from '../sites/use-province-selection'
 import { RecordsFilters } from './records-filters'
 import { RecordsMatrix } from './records-matrix'
 import { useMonthlyRecords, useRecordsFilterOptions } from './use-monthly-records'
@@ -46,7 +47,8 @@ export function RecordsPage() {
   const options = useRecordsFilterOptions()
   const monthValue = validMonthValue(searchParams.get('month'))
   const [year, month] = monthValue.split('-').map(Number) as [number, number]
-  const siteId = searchParams.get('siteId') ?? ''
+  const province = useProvinceSelection(options.sites, true)
+  const siteId = province.value
   const clientId = searchParams.get('clientId') ?? ''
   const workplaceId = searchParams.get('workplaceId') ?? ''
   const employeeId = searchParams.get('employeeId') ?? ''
@@ -66,9 +68,9 @@ export function RecordsPage() {
     reviewStatus,
     origin,
     hasAbsence: hasAbsence ? true : undefined,
-  }, true)
+  }, province.ready)
 
-  const pages = recordsQuery.data?.pages ?? []
+  const pages = province.ready ? recordsQuery.data?.pages ?? [] : []
   const rows = pages.flatMap((page) => page.data)
   const firstPage = pages[0]
   const totalItems = firstPage?.pagination.totalItems ?? 0
@@ -78,6 +80,8 @@ export function RecordsPage() {
     const next = new URLSearchParams(searchParams)
     if (name === 'monthValue') {
       next.set('month', String(value))
+    } else if (name === 'siteId' && value === '') {
+      next.set('siteId', 'all')
     } else if (value === '' || value === false) {
       next.delete(name)
     } else {
@@ -126,16 +130,17 @@ export function RecordsPage() {
   const clearSecondaryFilters = () => {
     const next = new URLSearchParams()
     next.set('month', monthValue)
-    if (siteId) next.set('siteId', siteId)
+    if (province.ready) next.set('siteId', siteId || 'all')
     setSearchParams(next)
   }
 
-  const optionError = options.sites.isError || options.clients.isError || options.workplaces.isError || options.employees.isError
+  const optionError = Boolean(province.error) || options.sites.isError || options.clients.isError || options.workplaces.isError || options.employees.isError
   const optionPending = options.sites.isPending || options.clients.isPending || options.workplaces.isPending || options.employees.isPending
   const retryLoad = () => {
     void Promise.all([
       ...Object.values(options).filter((query) => query.isError).map((query) => query.refetch()),
-      ...(recordsQuery.isError ? [recordsQuery.restart()] : []),
+      ...(recordsQuery.isError && province.ready ? [recordsQuery.restart()] : []),
+      ...(province.error && !options.sites.isError ? [options.sites.refetch()] : []),
     ])
   }
 
@@ -163,8 +168,8 @@ export function RecordsPage() {
       />
 
       <div aria-live="polite" className="min-w-0">
-        {optionPending || recordsQuery.isPending ? <LoadingSkeleton label="Cargando matriz mensual…" variant="matrix" /> : null}
-        {optionError || recordsQuery.isError ? <div className="rounded-md border border-accent/35 bg-background p-4" role="alert"><p className="font-semibold">No pudimos cargar la matriz mensual.</p><p className="mt-1 text-sm text-foreground/65">Revisá tu conexión o reiniciá la consulta para obtener un snapshot nuevo.</p><button className="mt-3 h-9 rounded-md border border-accent px-3 text-sm font-semibold text-accent transition-colors duration-150 hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={retryLoad}>Reintentar</button></div> : null}
+        {optionPending || (!province.error && recordsQuery.isPending) ? <LoadingSkeleton label="Cargando matriz mensual…" variant="matrix" /> : null}
+        {optionError || recordsQuery.isError ? <div className="rounded-md border border-accent/35 bg-background p-4" role="alert"><p className="font-semibold">{province.error ?? 'No pudimos cargar la matriz mensual.'}</p><p className="mt-1 text-sm text-foreground/65">Revisá tu conexión o reiniciá la consulta para obtener un snapshot nuevo.</p><button className="mt-3 h-9 rounded-md border border-accent px-3 text-sm font-semibold text-accent transition-colors duration-150 hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={retryLoad}>Reintentar</button></div> : null}
         {!optionPending && !recordsQuery.isPending && !optionError && !recordsQuery.isError && rows.length === 0 ? <div className="flex min-h-80 flex-col items-center justify-center gap-2 rounded-md border border-foreground/15 bg-background p-6 text-center"><h2 className="text-lg font-bold">No hay actividad para estos filtros</h2><p className="max-w-lg text-sm leading-6 text-foreground/65">La matriz solo muestra combinaciones de empleado y lugar con actividad en el mes seleccionado.</p><button className="mt-1 h-9 rounded-md border border-foreground/25 px-3 text-sm font-semibold transition-colors duration-150 hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="button" onClick={clearSecondaryFilters}>Limpiar filtros</button></div> : null}
         {rows.length > 0 ? <RecordsMatrix rows={rows} dates={monthDates(year, month)} totalItems={totalItems} hasNextPage={recordsQuery.hasNextPage && !recordsQuery.isError} isFetchingNextPage={recordsQuery.isFetchingNextPage} onEmptyCreate={(nextEmployeeId, nextWorkplaceId, date) => openRecordCreate({ employeeId: nextEmployeeId, workplaceId: nextWorkplaceId, date })} onEndReached={() => void recordsQuery.fetchNextPage()} onRecordOpen={openRecordDetail} /> : null}
       </div>

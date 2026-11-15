@@ -32,6 +32,19 @@ describe('monthly snapshot lifecycle', () => {
     await waitFor(() => expect(result.current.data?.pages).toEqual([response(1, 'new')]))
   })
 
+  it('starts province changes at page one without the previous province snapshot', async () => {
+    service.listMonthly.mockImplementation(({ siteId, page }) => Promise.resolve(response(page, siteId)))
+    const { wrapper } = setup()
+    const { result, rerender } = renderHook(({ siteId }) => useMonthlyRecords({ month: 11, year: 2026, siteId }, true), { wrapper, initialProps: { siteId: 'sj' } })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    await act(async () => { await result.current.fetchNextPage() })
+    await waitFor(() => expect(result.current.data?.pages).toHaveLength(2))
+    rerender({ siteId: 'mz' })
+    await waitFor(() => expect(result.current.data?.pages[0]?.meta.snapshotToken).toBe('mz'))
+    expect(service.listMonthly.mock.lastCall?.[0]).toMatchObject({ siteId: 'mz', page: 1, snapshotToken: undefined })
+    expect(result.current.data?.pages).toHaveLength(1)
+  })
+
   it('does not retry an expired snapshot and restarts page one on request', async () => {
     const expired = new ServiceError({ code: 'MONTHLY_SNAPSHOT_EXPIRED', status: 410, kind: 'api', retryable: false, message: 'Expired' })
     service.listMonthly.mockResolvedValueOnce(response(1, 'old')).mockRejectedValue(expired)

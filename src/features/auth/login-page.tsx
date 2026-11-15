@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
@@ -36,6 +36,7 @@ function safeReturnTo(value: string | null) {
 function LoginForm() {
   const { login, logout, logoutWarning, isSubmitting } = useAuth()
   const errorSummaryRef = useRef<HTMLDivElement>(null)
+  const [passwordVisible, setPasswordVisible] = useState(false)
   const {
     register,
     handleSubmit,
@@ -100,7 +101,7 @@ function LoginForm() {
         <label className="font-sans text-sm font-semibold text-foreground" htmlFor="password">Contraseña</label>
         <input
           id="password"
-          type="password"
+          type={passwordVisible ? 'text' : 'password'}
           autoComplete="current-password"
           className="min-h-10 rounded-md border border-foreground/25 bg-background px-3 py-2 font-sans text-sm text-foreground transition-colors duration-150 hover:border-foreground/50 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-invalid={Boolean(errors.password)}
@@ -109,6 +110,11 @@ function LoginForm() {
         />
         {errors.password ? <p id="password-error" className="text-sm font-medium text-accent">{errors.password.message}</p> : null}
       </div>
+
+      <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium text-foreground">
+        <input type="checkbox" className="size-5 accent-primary" checked={passwordVisible} onChange={(event) => setPasswordVisible(event.target.checked)} />
+        {passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+      </label>
 
       <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-medium text-foreground">
         <input type="checkbox" className="size-5 accent-primary" {...register('rememberSession')} />

@@ -93,7 +93,7 @@ export function RegistrationForm() {
 
       <fieldset className="flex min-w-0 flex-col gap-4 border-t border-foreground/15 pt-5">
         <legend className="text-base font-semibold text-foreground">Seguridad de tu cuenta</legend>
-        <p id="registration-password-help" className="text-sm leading-relaxed text-foreground/65">Si ya tenés cuenta, ingresá tu contraseña actual. Para una cuenta nueva, usá una frase de al menos 12 caracteres; se validará después de verificar tu email.</p>
+        <p id="registration-password-help" className="text-sm leading-relaxed text-foreground/65">Si ya tenés cuenta, ingresá tu contraseña actual. Para una cuenta nueva, usá entre 8 y 30 caracteres Unicode, incluidos espacios; se validará después de verificar tu email.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {fields.slice(8).map((field) => {
             const error = errors[field.name]
@@ -106,7 +106,7 @@ export function RegistrationForm() {
             )
           })}
         </div>
-        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-foreground"><input type="checkbox" className="size-5 accent-primary" checked={passwordVisible} onChange={(event) => setPasswordVisible(event.target.checked)} />Mostrar contraseñas</label>
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-foreground"><input type="checkbox" className="size-5 accent-primary" checked={passwordVisible} onChange={(event) => setPasswordVisible(event.target.checked)} /> {passwordVisible ? 'Ocultar contraseñas' : 'Mostrar contraseñas'}</label>
       </fieldset>
 
       {error ? <p role="alert">{error}</p> : null}

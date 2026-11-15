@@ -21,10 +21,10 @@ export function AppShell() {
   const isRecordsPage = location.pathname === '/registros'
 
   return (
-    <div className={`min-h-dvh bg-background text-foreground lg:grid ${location.pathname === '/' ? 'lg:grid-cols-[12rem_minmax(0,1fr)]' : 'lg:grid-cols-[16rem_minmax(0,1fr)]'}`}>
+    <div className={`app-shell min-h-dvh bg-background text-foreground lg:grid ${location.pathname === '/' ? 'lg:grid-cols-[12rem_minmax(0,1fr)]' : 'lg:grid-cols-[16rem_minmax(0,1fr)]'}`}>
       <a className="skip-link" href="#main-content">Saltar al contenido principal</a>
 
-      <aside className="border-b border-foreground/15 bg-foreground text-background lg:min-h-dvh lg:border-b-0 lg:border-r lg:border-background/15">
+      <aside className="app-sidebar border-b border-foreground/15 bg-foreground text-background lg:border-b-0 lg:border-r lg:border-background/15">
         <div className="flex items-center gap-3 px-5 py-5 lg:px-6 lg:py-6">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary font-sans text-sm font-bold text-background" aria-hidden="true"><UsersRound size={24} strokeWidth={1.8} /></span>
           <div className="min-w-0">
@@ -50,7 +50,7 @@ export function AppShell() {
         </nav>
       </aside>
 
-      <div className="min-w-0">
+      <div className="app-content min-w-0">
         <header className="border-b border-foreground/5 bg-surface text-foreground">
           <div className="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div className="min-w-0">

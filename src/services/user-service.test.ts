@@ -129,3 +129,25 @@ describe('employee HTTP contract', () => {
     expect(Object.fromEntries(url.searchParams)).toEqual({ search: 'Pérez', accountStatus: 'INACTIVE', page: '2', pageSize: '25' })
   })
 })
+
+it.each([[7, false], [8, true], [30, true], [31, false]] as const)('mock employee creation enforces %s code points: %s', async (length, accepted) => {
+  const result = setup().create({ ...newUser, initialPassword: '😀'.repeat(length) })
+  if (accepted) await expect(result).resolves.toMatchObject({ firstName: 'Ana' })
+  else await expect(result).rejects.toMatchObject({ code: 'WEAK_PASSWORD' })
+})
+
+
+it('filters province before counting/paginating and combines search and status', async () => {
+  const service = setup()
+  const siteId = newUser.siteId
+  expect((await service.list({ siteId, pageSize: 1 })).pagination.totalItems).toBe(1)
+  expect((await service.list({ siteId, search: 'Tomás', accountStatus: 'ACTIVE' })).data).toEqual([])
+  await expect(service.list({ siteId: 'invalid' })).rejects.toMatchObject({ code: 'INVALID_SITE' })
+})
+
+
+it('serializes siteId alongside supported HTTP filters', async () => {
+  const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ data: [], pagination: { page: 1, pageSize: 25, totalItems: 0, totalPages: 0 } }))
+  await new UserService(new HttpServiceAdapter('https://api.example.test/api/v1', fetcher)).list({ siteId: newUser.siteId, search: 'Ana', accountStatus: 'ACTIVE' })
+  expect(Object.fromEntries(new URL(String(fetcher.mock.calls[0]![0])).searchParams)).toEqual({ siteId: newUser.siteId, search: 'Ana', accountStatus: 'ACTIVE', page: '1', pageSize: '25' })
+})

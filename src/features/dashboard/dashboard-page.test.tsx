@@ -22,8 +22,8 @@ describe('dashboard metric period and destination', () => {
     ]
     for (const [title, path, filter] of targets) {
       const links = screen.getAllByRole('link', { name: new RegExp(`${title}[:,]`) })
-      expect(links).toHaveLength(2)
-      for (const link of links) expect(link).toHaveAttribute('href', `${path}?month=2024-02&${filter}`)
+      expect(links).toHaveLength(1)
+      for (const link of links) expect(link).toHaveAttribute('href', `${path}?month=2024-02&${filter}${path === "/registros" ? "&siteId=all" : ""}`)
     }
     fireEvent.change(screen.getByLabelText('Mes'), { target: { value: '2026-10' } })
     await waitFor(() => expect(getMetrics).toHaveBeenLastCalledWith({ month: 10, year: 2026 }, expect.any(AbortSignal)))

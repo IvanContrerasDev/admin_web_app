@@ -380,7 +380,7 @@ Los usuarios administradores podrán acceder mediante:
 La pantalla de login contará con:
 
 * Campo email.  
-* Campo contraseña.  
+* Campo contraseña con control accesible para mostrar/ocultar lo ingresado, oculto inicialmente; alternar no envía el formulario ni cambia el valor. La misma capacidad aplica a `/register`, incluida confirmación.
 * Opción "Recordar sesión".  
 * Enlace "Olvidé mi contraseña".
 
@@ -411,7 +411,7 @@ El flujo general será:
 1. El usuario ingresa su email.  
 2. El sistema envía un correo de recuperación.  
 3. El usuario accede al enlace recibido.  
-4. Define una nueva contraseña.  
+4. Define una nueva contraseña según política común de 8–30 puntos de código Unicode inclusive (también alta de empleado/cuenta nueva); conservar credenciales existentes en login/solicitud según contrato.
 5. Puede volver a iniciar sesión.
 
 ---
@@ -1996,7 +1996,7 @@ Los módulos principales del sistema son:
 
 Naming aprobado por el humano para conservar la navegación implementada; el legajo individual sigue accesible desde empleado.
 
-El sidebar debe permitir acceder rápidamente a cualquier módulo desde cualquier pantalla.
+El sidebar debe permitir acceder rápidamente a cualquier módulo desde cualquier pantalla. En dos columnas, el panel izquierdo permanece fijo sin scroll vertical propio; se desplaza el contenido derecho. Adaptar las ventanas bajas sin cortar accesos. En `/register` se aplica la misma independencia de panel izquierdo y formulario derecho; en composición apilada conservar acceso completo. Definición vigente en [UX común](arquitectura/experiencia-usuario.md#admin-web-app).
 
 ---
 
@@ -2073,7 +2073,7 @@ Por el momento no se calculan métricas de duración de ausencias ni estadístic
 
 # **48\. Navegación desde el Dashboard**
 
-Las métricas del dashboard deben funcionar como accesos rápidos.
+Las métricas del dashboard deben funcionar como accesos rápidos. Cada tarjeta completa contiene un único enlace/foco y abre la sección correspondiente conservando período y filtro de métrica. Textos, contadores y provincias interiores son informativos, sin enlaces o acciones independientes. Los destinos conservan alcance global (Todas explícita cuando corresponda); no seleccionan provincia por un contador. Ver [UX común](arquitectura/experiencia-usuario.md#admin-web-app).
 
 Ejemplos:
 
@@ -2786,7 +2786,7 @@ Los listados grandes se paginan server-side con query, envelope y límites del [
 
 # **83\. Convención de filtros y ordenamiento**
 
-Filtros visibles en URL, combinables según contrato de cada recurso y ejecutados server-side. Los órdenes de empleados/clientes/lugares/matriz son fijos en el [contrato común](arquitectura/contratos-api.md); no exponer sortBy libre ni inferir que siteId es provincia personal del empleado. Mantener los filtros al navegar y al volver.
+Filtros visibles en URL, combinables según contrato de cada recurso y ejecutados server-side. Los órdenes de empleados/clientes/lugares/matriz son fijos en el [contrato común](arquitectura/contratos-api.md); no exponer sortBy libre ni inferir que siteId es provincia personal del empleado. Mantener los filtros al navegar y al volver. Usuarios exige una sola Provincia seleccionada, inicial San Juan resuelta desde catálogo, sin Todas y con filtrado/paginación server-side por provincia del empleado. Registros inicia San Juan al no existir elección provincial, permite Todas explícita y conserva esa elección al navegar/recargar; su provincia corresponde al lugar/snapshot. El campo Mes debe mostrar noviembre de 2026 o nov 2026 completo, incluido año, redistribuyendo o reorganizando los demás filtros. Ver [UX común](arquitectura/experiencia-usuario.md#admin-web-app).
 
 ---
 

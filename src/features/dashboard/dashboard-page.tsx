@@ -56,9 +56,9 @@ export function DashboardPage() {
   const cards: { title: string; value: number; description: string; href: string; metric: DashboardMetricKey }[] = metrics
     ? [
       { metric: 'pendingTimesheets', title: 'Planillas pendientes', value: metrics.pendingTimesheets, description: 'Planillas del mes sin procesar.', href: `/planillas?month=${monthValue}&status=PENDING` },
-      { metric: 'incompleteRecords', title: 'Registros incompletos', value: metrics.incompleteRecords, description: 'Registros del mes con información faltante.', href: `/registros?month=${monthValue}&status=INCOMPLETE` },
-      { metric: 'pendingReviewRecords', title: 'Pendientes de validación', value: metrics.pendingReviewRecords, description: 'Registros del mes que esperan revisión.', href: `/registros?month=${monthValue}&reviewStatus=PENDING` },
-      { metric: 'recordsWithAbsence', title: 'Registros con ausencia', value: metrics.recordsWithAbsence, description: 'Registros del mes con al menos una ausencia.', href: `/registros?month=${monthValue}&hasAbsence=true` },
+      { metric: 'incompleteRecords', title: 'Registros incompletos', value: metrics.incompleteRecords, description: 'Registros del mes con información faltante.', href: `/registros?month=${monthValue}&status=INCOMPLETE&siteId=all` },
+      { metric: 'pendingReviewRecords', title: 'Pendientes de validación', value: metrics.pendingReviewRecords, description: 'Registros del mes que esperan revisión.', href: `/registros?month=${monthValue}&reviewStatus=PENDING&siteId=all` },
+      { metric: 'recordsWithAbsence', title: 'Registros con ausencia', value: metrics.recordsWithAbsence, description: 'Registros del mes con al menos una ausencia.', href: `/registros?month=${monthValue}&hasAbsence=true&siteId=all` },
     ]
     : []
 

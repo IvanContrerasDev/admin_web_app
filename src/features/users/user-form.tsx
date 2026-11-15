@@ -111,8 +111,8 @@ export function UserForm({ current, sites }: { current?: UserDetail; sites: Site
       </fieldset>
       {!editing ? <fieldset className="rounded-lg border border-foreground/15 bg-background p-5 sm:p-6" disabled={mutation.isPending}>
         <legend className="px-2 text-lg font-bold">Acceso inicial</legend>
-        <UserField label="Contraseña inicial" error={errors.initialPassword} maxLength={128} required type="password" autoComplete="new-password" {...register('initialPassword')} />
-        <p className="mt-2 text-sm leading-relaxed text-foreground/55">Entre 12 y 128 caracteres. Puede incluir espacios y caracteres Unicode.</p>
+        <UserField label="Contraseña inicial" error={errors.initialPassword} required type="password" autoComplete="new-password" {...register('initialPassword')} />
+        <p className="mt-2 text-sm leading-relaxed text-foreground/55">Entre 8 y 30 caracteres. Puede incluir espacios y caracteres Unicode.</p>
       </fieldset> : null}
       {errors.root ? <p className="rounded-md border border-destructive/35 bg-background p-4 font-semibold text-destructive" role="alert">{errors.root.message}</p> : null}
       <div className="flex flex-col-reverse gap-3 border-t border-foreground/15 pt-6 sm:flex-row sm:justify-end">

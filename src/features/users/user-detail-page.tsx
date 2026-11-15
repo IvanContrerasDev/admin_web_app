@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { userService } from '../../services/services'
 import { LoadingSkeleton } from '../../app/loading-skeleton'
 import { useToast } from '../toasts/use-toast'
@@ -14,6 +14,9 @@ function formatDate(value: string | null) {
 export function UserDetailPage() {
   const { userId = '' } = useParams()
   const navigate = useNavigate()
+  const [listParams] = useSearchParams()
+  const listSearch = listParams.toString()
+  const listHref = `/usuarios${listSearch ? `?${listSearch}` : ''}`
   const queryClient = useQueryClient()
   const toast = useToast()
   const [confirmingStatus, setConfirmingStatus] = useState(false)
@@ -29,7 +32,7 @@ export function UserDetailPage() {
   })
 
   if (userQuery.isPending) return <LoadingSkeleton label="Cargando empleado…" variant="detail" />
-  if (userQuery.isError || !userQuery.data) return <section className="rounded-lg border border-destructive/35 bg-background p-6" role="alert"><h1 className="text-2xl font-bold">No pudimos abrir este empleado</h1><p className="mt-2 text-foreground/65">Verificá el enlace o volvé al listado.</p><button className="mt-5 min-h-11 rounded-md border border-foreground/25 px-4 font-semibold" onClick={() => navigate('/usuarios')} type="button">Volver a empleados</button></section>
+  if (userQuery.isError || !userQuery.data) return <section className="rounded-lg border border-destructive/35 bg-background p-6" role="alert"><h1 className="text-2xl font-bold">No pudimos abrir este empleado</h1><p className="mt-2 text-foreground/65">Verificá el enlace o volvé al listado.</p><button className="mt-5 min-h-11 rounded-md border border-foreground/25 px-4 font-semibold" onClick={() => navigate(listHref)} type="button">Volver a empleados</button></section>
 
   const user = userQuery.data
   const active = user.accountStatus === 'ACTIVE'
@@ -39,7 +42,7 @@ export function UserDetailPage() {
 
   return (
     <section className="flex flex-col gap-6">
-      <nav aria-label="Migas de pan"><Link className="font-semibold text-primary hover:underline" to="/usuarios">Empleados</Link><span className="px-2 text-foreground/40" aria-hidden="true">/</span><span aria-current="page">Detalle</span></nav>
+      <nav aria-label="Migas de pan"><Link className="font-semibold text-primary hover:underline" to={listHref}>Empleados</Link><span className="px-2 text-foreground/40" aria-hidden="true">/</span><span aria-current="page">Detalle</span></nav>
       <header className="flex flex-col gap-4 border-b border-foreground/15 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div><p className="font-semibold text-primary tabular-nums">Legajo {user.employeeId}</p><h1 className="mt-1 text-balance text-3xl font-bold tracking-tight sm:text-4xl">{user.firstName} {user.lastName}</h1><p className="mt-2 text-foreground/65">Cuenta {active ? 'activa' : 'inactiva'} · {user.site.name}</p></div>
         <Link className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-5 font-semibold text-background hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={`/usuarios/${user.id}/editar`}>Editar datos</Link>

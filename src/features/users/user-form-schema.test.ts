@@ -28,3 +28,7 @@ describe('employee form validation', () => {
     if (!result.success) expect(result.error.issues[0]?.path).toEqual([field])
   })
 })
+
+it.each([[7, false], [8, true], [30, true], [31, false]] as const)('counts %s Unicode code points for new passwords', (length, accepted) => {
+  expect(createUserFormSchema(false, now).safeParse({ ...fields, initialPassword: '😀'.repeat(length) }).success).toBe(accepted)
+})

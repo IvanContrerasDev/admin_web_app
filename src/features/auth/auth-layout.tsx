@@ -52,8 +52,8 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
   }
 
   return (
-    <main id="main-content" className="grid min-h-dvh bg-background lg:grid-cols-[minmax(20rem,0.9fr)_minmax(32rem,1.1fr)]">
-      <section className="flex min-h-64 flex-col justify-between gap-8 bg-primary px-6 py-8 text-background sm:px-10 lg:min-h-dvh lg:px-12 lg:py-12">
+    <main id="main-content" className="registration-layout grid min-h-dvh bg-background lg:grid-cols-[minmax(20rem,0.9fr)_minmax(32rem,1.1fr)]">
+      <section className="registration-panel flex min-h-64 flex-col justify-between gap-8 bg-primary px-6 py-8 text-background sm:px-10 lg:min-h-dvh lg:px-12 lg:py-12">
         <div className="flex items-center gap-3">
           <span className="flex size-11 items-center justify-center rounded-md border border-background/40 font-sans text-lg font-bold" aria-hidden="true">G</span>
           <div>
@@ -70,7 +70,7 @@ export function AuthLayout({ children, registration = false }: AuthLayoutProps) 
           </p>
         </div>
       </section>
-      <section className="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16">
+      <section className="registration-content flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16">
         <div className={`w-full ${registration ? 'max-w-xl' : 'max-w-md'}`}>{children}</div>
       </section>
     </main>

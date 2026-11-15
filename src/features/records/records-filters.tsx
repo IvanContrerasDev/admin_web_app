@@ -32,7 +32,7 @@ export function RecordsFilters({ values, sites, clients, workplaces, employees, 
 
   return (
     <section aria-label="Filtros de registros" className="rounded-md border border-foreground/25 bg-foreground/10 px-3 py-3 text-foreground">
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[9rem_10rem_minmax(9rem,1fr)_minmax(11rem,1.25fr)_minmax(11rem,1.25fr)]">
+      <div className="grid gap-2 sm:grid-cols-2 2xl:grid-cols-[14rem_9rem_minmax(8rem,1fr)_minmax(9rem,1.2fr)_minmax(9rem,1.2fr)]">
         <label className="flex min-w-0 flex-col gap-1 text-sm font-semibold" htmlFor="records-month">
           Mes
           <input className={controlClass} id="records-month" name="month" type="month" value={values.monthValue} onChange={(event) => onChange('monthValue', event.target.value)} />

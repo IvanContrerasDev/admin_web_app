@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { UserListItem } from '../../types/users'
 
 interface UsersTableProps {
@@ -17,6 +17,8 @@ function StatusBadge({ status }: { status: UserListItem['accountStatus'] }) {
 const actionLinkClass = 'inline-flex min-h-9 items-center rounded-md px-2 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
 
 export function UsersTable({ users }: UsersTableProps) {
+  const [params] = useSearchParams()
+  const listSearch = params.toString()
   return (
     <>
       <div className="hidden overflow-x-auto rounded-lg border border-foreground/15 bg-background md:block">
@@ -54,7 +56,7 @@ export function UsersTable({ users }: UsersTableProps) {
                   <Link className={actionLinkClass} to={`/planillas?employeeId=${user.id}`}>Ver planillas</Link>
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <Link className={actionLinkClass} to={`/usuarios/${user.id}`}>Ver detalle</Link>
+                  <Link className={actionLinkClass} to={`/usuarios/${user.id}${listSearch ? `?${listSearch}` : ''}`}>Ver detalle</Link>
                 </td>
               </tr>
             ))}
@@ -79,7 +81,7 @@ export function UsersTable({ users }: UsersTableProps) {
               <div><dt className="text-foreground/60">Teléfono</dt><dd className="font-medium tabular-nums">{user.phone}</dd></div>
             </dl>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Link className="flex min-h-10 flex-1 items-center justify-center rounded-md border border-primary px-3 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={`/usuarios/${user.id}`}>Detalle</Link>
+              <Link className="flex min-h-10 flex-1 items-center justify-center rounded-md border border-primary px-3 text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={`/usuarios/${user.id}${listSearch ? `?${listSearch}` : ''}`}>Detalle</Link>
               <Link className="flex min-h-10 flex-1 items-center justify-center rounded-md border border-foreground/25 px-3 text-sm font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={`/usuarios/${user.id}/legajo`}>Legajo</Link>
               <Link className="flex min-h-10 flex-1 items-center justify-center rounded-md border border-foreground/25 px-3 text-sm font-semibold hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" to={`/planillas?employeeId=${user.id}`}>Planillas</Link>
             </div>

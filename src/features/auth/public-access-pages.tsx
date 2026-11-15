@@ -36,14 +36,14 @@ export function PasswordResetPage() {
   const { busy, error, run } = useAccessOperation()
   return <AuthLayout><form className="flex flex-col gap-5" noValidate onSubmit={(event) => {
     event.preventDefault()
-    if ([...password].length < 12 || [...password].length > 128) { setValidation('La contraseña debe tener entre 12 y 128 caracteres.'); return }
+    if ([...password].length < 8 || [...password].length > 30) { setValidation('La contraseña debe tener entre 8 y 30 caracteres.'); return }
     if (password !== confirm) { setValidation('Las contraseñas no coinciden.'); return }
     setValidation('')
     void run(async (signal) => { await accessService.reset(token, password, signal); if (!signal.aborted) { setPassword(''); setConfirm(''); setUpdated(true) } })
   }}>
     <h1 className="text-3xl font-semibold">Restablecer contraseña</h1>
     {!token ? <p role="alert">El enlace no es válido. Solicitá uno nuevo.</p> : updated ? <p role="status">Contraseña actualizada. Volvé a iniciar sesión en tu aplicación.</p> : <>
-      <p>Usá entre 12 y 128 caracteres. La contraseña nueva se validará al guardar.</p>
+      <p>Usá entre 8 y 30 caracteres. La contraseña nueva se validará al guardar.</p>
       <label htmlFor="reset-password">Nueva contraseña</label><input className={accessInputClass} id="reset-password" name="newPassword" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} />
       <label htmlFor="reset-confirm">Confirmar contraseña</label><input className={accessInputClass} id="reset-confirm" name="confirmPassword" type="password" autoComplete="new-password" value={confirm} onChange={(event) => setConfirm(event.target.value)} />
       <button className={accessButtonClass} disabled={busy}>{busy ? 'Guardando…' : 'Guardar contraseña'}</button>

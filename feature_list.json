@@ -60,7 +60,7 @@
       "task_spec": null,
       "plan": null,
       "review_status": "approved",
-      "notes": "Gestión mock y correcciones F-011 aprobadas independientemente. Integración real en F-015; brecha filtro provincial frente a contrato HTTP registrada por leader.",
+      "notes": "Gestión mock y correcciones F-011 aprobadas independientemente. Integración real en F-015; filtro provincial server-side y default San Juan implementados/aprobados localmente en F-022, sin certificar recorrido DEV autenticado.",
       "documentation": "docs/diseno-frontend.md"
     },
     {
@@ -333,6 +333,36 @@
       "review_status": "approved",
       "notes": "DEV HTTP5173 y DEMO mocks5174 explícitos; aprobados independientemente, 41/41 focalizadas + build/tsc/lint0. Root conserva arranques y aceptación navegador; sin Git.",
       "documentation": "docs/integracion.md"
+    },
+    {
+      "id": "F-021",
+      "title": "Acceso, contraseña nueva 8–30 y paneles izquierdos fijos",
+      "status": "done",
+      "dependencies": [],
+      "contract_dependencies": [
+        "docs/arquitectura/experiencia-usuario.md",
+        "docs/arquitectura/contratos-api.md"
+      ],
+      "task_spec": null,
+      "plan": null,
+      "review_status": "approved",
+      "notes": "Aprobación independiente: 70 tests focales/checks exit0; suite completa 290/290 y QA Chromium geometría cinco tamaños. Contraseñas nuevas 8–30 Unicode; existentes preservadas. No certifica backend/Android ni pendientes F010.",
+      "documentation": "docs/diseno-frontend.md"
+    },
+    {
+      "id": "F-022",
+      "title": "Provincia inicial San Juan, tarjeta única y mes legible",
+      "status": "done",
+      "dependencies": [],
+      "contract_dependencies": [
+        "docs/arquitectura/experiencia-usuario.md",
+        "docs/arquitectura/contratos-api.md"
+      ],
+      "task_spec": null,
+      "plan": null,
+      "review_status": "approved",
+      "notes": "Aprobación independiente: suite305/305, focal63/63 y typecheck/lint/build/diff0; QA Chromium DEMO estable confirma provincias, Todas persistente, tarjeta única global y Mes completo. Browser DEV autenticado pendiente; no cierra F010/A01–05.",
+      "documentation": "docs/diseno-frontend.md"
     }
   ]
 }

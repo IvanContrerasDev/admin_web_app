@@ -1,3 +1,3 @@
 # Estado actual — reviewer Admin
 
-F-020 aprobado independientemente, 0 ítems. Definición vigente en docs/integracion.md. Verificación propia 41/41 focalizadas config/fábrica/transporte/auth/sesión + build/tsc/lint0; bundles en memoria prueban import.meta.env entero y código vite:import-analysis confirma precedencia serve. HTTP5173/mock5174, localhost/strictPort, URL default/custom, env heredado opuesto, mutación mock sin fetch/reinicio y fallo HTTP sin fallback conformes. Root conserva arranques, ocupación real de puerto y aceptación navegador; sin claim login/E2E. Sin edición de producto, Git o SYNCED.
+Sin revisión activa. F-021/F-022 aprobadas, 0 ítems; evidencia y límites consolidados por leader en docs/diseno-frontend.md. Aceptación local y Chromium DEMO; browser DEV autenticado/Android no certificados.

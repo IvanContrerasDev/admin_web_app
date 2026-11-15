@@ -27,6 +27,7 @@ export class UserService {
       {
         path: '/users',
         query: {
+          siteId: query.siteId,
           search: query.search,
           accountStatus: query.accountStatus,
           page: query.page ?? 1,

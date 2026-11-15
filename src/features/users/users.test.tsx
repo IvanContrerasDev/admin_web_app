@@ -65,14 +65,66 @@ describe('F-011 employee regressions', () => {
     }
   })
 
-  it('loads employees globally using only contractual filters and no catalogue request', async () => {
-    renderUsers('/usuarios?siteId=11000000-0000-4000-8000-000000000005')
+  it('defaults to San Juan and queries server-side without offering Todas', async () => {
+    renderUsers()
     const table = await screen.findByRole('table')
-    expect(table).toHaveTextContent('Tomás')
+    expect(table).not.toHaveTextContent('Tomás')
     expect(table).toHaveTextContent('Lucía')
-    expect(screen.queryByRole('combobox', { name: 'Provincia' })).not.toBeInTheDocument()
-    expect(userService.listSites).not.toHaveBeenCalled()
-    expect(userService.list).toHaveBeenCalledWith({ search: undefined, accountStatus: 'ACTIVE', page: 1, pageSize: 25 }, expect.any(AbortSignal))
+    expect(screen.getByRole('combobox', { name: 'Provincia' })).toHaveValue('11000000-0000-4000-8000-000000000005')
+    expect(within(screen.getByLabelText('Provincia')).queryByRole('option', { name: 'Todas' })).not.toBeInTheDocument()
+    expect(userService.list).toHaveBeenCalledWith({ siteId: '11000000-0000-4000-8000-000000000005', search: undefined, accountStatus: 'ACTIVE', page: 1, pageSize: 25 }, expect.any(AbortSignal))
+  })
+
+  it('waits for the catalogue and never falls back to a global query on error', async () => {
+    vi.mocked(userService.listSites).mockRejectedValue(new Error('Offline'))
+    renderUsers()
+    expect(await screen.findByRole('alert')).toHaveTextContent('provincias')
+    expect(userService.list).not.toHaveBeenCalled()
+  })
+
+  it.each([{ sites: [] }, { sites: [{ id: '11000000-0000-4000-8000-000000000003', name: 'Mendoza' }] }])('explains missing San Juan without querying globally', async ({ sites }) => {
+    vi.mocked(userService.listSites).mockResolvedValue(sites)
+    renderUsers()
+    expect(await screen.findByRole('alert')).toHaveTextContent('San Juan no está disponible')
+    expect(userService.list).not.toHaveBeenCalled()
+  })
+
+  it('rejects an invalid province URL without querying users', async () => {
+    renderUsers('/usuarios?siteId=all')
+    expect(await screen.findByRole('alert')).toHaveTextContent('provincia del enlace')
+    expect(userService.list).not.toHaveBeenCalled()
+  })
+
+  it('waits for delayed catalogue and recovers after selecting a province', async () => {
+    let release!: (sites: { id: string; name: string }[]) => void
+    vi.mocked(userService.listSites).mockReturnValue(new Promise((resolve) => { release = resolve }))
+    renderUsers()
+    expect(userService.list).not.toHaveBeenCalled()
+    await act(async () => release([{ id: '11000000-0000-4000-8000-000000000005', name: 'San Juan' }]))
+    await screen.findByRole('table')
+    expect(vi.mocked(userService.list).mock.calls.every(([query]) => query.siteId === '11000000-0000-4000-8000-000000000005')).toBe(true)
+  })
+
+  it('changes province server-side and resets pagination', async () => {
+    const user = userEvent.setup()
+    const router = renderUsers('/usuarios?siteId=11000000-0000-4000-8000-000000000005&page=1')
+    await screen.findByRole('table')
+    await user.selectOptions(screen.getByLabelText('Provincia'), '11000000-0000-4000-8000-000000000003')
+    await waitFor(() => expect(screen.getByRole('table')).toHaveTextContent('Tomás'))
+    expect(router.state.location.search).not.toContain('page=')
+    expect(screen.getByRole('table')).not.toHaveTextContent('Lucía')
+  })
+
+  it('returns from detail preserving the province and combined list filters', async () => {
+    const user = userEvent.setup()
+    const router = renderUsers('/usuarios?siteId=11000000-0000-4000-8000-000000000003&search=Tomás&status=ACTIVE')
+    await screen.findByRole('table')
+    await user.click(screen.getByRole('link', { name: 'Ver detalle' }))
+    await screen.findByRole('heading', { name: 'Tomás Benítez' })
+    await user.click(screen.getByRole('link', { name: 'Empleados' }))
+    await screen.findByRole('table')
+    expect(screen.getByLabelText('Provincia')).toHaveValue('11000000-0000-4000-8000-000000000003')
+    expect(new URLSearchParams(router.state.location.search).get('search')).toBe('Tomás')
   })
 
   it('recovers a failed province catalogue in the employee form', async () => {
@@ -198,13 +250,13 @@ describe('F-011 employee regressions', () => {
     await user.click(await screen.findByRole('button', { name: 'Limpiar filtros' }))
     await screen.findByRole('table')
     expect(screen.getByLabelText('Buscar empleado')).toHaveValue('')
-    expect(router.state.location.search).toBe('')
+    expect(router.state.location.search).toBe('?siteId=11000000-0000-4000-8000-000000000005')
   })
 
   it('replaces an out-of-range URL with the valid page without showing a false empty state', async () => {
     const router = renderUsers('/usuarios?page=999')
     await screen.findByRole('table')
-    await waitFor(() => expect(router.state.location.search).toBe('?page=1'))
+    await waitFor(() => expect(router.state.location.search).toBe('?page=1&siteId=11000000-0000-4000-8000-000000000005'))
     expect(screen.queryByRole('heading', { name: 'No hay resultados' })).not.toBeInTheDocument()
   })
 })

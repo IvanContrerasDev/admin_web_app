@@ -10,3 +10,10 @@ it('supports a local UI-only request/OTP/reset/decision flow', async () => {
   expect(await service.confirm('mock-token', 'REJECT')).toEqual({ decision: 'REJECTED' })
   await expect(service.confirm('mock-token', 'APPROVE')).rejects.toMatchObject({ code: 'REQUEST_ALREADY_DECIDED' })
 })
+
+it.each([[7, false], [8, true], [30, true], [31, false]] as const)('mock reset enforces %s code points: %s', async (length, accepted) => {
+  const service = new AccessService(createServiceAdapter({ VITE_SERVICE_MODE: 'mock' }))
+  const result = service.reset('mock-token', '😀'.repeat(length))
+  if (accepted) await expect(result).resolves.toEqual({ updated: true })
+  else await expect(result).rejects.toMatchObject({ code: 'WEAK_PASSWORD' })
+})

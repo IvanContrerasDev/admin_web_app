@@ -66,6 +66,7 @@ export interface UpdateUserInput {
 }
 
 export interface UserListQuery {
+  siteId?: string
   search?: string
   accountStatus?: AccountStatus
   page?: number

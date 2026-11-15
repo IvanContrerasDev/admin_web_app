@@ -61,3 +61,15 @@ it('shows expired reset error and keeps the password form available', async () =
   await userEvent.click(screen.getByRole('button', { name: 'Guardar contraseña' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('El enlace venció')
 })
+
+it.each([[7, false], [8, true], [30, true], [31, false]] as const)('reset accepts %s Unicode characters: %s', async (length, accepted) => {
+  window.history.replaceState(null, '', '/password-reset?token=secret')
+  const reset = vi.spyOn(accessService, 'reset').mockResolvedValue({ updated: true })
+  render(<MemoryRouter><PasswordResetPage /></MemoryRouter>)
+  const password = '😀'.repeat(length)
+  await userEvent.type(screen.getByLabelText('Nueva contraseña'), password)
+  await userEvent.type(screen.getByLabelText('Confirmar contraseña'), password)
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar contraseña' }))
+  if (accepted) expect(reset.mock.calls[0]!.slice(0, 2)).toEqual(['secret', password])
+  else { expect(reset).not.toHaveBeenCalled(); expect(screen.getByRole('alert')).toHaveTextContent('entre 8 y 30') }
+})
