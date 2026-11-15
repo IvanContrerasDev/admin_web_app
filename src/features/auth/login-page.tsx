@@ -119,10 +119,6 @@ function LoginForm() {
         {isSubmitting ? 'Validando acceso…' : 'Continuar con código'}
       </button>
 
-      <p className="text-center text-sm text-foreground/65">
-        La recuperación de contraseña se habilitará cuando el backend publique el contrato administrativo definitivo.
-      </p>
-      <Link to="/password-recovery" className="self-center min-h-11 text-sm text-primary underline hover:text-foreground focus-visible:outline-2">Olvidé mi contraseña</Link>
       <Link to="/registro" className="self-center rounded-sm font-sans text-sm font-medium text-primary underline-offset-4 transition-colors hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Crear cuenta o registrarse</Link>
     </form>
   )

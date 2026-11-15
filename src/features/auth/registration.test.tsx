@@ -36,7 +36,7 @@ describe('Administrative registration screen', () => {
     await user.click(await screen.findByRole('link', { name: 'Crear cuenta o registrarse' }))
     expect(await screen.findByRole('heading', { name: 'Crear cuenta' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/registro')
-    expect(screen.getByText(/requiere la aprobación del SuperAdmin/)).toBeInTheDocument()
+    expect(screen.getByText(/requiere la aprobación de un administrador/)).toBeInTheDocument()
     expect(screen.getByLabelText('Provincia')).toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Iniciar sesión' }))
     expect(await screen.findByRole('heading', { name: 'Ingresar' })).toBeInTheDocument()
