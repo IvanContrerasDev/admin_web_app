@@ -38,7 +38,7 @@ async function parseJson(response: Response) {
 export class HttpServiceAdapter implements ServiceAdapter {
   private readonly baseUrl: URL
 
-  constructor(baseUrl: string, private readonly fetcher: typeof fetch = fetch) {
+  constructor(baseUrl: string, private readonly fetcher: typeof fetch = globalThis.fetch.bind(globalThis)) {
     try {
       this.baseUrl = new URL(baseUrl)
       if (!['http:', 'https:'].includes(this.baseUrl.protocol) || this.baseUrl.username || this.baseUrl.password || this.baseUrl.search || this.baseUrl.hash) throw new Error('Invalid API base')
@@ -66,7 +66,9 @@ export class HttpServiceAdapter implements ServiceAdapter {
 
     let response: Response
     try {
-      response = await this.fetcher(url, {
+      // Native fetch needs its global receiver; injected fetchers are plain functions.
+      const fetcher = this.fetcher
+      response = await fetcher(url, {
         method: request.method ?? 'GET',
         credentials: 'include',
         cache: request.path.startsWith('/auth/') ? 'no-store' : undefined,

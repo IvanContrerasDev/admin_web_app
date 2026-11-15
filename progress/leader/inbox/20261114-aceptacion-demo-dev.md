@@ -1,0 +1,3 @@
+# Aceptación humana DEV/DEMO
+
+Usuario respondió «Sí, ambos muestran lo esperado» a la pregunta de comparación entre DEV http://localhost:5173 solo datos reales/backend y DEMO http://localhost:5174 con datos simulados. Incorporar esta aceptación física de F-020 a la documentación/estado local al consolidar; no corresponde exigir una nueva prueba del mismo criterio ni confundir con criterios integrales ajenos. La aceptación la aportó el usuario, no CUA. Root verificó procesos, módulos servidos y rechazo real de segundos arranques por puerto ocupado. No se realizaron commits en este tramo. Consumir inbox tras consolidación.

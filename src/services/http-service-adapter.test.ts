@@ -2,6 +2,30 @@ import { describe, expect, it, vi } from 'vitest'
 import { HttpServiceAdapter } from './http-service-adapter'
 
 describe('HTTP transport', () => {
+  it('uses the global receiver for the default browser fetch', async () => {
+    const fetcher = vi.fn<typeof fetch>(function (this: unknown) {
+      if (this !== globalThis) throw new TypeError('Illegal invocation')
+      return Promise.resolve(Response.json({ data: [] }))
+    })
+    vi.stubGlobal('fetch', fetcher)
+    try {
+      const adapter = new HttpServiceAdapter('https://localhost/api/v1')
+      await expect(adapter.request({ path: '/users' })).resolves.toEqual({ data: [] })
+      expect(fetcher).toHaveBeenCalledOnce()
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it('calls injected fetch without the adapter receiver', async () => {
+    const fetcher = vi.fn<typeof fetch>(function (this: unknown) {
+      expect(this).toBeUndefined()
+      return Promise.resolve(Response.json({ data: [] }))
+    })
+    const adapter = new HttpServiceAdapter('https://localhost/api/v1', fetcher)
+    await expect(adapter.request({ path: '/users' })).resolves.toEqual({ data: [] })
+  })
+
   it('preserves the API prefix and escapes query values', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ data: [] }))
     const adapter = new HttpServiceAdapter('https://localhost:3000/api/v1', fetcher)

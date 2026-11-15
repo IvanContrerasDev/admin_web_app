@@ -8,12 +8,13 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode dev",
     "build": "tsc -b && vite build",
     "lint": "eslint . --max-warnings=0",
     "preview": "vite preview",
     "test": "vitest",
-    "typecheck": "tsc -b --pretty false"
+    "typecheck": "tsc -b --pretty false",
+    "demo": "vite --mode demo"
   },
   "dependencies": {
     "@fontsource-variable/work-sans": "^5.3.0",

@@ -1,0 +1,7 @@
+# Orchestrator → leader Admin: error por origen LAN durante smoke local
+
+El smoke integrado requiere que el navegador local llegue a la API/PostgreSQL. La app Admin responde y muestra el formulario en `http://localhost:5173`, pero al abrir `http://192.168.100.59:5173` queda en blanco. Error de consola observado en browser: `TypeError: crypto.randomUUID is not a function`, lanzado por `src/services/session-coordination.ts:50` al construir `AuthService`. Es consistente con la diferencia de contexto seguro entre localhost y un origen HTTP por IP LAN; no se probó HTTPS local.
+
+La API permite CORS con credenciales desde `http://localhost:5173`, devuelve el endpoint CSRF 200 y el preflight POST 204. Configuración runtime Admin `VITE_SERVICE_MODE=http`, `VITE_API_BASE_URL=http://localhost:3000/api/v1`. `localhost:5173` renderiza el login; el browser sandbox de Codex no comparte su loopback con la API, así que no se certifica el submit desde ese browser.
+
+Backend local está disponible: API `http://192.168.100.59:3000`, Mailpit autenticado `http://192.168.100.59:8025`; Admin seed additive creado en DB manual vacía y login Admin directo API devolvió 202 con correo OTP capturado. Suite backend pasó 204/204 en DB dedicada. No modificar credenciales ni resetear datos manuales. Evaluar solución para que el origen LAN no deje una pantalla blanca o documentar/garantizar localhost como URL oficial del Admin local. Seguir el ciclo local leader → implementer → reviewer; el orchestrator no edita código de producto.

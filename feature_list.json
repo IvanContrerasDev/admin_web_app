@@ -307,6 +307,32 @@
       "plan": "docs/tasks/018-binarios-legajos-http-plan.md",
       "review_status": "pending",
       "notes": "Ejecución autorizada. Validación integral depende stack/fixture y navegador; no ratificar abiertos. Alcance y bloqueos en task_spec."
+    },
+    {
+      "id": "F-019",
+      "title": "Corregir receptor de fetch en transporte HTTP Admin",
+      "status": "done",
+      "dependencies": [
+        "F-014"
+      ],
+      "contract_dependencies": [],
+      "task_spec": null,
+      "plan": null,
+      "review_status": "approved",
+      "notes": "Corrección local aprobada independientemente, 36/36 focalizadas + build/lint. Receptor incorrecto demostrado con doble; login físico Chrome pendiente. No certifica E2E.",
+      "documentation": "docs/integracion.md"
+    },
+    {
+      "id": "F-020",
+      "title": "Arranques explícitos DEV HTTP y DEMO mocks",
+      "status": "done",
+      "dependencies": [],
+      "contract_dependencies": [],
+      "task_spec": null,
+      "plan": null,
+      "review_status": "approved",
+      "notes": "DEV HTTP5173 y DEMO mocks5174 explícitos; aprobados independientemente, 41/41 focalizadas + build/tsc/lint0. Root conserva arranques y aceptación navegador; sin Git.",
+      "documentation": "docs/integracion.md"
     }
   ]
 }
